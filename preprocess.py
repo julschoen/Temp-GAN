@@ -14,6 +14,7 @@ def main():
 	print(files)
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
+		print(img.dataobj)
 		img_ = torch.Tensor(np.asanyarray(img.dataobj))
 		img_ = interpolate(
 			img_.reshape(1,1,384,384,64),
@@ -22,8 +23,6 @@ def main():
 		)
 		img_ = torch.clamp(img_, -1000,1000)
 		img_ = img_/1000
-		print(img_.min(), img_.max())
-		print(img_.shape)
 		break
 
 
