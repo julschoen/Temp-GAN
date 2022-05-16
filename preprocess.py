@@ -7,11 +7,11 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--path', type=str, default='')
 	params = parser.parse_args()
-	files = [f for f in os.listdir(params.path) if f.startswith('cbct')]
+	files = np.sort([f for f in os.listdir(params.path) if f.startswith('cbct')])
 	print(files)
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
-		print(img.header)
+		#print(img.header)
 
 
 if __name__ == '__main__':
