@@ -7,6 +7,7 @@ from torch.nn.functional import interpolate
 
 def process(path, files):
 	ims = None
+	print(files)
 	for f in files:
 		if not f.endswith('.gz'):
 			continue
@@ -49,6 +50,7 @@ def main():
 				print(ims.shape)
 				np.savez_compressed(f'{sub}.npz', x=ims)
 				print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
+			break
 
 
 if __name__ == '__main__':
