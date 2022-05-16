@@ -3,13 +3,10 @@ import os
 import nibabel as nib
 import argparse
 import torch
-from torch.nn.functional import interpolate
+from torch.nn.functional import 
 
-def main():
-	parser = argparse.ArgumentParser()
-	parser.add_argument('-p', '--path', type=str, default='')
-	params = parser.parse_args()
-	files = sorted([f for f in os.listdir(params.path) if f.startswith('cbct')],
+def process(path):
+	files = sorted([f for f in os.listdir(path) if f.startswith('cbct')],
 		key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
 	ims = None
 	for f in files:
@@ -27,6 +24,14 @@ def main():
 			ims = torch.concat((ims,img))
 		else:
 			ims = img
+
+		return ims
+
+def main():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-p', '--path', type=str, default='')
+	params = parser.parse_args()
+	ims = process(params.path)
 	print(ims.shape)
 
 
