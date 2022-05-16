@@ -53,7 +53,6 @@ def main():
 	parser.add_argument('-s', '--save_path', type=str, default='data')
 	params = parser.parse_args()
 
-	"""
 	dirs = sorted([f for f in os.listdir(params.data_path) if os.path.isdir(os.path.join(params.data_path, f))],
 		key=lambda x: int(x))
 	os.makedirs(params.save_path, exist_ok=True)
@@ -69,7 +68,7 @@ def main():
 				ims = process(os.path.join(params.data_path, d, sub), files)
 				np.savez_compressed(os.path.join(params.save_path, d,f'{sub}.npz'), x=ims)
 				print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
-	"""
+	
 	dirs = sorted([f for f in os.listdir(params.save_path) if os.path.isdir(os.path.join(params.save_path, f))],
 		key=lambda x: int(x))
 
