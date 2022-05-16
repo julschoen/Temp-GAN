@@ -16,10 +16,14 @@ def main():
 
 		for f in files:
 			x = np.load(os.path.join(path,d,f))['x']
-			print(x.shape)
-			x = x.reshape(-1,1,128,128,128)
-			print(x.shape)
-			break
+			
+			if data is None:
+				data = x
+			else:
+				data = np.concatenate((data, x))
+
+	print(data.shape)
+	np.savez_compressed('train_cbct.npz', x=data)
 
 if __name__ == '__main__':
 	main()
