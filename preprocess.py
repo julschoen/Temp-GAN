@@ -2,6 +2,7 @@ import numpy as np
 import os
 import nibabel as nib
 import argparse
+import torch
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -12,10 +13,12 @@ def main():
 	print(files)
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
-		img_ = np.asanyarray(img.dataobj)
-		img_ = np.clip(img_, -1000,1000)
-		img_ = img_/1000
+		img_ = torch.Tensor(img.dataobj)
+		#img_ = np.clip(img_, -1000,1000)
+		#img_ = img_/1000
+		print(img_)
 		print(img_.shape)
+		break
 
 
 if __name__ == '__main__':
