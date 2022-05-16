@@ -42,7 +42,7 @@ def main():
 			files = sorted([f for f in os.listdir(os.path.join(params.data_path,d,sub)) if f.startswith('cbct')],
 							key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
 			if len(files)>1:
-				s.makedirs(os.path.join(params.save_path, d), exist_ok=True)
+				os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 				ims = preprocess(os.path.join(params.data_path, d, sub), files)
 				np.savez_compressed(f'{sub}.npz', x=ims)
 
