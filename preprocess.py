@@ -31,7 +31,7 @@ def combine(dirs, params):
 	data = None
 	for d in dirs:
 		files = sorted([f for f in os.listdir(os.path.join(params.save_path, d)) if f.endswith('.npz')],
-						key=lambda x: int(x[0]))
+						key=lambda x: int(x[:-4]))
 		pat = None
 		for f in files:
 			ims = np.load(os.path.join(params.save_path, d, f))['x']
