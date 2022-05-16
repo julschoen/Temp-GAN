@@ -13,7 +13,7 @@ def main():
 	print(files)
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
-		img_ = torch.Tensor(img.dataobj)
+		img_ = torch.Tensor(np.asanyarray(img.dataobj))
 		#img_ = np.clip(img_, -1000,1000)
 		#img_ = img_/1000
 		print(img_)
