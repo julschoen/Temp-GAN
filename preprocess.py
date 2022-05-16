@@ -46,11 +46,6 @@ def main():
 				ims = preprocess(os.path.join(params.data_path, d, sub), files)
 				np.savez_compressed(f'{sub}.npz', x=ims)
 
-				
-
-	ims = process(files[-1])
-	print(ims.shape)
-
 
 if __name__ == '__main__':
 	main()
