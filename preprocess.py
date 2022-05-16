@@ -30,8 +30,6 @@ def process(path, files):
 def combine(dirs, params):
 	data = None
 	for d in dirs:
-		if d in choice:
-			continue
 		files = sorted([f for f in os.listdir(os.path.join(params.save_path, d)) if f.endswith('.npz')],
 						key=lambda x: int(x))
 		pat = None
