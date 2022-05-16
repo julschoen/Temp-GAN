@@ -30,9 +30,11 @@ def process(path):
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--path', type=str, default='')
+	params = parser.parse_args()
+
 	files = sorted([f for f in os.listdir(params.path) if os.path.isdir(f)],
 		key=lambda x: int(x))
-	params = parser.parse_args()
+
 	ims = process(files[-1])
 	print(ims.shape)
 
