@@ -11,7 +11,7 @@ def main():
 	params = parser.parse_args()
 	files = sorted([f for f in os.listdir(params.path) if f.startswith('cbct')],
 		key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
-	print(files)
+	ims = None
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
 		print(img.dataobj)
@@ -23,7 +23,11 @@ def main():
 		)
 		img_ = torch.clamp(img_, -1000,1000)
 		img_ = img_/1000
-		break
+		if ims is not None:
+			ims.concat((ims,img_))
+		else:
+			ims = img_
+	print(ims.shape)
 
 
 if __name__ == '__main__':
