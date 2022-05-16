@@ -13,8 +13,9 @@ def main():
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
 		img_ = np.asanyarray(img.dataobj)
-		print(img_)
-		print(img_.max(), img_.min())
+		img_ = np.clip(img_, -1000,1000)
+		img_ = img_/1000
+		print(img_.min(), img_.max())
 
 
 if __name__ == '__main__':
