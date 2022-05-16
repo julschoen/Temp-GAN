@@ -12,7 +12,8 @@ def main():
 	print(files)
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
-		print(img.max(), img.min())
+		img_ = np.copy(img.get_data())
+		print(img_.max(), img_.min())
 
 
 if __name__ == '__main__':
