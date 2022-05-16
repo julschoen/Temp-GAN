@@ -34,7 +34,7 @@ def main():
 
 	dirs = sorted([f for f in os.listdir(params.path) if os.path.isdir(f)],
 		key=lambda x: int(x))
-
+	print(dirs)
 	for d in dirs:
 		subdirs = sorted([f for f in os.listdir(d) if os.path.isdir(f)],
 				key=lambda x: int(x))
