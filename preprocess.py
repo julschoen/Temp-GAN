@@ -77,7 +77,6 @@ def main():
 	np.savez_compressed(os.path.join(params.save_path, 'test_pat.npz'), x=np.array(choice))
 	
 	train = []
-	test = choice
 
 	for d in dirs:
 		if d in choice:
@@ -85,13 +84,8 @@ def main():
 		else:
 			train.append(d)
 
-	train_data = combine(train, params)
-	print(train.shape)
-	np.savez_compressed(os.path.join(params.save_path, 'train.npz'), x=train_data)
-	test_data = combine(choice, params)
-	print(test_data.shape)
-	np.savez_compressed(os.path.join(params.save_path, 'test.npz'), x=test_data)
-
+	np.savez_compressed(os.path.join(params.save_path, 'test_pat.npz'), x=np.array(choice))
+	np.savez_compressed(os.path.join(params.save_path, 'train_pat.npz'), x=np.array(train))
 
 
 
