@@ -46,7 +46,7 @@ def main():
 			if len(files)>1:
 				os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 				ims = process(os.path.join(params.data_path, d, sub), files)
-				np.savez_compressed(os.path.join(params.data_path, d, ,f'{sub}.npz'), x=ims)
+				np.savez_compressed(os.path.join(params.data_path, d,f'{sub}.npz'), x=ims)
 				print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
 
 
