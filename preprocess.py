@@ -12,7 +12,7 @@ def main():
 	print(files)
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
-		#print(img.header)
+		print(img.header)
 
 
 if __name__ == '__main__':
