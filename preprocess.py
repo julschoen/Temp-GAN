@@ -8,6 +8,8 @@ from torch.nn.functional import interpolate
 def process(path, files):
 	ims = None
 	for f in files:
+		if not f.endswith('.gz'):
+			continue
 		img = nib.load(os.path.join(path,f))
 		img = torch.Tensor(np.asanyarray(img.dataobj))
 		shape = img.shape
