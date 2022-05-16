@@ -3,7 +3,7 @@ import os
 import nibabel as nib
 import argparse
 
-def main(params):
+def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--path', type=str, default='')
 	params = parser.parse_args()
