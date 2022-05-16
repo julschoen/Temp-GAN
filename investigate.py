@@ -11,7 +11,7 @@ def main():
 	dirs = sorted([f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))],
 		key=lambda x: int(x))
 	for d in dirs:
-		files = sorted([f for f in os.listdir(os.data_path.join(path, d)) if f.endswith('.npz')],
+		files = sorted([f for f in os.listdir(os.path.join(path, d)) if f.endswith('.npz')],
 					key=lambda x: int(x[:-4]))
 
 		if len(files) > 1:
