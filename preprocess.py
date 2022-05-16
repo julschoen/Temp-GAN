@@ -7,7 +7,6 @@ from torch.nn.functional import interpolate
 
 def process(path, files):
 	ims = None
-	print(files)
 	for f in files:
 		if not f.endswith('.gz'):
 			continue
@@ -26,7 +25,7 @@ def process(path, files):
 		else:
 			ims = img
 
-		return ims.numpy()
+	return ims.numpy()
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -47,7 +46,6 @@ def main():
 			if len(files)>1:
 				os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 				ims = process(os.path.join(params.data_path, d, sub), files)
-				print(ims.shape)
 				np.savez_compressed(f'{sub}.npz', x=ims)
 				print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
 			break
