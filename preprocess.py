@@ -3,6 +3,7 @@ import os
 import nibabel as nib
 import argparse
 import torch
+from torch.nn.functional import interpolate
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -14,6 +15,7 @@ def main():
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
 		img_ = torch.Tensor(np.asanyarray(img.dataobj))
+		img_ = interpolate(img_, size=(128,128,128), mode='bicubic')
 		#img_ = np.clip(img_, -1000,1000)
 		#img_ = img_/1000
 		print(img_)
