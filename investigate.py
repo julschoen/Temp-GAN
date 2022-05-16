@@ -10,9 +10,8 @@ def main():
 
 	dirs = sorted([f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))],
 		key=lambda x: int(x))
-	print(dirs)
-	print(len(dirs))
-
+	choice = np.random.choice(dirs, size=26)
+	print(choice)
 
 if __name__ == '__main__':
 	main()
