@@ -48,7 +48,6 @@ def main():
 				ims = process(os.path.join(params.data_path, d, sub), files)
 				np.savez_compressed(f'{sub}.npz', x=ims)
 				print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
-			break
 
 
 if __name__ == '__main__':
