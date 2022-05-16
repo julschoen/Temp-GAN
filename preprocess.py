@@ -7,8 +7,11 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--path', type=str, default='')
 	params = parser.parse_args()
-	img = nib.load(params.path)
-	print(img.header)
+	files = [f for f in os.listdir(params.path) if f.startswith('cbct')]
+	print(files)
+	for f in files:
+		img = nib.load(os.path.join(params.path,f))
+		print(img.header)
 
 
 if __name__ == '__main__':
