@@ -15,7 +15,7 @@ def main():
 		img_ = np.asanyarray(img.dataobj)
 		img_ = np.clip(img_, -1000,1000)
 		img_ = img_/1000
-		print(img_.min(), img_.max())
+		print(img_.shape)
 
 
 if __name__ == '__main__':
