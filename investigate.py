@@ -7,18 +7,19 @@ from torch.nn.functional import interpolate
 
 def main():
 	path = 'data'
+	dirs = np.load(os.path.join(path, 'train_pat.npz'))['x']
 
-	dirs = sorted([f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))],
-		key=lambda x: int(x))
+	data = None
 	for d in dirs:
 		files = sorted([f for f in os.listdir(os.path.join(path, d)) if f.endswith('.npz')],
 					key=lambda x: int(x[:-4]))
 
-		if len(files) > 1:
-			print(d)
-			for f in files:
-				x = np.load(os.path.join(path,d,f))['x']
-				print(f'File {f} len {x.shape[0]}')
+		for f in files:
+			x = np.load(os.path.join(path,d,f))['x']
+			print(x.shape)
+			x = x.reshape(-1,1,128,128,128)
+			print(x.shape)
+			break
 
 if __name__ == '__main__':
 	main()
