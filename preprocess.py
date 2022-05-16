@@ -43,6 +43,7 @@ def combine(dirs, params):
 		if data is None:
 			data = pat.reshape(1,pat.shape[0],-1,1,128,128,128)
 		else:
+			print(data.shape)
 			data = np.concatenate((data, pat.reshape(1,pat.shape[0],-1,1,128,128,128)))
 	return data
 
