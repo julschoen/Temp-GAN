@@ -24,7 +24,7 @@ def main():
 		img_ = torch.clamp(img_, -1000,1000)
 		img_ = img_/1000
 		if ims is not None:
-			ims.concat((ims,img_))
+			ims = torch.concat((ims,img_))
 		else:
 			ims = img_
 	print(ims.shape)
