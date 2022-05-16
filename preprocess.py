@@ -31,7 +31,7 @@ def main():
 	parser.add_argument('-s', '--save_path', type=str, default='data')
 	params = parser.parse_args()
 
-	dirs = sorted([f for f in os.listdir(params.path) if os.path.isdir(os.path.join(params.path, f))],
+	dirs = sorted([f for f in os.listdir(params.data_path) if os.path.isdir(os.path.join(params.data_path, f))],
 		key=lambda x: int(x))
 
 	for d in dirs:
