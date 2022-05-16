@@ -30,9 +30,21 @@ def process(path):
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--path', type=str, default='')
-	files = sorted([f for f in os.listdir(params.path) if os.path.isdir(f)],
-		key=lambda x: int(x))
 	params = parser.parse_args()
+
+	dirs = sorted([f for f in os.listdir(params.path) if os.path.isdir(f)],
+		key=lambda x: int(x))
+
+	for d in dirs:
+		subdirs = sorted([f for f in os.listdir(d) if os.path.isdir(f)],
+				key=lambda x: int(x))
+		for sub in subdirs:
+			files = sorted([f for f in os.listdir(os.path.join(d,sub)) if f.startswith('cbct')],
+							key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
+			if len(files)<2:
+				print(d, sub)
+				print(len(files))
+
 	ims = process(files[-1])
 	print(ims.shape)
 
