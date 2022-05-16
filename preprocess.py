@@ -3,7 +3,7 @@ import os
 import nibabel as nib
 import argparse
 import torch
-from torch.nn.functional import 
+from torch.nn.functional import interpolate
 
 def process(path):
 	files = sorted([f for f in os.listdir(path) if f.startswith('cbct')],
