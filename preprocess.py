@@ -22,7 +22,7 @@ def main():
 		)
 		img_ = torch.clamp(img_, -1000,1000)
 		img_ = img_/1000
-		print(img_)
+		print(img_.min(), img_.max())
 		print(img_.shape)
 		break
 
