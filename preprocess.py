@@ -15,10 +15,13 @@ def main():
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
 		img_ = torch.Tensor(np.asanyarray(img.dataobj))
-		print(img_.shape)
-		img_ = interpolate(img_.reshape(1,1,384, 384, 64), size=(128,128,128), mode='trilinear')
-		#img_ = np.clip(img_, -1000,1000)
-		#img_ = img_/1000
+		img_ = interpolate(
+			img_.reshape(1,1,384,384,64),
+			size=(128,128,128),
+			mode='trilinear'
+		)
+		img_ = torch.clamp(img_, -1000,1000)
+		img_ = img_/1000
 		print(img_)
 		print(img_.shape)
 		break
