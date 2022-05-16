@@ -14,18 +14,19 @@ def main():
 	ims = None
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
-		img_ = torch.Tensor(np.asanyarray(img.dataobj))
-		img_ = interpolate(
-			img_.reshape(1,1,384,384,64),
+		img = torch.Tensor(np.asanyarray(img.dataobj))
+		shape = img.shape
+		img = interpolate(
+			img.reshape(1,1,shape[0],shape[1],shape[2]),
 			size=(128,128,128),
 			mode='trilinear'
 		)
-		img_ = torch.clamp(img_, -1000,1000)
-		img_ = img_/1000
+		img = torch.clamp(img, -1000,1000)
+		img = img/1000
 		if ims is not None:
-			ims = torch.concat((ims,img_))
+			ims = torch.concat((ims,img))
 		else:
-			ims = img_
+			ims = img
 	print(ims.shape)
 
 
