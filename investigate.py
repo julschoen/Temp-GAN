@@ -45,9 +45,6 @@ def main():
 				print(d, sub)
 				print(len(files))
 
-	ims = process(files[-1])
-	print(ims.shape)
-
 
 if __name__ == '__main__':
 	main()
