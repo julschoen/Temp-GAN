@@ -14,7 +14,6 @@ def main():
 	ims = None
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
-		print(img.dataobj)
 		img_ = torch.Tensor(np.asanyarray(img.dataobj))
 		img_ = interpolate(
 			img_.reshape(1,1,384,384,64),
