@@ -7,7 +7,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--path', type=str, default='')
 	params = parser.parse_args()
-	files = np.sort([f for f in os.listdir(params.path) if f.startswith('cbct')])
+	files = sorted([f for f in os.listdir(params.path) if f.startswith('cbct')], key=lambda x: x[:5])
 	print(files)
 	for f in files:
 		img = nib.load(os.path.join(params.path,f))
