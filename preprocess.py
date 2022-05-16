@@ -35,7 +35,7 @@ def main():
 
 	dirs = sorted([f for f in os.listdir(params.data_path) if os.path.isdir(os.path.join(params.data_path, f))],
 		key=lambda x: int(x))
-
+	os.makedirs(params.save_path, exist_ok=True)
 	for d in dirs:
 		subdirs = sorted([f for f in os.listdir(os.path.join(params.data_path, d)) 
 									if os.path.isdir(os.path.join(params.data_path,d,f))],
@@ -46,7 +46,7 @@ def main():
 			if len(files)>1:
 				os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 				ims = process(os.path.join(params.data_path, d, sub), files)
-				np.savez_compressed(f'{sub}.npz', x=ims)
+				np.savez_compressed(os.path.join(params.data_path, d, ,f'{sub}.npz'), x=ims)
 				print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
 
 
