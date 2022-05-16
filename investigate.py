@@ -32,7 +32,7 @@ def main():
 	parser.add_argument('-p', '--path', type=str, default='')
 	params = parser.parse_args()
 
-	dirs = sorted([f for f in os.listdir(params.path) if os.path.isdir(f)],
+	dirs = sorted([f for f in os.listdir(params.path)],
 		key=lambda x: int(x))
 	print(dirs)
 	for d in dirs:
