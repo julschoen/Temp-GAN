@@ -10,7 +10,7 @@ def process(path):
 		key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
 	ims = None
 	for f in files:
-		img = nib.load(os.path.join(params.path,f))
+		img = nib.load(os.path.join(path,f))
 		img = torch.Tensor(np.asanyarray(img.dataobj))
 		shape = img.shape
 		img = interpolate(
