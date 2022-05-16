@@ -1,5 +1,15 @@
 import numpy as np
 import os
 import nibabel as nib
+import argparse
 
-img = nib.load(example_filename)
+def main(params):
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-p', '--path', type=str, default='')
+	params = parser.parse_args()
+	img = nib.load(params.path)
+	print(img.header)
+
+
+if __name__ == '__main__':
+	main()
