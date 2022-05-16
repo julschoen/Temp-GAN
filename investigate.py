@@ -31,6 +31,8 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--path', type=str, default='')
 	params = parser.parse_args()
+	pat = 0
+	tot = 0
 
 	dirs = sorted([f for f in os.listdir(params.path) if os.path.isdir(os.path.join(params.path, f))],
 		key=lambda x: int(x))
@@ -41,9 +43,10 @@ def main():
 		for sub in subdirs:
 			files = sorted([f for f in os.listdir(os.path.join(params.path,d,sub)) if f.startswith('cbct')],
 							key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
-			if len(files)<2:
-				print(d, sub)
-				print(len(files))
+			if len(files)>1:
+				pat += 1
+				tot += len(files)
+	print(f'Patients: {pat}, Total Volumes: {tot}')
 
 
 if __name__ == '__main__':
