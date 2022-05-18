@@ -18,13 +18,14 @@ def main():
 
 			for f in files:
 				x = np.load(os.path.join(path,d,f))['x']
-				shapes.append(x.shape)
-			print(shapes)
-		else:
-			f = files[0]
-			x = np.load(os.path.join(path,d,f))['x']
-			if x.shape[0] < 3:
-				print(d,f,x.shape[0])
+				if x.shape[0] < 3:
+					os.remove(os.path.join(path, d, f))
+
+	for d in dirs:
+		files = sorted([f for f in os.listdir(os.path.join(path, d)) if f.endswith('.npz')],
+					key=lambda x: int(x[:-4]))
+		if len(files) < 1:
+			os.remove(os.path.join(path, d))
 
 if __name__ == '__main__':
 	main()
