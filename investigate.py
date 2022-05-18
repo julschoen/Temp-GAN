@@ -6,7 +6,7 @@ from torch.nn.functional import interpolate
 
 def main():
 	path = 'data'
-	dirs = np.load(os.path.join(path, 'test_pat.npz'))['x']
+	dirs = np.load(os.path.join(path, 'train_pat.npz'))['x']
 
 	data = None
 	for d in dirs:
