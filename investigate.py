@@ -6,7 +6,7 @@ from torch.nn.functional import interpolate
 
 def main():
 	path = 'data'
-	dirs = np.load(os.path.join(path, 'train_pat.npz'))['x']
+	dirs = np.load(os.path.join(path, 'test_pat.npz'))['x']
 
 	new_dirs = []
 	for d in dirs:
@@ -26,7 +26,7 @@ def main():
 
 	dirs = np.array(new_dirs)
 	print(dirs.shape)
-	np.savez_compressed(os.path.join(path, 'train_pat.npz'), x=dirs)
+	np.savez_compressed(os.path.join(path, 'test_pat.npz'), x=dirs)
 
 if __name__ == '__main__':
 	main()
