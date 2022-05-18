@@ -9,7 +9,7 @@ def main():
 	dirs = np.load(os.path.join(path, 'train_pat.npz'))['x']
 	new_dirs = []
 	for d in dirs:
-		if os.isdir(os.path.join(path, d)):
+		if os.path.isdir(os.path.join(path, d)):
 			new_dirs.append(d)
 	print(new_dirs)
 
