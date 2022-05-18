@@ -26,7 +26,7 @@ def main():
 		files = sorted([f for f in os.listdir(os.path.join(path, d)) if f.endswith('.npz')],
 					key=lambda x: int(x[:-4]))
 		if len(files) < 1:
-			os.remove(os.path.join(path, d))
+			os.rmdir(os.path.join(path, d))
 
 	new_dirs = []
 	for d in dirs:
