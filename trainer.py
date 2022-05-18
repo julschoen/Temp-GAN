@@ -43,13 +43,20 @@ class Trainer(object):
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
 
-        self.optimizerD = optim.Adam(self.netD.parameters(), lr=self.p.lrD,
+        self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrD,
                                          betas=(0., 0.9))
-        self.optimizerG = optim.Adam(self.netG.parameters(), lr=self.p.lrG,
+        self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
 
-        self.scalerD = GradScaler()
-        self.scalerG = GradScaler()
+        self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrD,
+                                         betas=(0., 0.9))
+        self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrG,
+                                         betas=(0., 0.9))
+
+        self.scalerImD = GradScaler()
+        self.scalerImG = GradScaler()
+        self.scalerTempD = GradScaler()
+        self.scalerTempG = GradScaler()
 
         ### Make Data Generator ###
         self.generator_train = DataLoader(dataset, batch_size=self.p.batch_size, shuffle=True, num_workers=4, drop_last=True)
@@ -59,8 +66,10 @@ class Trainer(object):
         self.img_list = []
         self.G_losses = []
         self.D_losses = []
+        self.triplet_losses = []
         self.fid = []
         self.fid_epoch = []
+        self.reg_loss = nn.MSELoss()
 
     def inf_train_gen(self):
         while True:
@@ -98,14 +107,21 @@ class Trainer(object):
         if os.path.isfile(checkpoint):
             state_dict = torch.load(checkpoint)
             step = state_dict['step']
-            self.netG.load_state_dict(state_dict['modelG_state_dict'])
-            self.netD.load_state_dict(state_dict['modelD_state_dict'])
+            self.imG.load_state_dict(state_dict['imG'])
+            self.imD.load_state_dict(state_dict['imD'])
 
-            self.optimizerG.load_state_dict(state_dict['optimizerG_state_dict'])
-            self.optimizerD.load_state_dict(state_dict['optimizerD_state_dict'])
+            self.tempG.load_state_dict(state_dict['tempG'])
+            self.tempD.load_state_dict(state_dict['tempD'])
+
+            self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
+            self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
+
+            self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
+            self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
             self.G_losses = state_dict['lossG']
             self.D_losses = state_dict['lossD']
+            self.triplet_losses = state_dict['triplet']
             self.fid_epoch = state_dict['fid']
             print('starting from step {}'.format(step))
         return step
@@ -113,12 +129,17 @@ class Trainer(object):
     def save_checkpoint(self, step):
         torch.save({
         'step': step,
-        'modelG_state_dict': self.netG.state_dict(),
-        'modelD_state_dict': self.netD.state_dict(),
-        'optimizerG_state_dict': self.optimizerG.state_dict(),
-        'optimizerD_state_dict': self.optimizerD.state_dict(),
+        'imG': self.imG.state_dict(),
+        'imD': self.imD.state_dict(),
+        'tempG': self.tempG.state_dict(),
+        'tempD': self.tempD.state_dict(),
+        'optimizerImG': self.optimizerImG.state_dict(),
+        'optimizerImD': self.optimizerImD.state_dict(),
+        'optimizerTempG': self.optimizerTempG.state_dict(),
+        'optimizerTempD': self.optimizerTempD.state_dict(),
         'lossG': self.G_losses,
         'lossD': self.D_losses,
+        'triplet': self.triplet_losses,
         'fid': self.fid_epoch,
         }, os.path.join(self.models_dir, 'checkpoint.pt'))
 
@@ -134,49 +155,103 @@ class Trainer(object):
         self.log_interpolation(step)
         self.save_checkpoint(step)
 
-    def step_d
+    def sample_g(self, grad):
+        if grad:
+            for p in self.tempG.parameters():
+                p.requires_grad = True
+            for p in self.imG.parameters():
+                p.requires_grad = True
+
+            self.imG.zero_grad()
+            self.tempG.zero_grad()
+
+        with autocast():
+            zs = torch.randn(1, self.p.z_size, 1, 1,1,
+                                    dtype=torch.float, device=self.device)
+
+            for i in range(torch.randint(low=2, high=11, size=())):
+                zs = torch.concat((zs, self.tempG(zs[-1])))
+
+            ims = self.imG(zs)
+
+        for p in self.tempG.parameters():
+                p.requires_grad = False
+        for p in self.imG.parameters():
+            p.requires_grad = False
+
+        return ims, zs
+
+
+    def step_imD(self, real, fake, noise):
+        for p in self.imD.parameters():
+            p.requires_grad = True
+        
+        self.imD.zero_grad()
+        with autocast():
+            disc_fake, zs = self.imD(fake)
+            disc_real, _ = self.imD(real)
+            errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
+            errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
+            rec_loss = self.reg_loss(zs, noise)
+            errImD = errD_fake + errD_real + rec_loss
+        self.scalerImD.scale(errImD).backward()
+        self.scalerImD.step(self.optimizerImD)
+        self.scalerImD.update()
+
+        for p in self.imD.parameters():
+            p.requires_grad = False
+
+    def step_tempD(self, real, fake):
+        for p in self.tempD.parameters():
+            p.requires_grad = True
+        self.tempD.zero_grad()
+        with autocast():
+            disc_fake, triplet = self.tempD(fake)
+            disc_real, triplet = self.tempD(real)
+            errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
+            errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
+            triplet_real = self.reg_loss(zs, noise)
+            triplet_fake = self.reg_loss(zs, noise)
+            errTempD = errD_fake + errD_real + triplet_real + triplet_fake
+        self.scalerTempD.scale(errTempD).backward()
+        self.scalerTempD.step(self.optimizerTempD)
+        self.scalerTempD.update()
+
+        for p in self.tempD.parameters():
+            p.requires_grad = False
+
+    def step_G(self):
+        fake, _ = self.sample_g(grad=True)
+        disc_im_fake, _ = self.imD(fake)
+        disc_temp_fake, triplet = self.tempD(fake)
+
+        errImG = -disc_fake.mean() - disc_temp_fake.mean()
+        self.scalerImG.scale(errImG).backward()
+        self.scalerImG.step(self.optimizerImG)
+        self.scalerImG.update()
+
+        triplet_loss = self.reg_loss(zs, noise)
+
+        errTempG = -triplet_loss.mean() - disc_temp_fake.mean()
+        self.scalerTempG.scale(errTempG).backward()
+        self.scalerTempG.step(self.optimizerTempG)
+        self.scalerTempG.update()
 
     def train(self):
         step_done = self.start_from_checkpoint()
         FID.set_config(device=self.device)
-        one = torch.FloatTensor([1]).to(self.device)
-        mone = one * -1
         gen = self.inf_train_gen()
 
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
-            for p in self.imD.parameters():
-                p.requires_grad = True
             for _ in range(self.p.iterD):    
                 data = next(gen)
-                real = data.to(self.device).unsqueeze(dim=1)
-                self.imD.zero_grad()
+                real = data.to(self.device)
+                fake, zs = torch.sample_g(grad=False)
+                self.step_imD(real, fake, noise)
+                self.step_imD(real, fake)
 
-                with autocast():
-                    noise = torch.randn(real.shape[0], self.p.z_size, 1, 1,1,
-                                dtype=torch.float, device=self.device)
-                    fake = self.netG(noise)
-                    errD_real = (nn.ReLU()(1.0 - self.netD(real))).mean()
-                    errD_fake = (nn.ReLU()(1.0 + self.netD(fake))).mean()
-                    errD = errD_fake + errD_real
-                self.scalerD.scale(errD).backward()
-                self.scalerD.step(self.optimizerD)
-                self.scalerD.update()
-
-            for p in self.netD.parameters():
-                p.requires_grad = False
-
-            self.netG.zero_grad()
-            
-            with autocast():
-                noise = torch.randn(real.shape[0], self.p.z_size, 1, 1,1,
-                            dtype=torch.float, device=self.device)
-                fake = self.netG(noise)
-                errG = -self.netD(fake).mean()
-
-            self.scalerG.scale(errG).backward()
-            self.scalerG.step(self.optimizerG)
-            self.scalerG.update()
+            self.step_G()
 
             self.G_losses.append(errG.item())
             self.D_losses.append(errD.item())
