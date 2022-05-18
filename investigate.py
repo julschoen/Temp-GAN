@@ -17,11 +17,11 @@ def main():
 			for i, f in enumerate(files):
 				x = np.load(os.path.join(path,d,f))['x']
 				if i == 0:
-					np.savez_compressed(os.path.join(path, d, '0.npz') x=x)
+					np.savez_compressed(os.path.join(path, d, '0.npz'), x=x)
 				else:
 					new_path = os.path.join(path, d+f'_{i}')
 					os.makedirs(new_path, exist_ok=True)
-					np.savez_compressed(os.path.join(new_path, '0.npz') x=x)
+					np.savez_compressed(os.path.join(new_path, '0.npz'), x=x)
 					new_dirs.append(new_path)
 
 	dirs = np.array(new_dirs)
