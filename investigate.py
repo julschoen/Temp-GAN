@@ -21,7 +21,7 @@ def main():
 				for f in files:
 					if not f.endswith('.gz'):
 						continue
-					img = nib.load(os.path.join(path,f))
+					img = nib.load(os.path.join(path,d,sub,f))
 					print(img.header)
 
 if __name__ == '__main__':
