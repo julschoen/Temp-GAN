@@ -10,6 +10,7 @@ def main():
 
 	dirs = sorted([f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))],
 		key=lambda x: int(x))
+	num = 0
 	for d in dirs:
 		subdirs = sorted([f for f in os.listdir(os.path.join(path, d)) 
 									if os.path.isdir(os.path.join(path,d,f))],
@@ -23,7 +24,9 @@ def main():
 						continue
 					img = nib.load(os.path.join(path,d,sub,f))
 					if not (img.header['pixdim'] ==  [1., 1.171875,1.171875,2.5,1.,1.,1.,1.]).all():
-						print(img.header['pixdim'])
+						print(d,f)
+						num +=1
+	print(num)
 
 if __name__ == '__main__':
 	main()
