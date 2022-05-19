@@ -28,7 +28,7 @@ def main():
 						print(d,f)
 						ds.append(int(d))
 						num +=1
-	print(np.unique(d))
+	print(np.unique(ds))
 	print(num)
 
 if __name__ == '__main__':
