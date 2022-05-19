@@ -22,7 +22,8 @@ def main():
 					if not f.endswith('.gz'):
 						continue
 					img = nib.load(os.path.join(path,d,sub,f))
-					print(img.header)
+					if not img.header['pixdim'] ==  [1., 1.171875,1.171875,2.5,1.,1.,1.,1.]:
+						print(img.header['pixdim'])
 
 if __name__ == '__main__':
 	main()
