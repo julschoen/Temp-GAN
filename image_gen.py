@@ -49,10 +49,8 @@ class Generator(nn.Module):
 
   def forward(self, z):
     # First linear layer
-    print(z.shape)
-    h = self.linear(z.squeeze())
+    h = self.linear(z)
     # Reshape
-    print(h.shape)
     h = h.view(h.size(0), -1, 4, 4, 4)    
     for index, blocklist in enumerate(self.blocks):
       for block in blocklist:
