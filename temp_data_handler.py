@@ -11,7 +11,8 @@ class DATA(Dataset):
     self.len = len(self.files)
 
   def __getitem__(self, index):
-      x = np.load(self.files[0])['x']
+      pat = [os.path.join(self.files[index], f) for f in os.listdir(self.files[index]) if f.endswith('npz')][0]
+      x = np.load(pat)['x']
       ind = np.random.choice(x.shape[0], 3)
       xs = x[ind]
       xs = np.clip(xs, -1,1)
