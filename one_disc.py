@@ -50,6 +50,7 @@ class Discriminator(nn.Module):
   def forward(self, x):
     # Run input conv
     h = self.input_conv(x)
+    print(h.shape)
     # Loop over blocks
     for index, blocklist in enumerate(self.blocks):
       for block in blocklist:
