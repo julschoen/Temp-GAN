@@ -50,11 +50,11 @@ class Discriminator(nn.Module):
   def forward(self, x):
     # Run input conv
     h = self.input_conv(x)
-    print(h.shape)
     # Loop over blocks
     for index, blocklist in enumerate(self.blocks):
       for block in blocklist:
         h = block(h)
+        print(h.shape)
     # Apply global sum pooling as in SN-GAN
     h = torch.sum(self.activation(h), [2, 3, 4])
     return self.linear(h), self.linear_z(h), h
