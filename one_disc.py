@@ -17,7 +17,7 @@ class Discriminator(nn.Module):
                'resolution' : [64, 32, 16, 8, 4, 4],
                'attention' : {2**i: 2**i in [int(item) for item in '16'.split('_')]
                               for i in range(2,8)}}
-    
+    print(arch)
     # Prepare model
     self.input_conv = snconv3d(1, self.arch['in_channels'][0])
 

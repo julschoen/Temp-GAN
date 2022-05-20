@@ -21,7 +21,7 @@ def main():
 	parser.add_argument('--device', type=str, default='cuda', help='Torch Device Choice')
 	parser.add_argument('--att', type=bool, default=True, help='Use Attention in BigGAN')
 	params = parser.parse_args()
-
+	print(params)
 	dataset_train = DATA(path=params.data_path)
 
 	trainer = Trainer(dataset_train, params=params)
