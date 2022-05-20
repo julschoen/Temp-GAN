@@ -133,7 +133,7 @@ class Trainer(object):
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
-        'optimizerImD': self.optimizerImD.state_dict(),
+        #'optimizerImD': self.optimizerImD.state_dict(),
         'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
         'lossG': self.G_losses,
