@@ -37,8 +37,8 @@ def clean(path, dirs):
 				if i == 0:
 					continue
 				else:
-					new_path = os.path.join(path, d+f'_{i}'
-					os.makedirs(new_path), exist_ok=True)
+					new_path = os.path.join(path, d+f'_{i}')
+					os.makedirs(new_path, exist_ok=True)
 					os.replace(os.path.join(path, d, f), os.path.join(new_path, f))
 					new_dirs = np.append(new_dirs, new_path)
 
