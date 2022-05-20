@@ -27,6 +27,23 @@ def process(path, files):
 
 	return ims.numpy()
 
+def clean(path, dirs):
+	new_dirs = np.copy(dirs)
+	for d in dirs:
+		files = sorted([f for f in os.listdir(os.path.join(path,d)) if f.endswith('npz')],
+							key=lambda x: int(x[:-4]))
+		if len(files) > 1:
+			for i, f in enumerate(files):
+				if i == 0:
+					continue
+				else:
+					new_path = os.path.join(path, d+f'_{i}'
+					os.makedirs(new_path), exist_ok=True)
+					os.replace(os.path.join(path, d, f), os.path.join(new_path, f))
+					new_dirs = np.append(new_dirs, new_path)
+
+	return new_dirs
+
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-d', '--data_path', type=str, default='')
@@ -53,16 +70,18 @@ def main():
 	dirs = sorted([f for f in os.listdir(params.save_path) if os.path.isdir(os.path.join(params.save_path, f))],
 		key=lambda x: int(x))
 
-	choice = np.random.choice(dirs, size=int(len(dirs)*0.1))
+	test = np.random.choice(dirs, size=int(len(dirs)*0.1))
 	train = []
-
 	for d in dirs:
-		if d in choice:
+		if d in test:
 			continue
 		else:
 			train.append(d)
 
-	np.savez_compressed(os.path.join(params.save_path, 'test_pat.npz'), x=np.array(choice))
+	train = clean(params.save_path, train)
+	test = clean(params.save_path, test)
+
+	np.savez_compressed(os.path.join(params.save_path, 'test_pat.npz'), x=np.array(test))
 	np.savez_compressed(os.path.join(params.save_path, 'train_pat.npz'), x=np.array(train))
 
 
