@@ -263,7 +263,7 @@ class Trainer(object):
 
             #errTempG = - disc_temp_fake
 
-        self.scalerImG.scale(errImG).backward()
+        self.scalerImG.scale(errImG).backward(retain_graph=True)
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
