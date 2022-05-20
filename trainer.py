@@ -154,15 +154,7 @@ class Trainer(object):
         self.log_interpolation(step)
         self.save_checkpoint(step)
 
-    def sample_g(self, grad):
-        if grad:
-            for p in self.tempG.parameters():
-                p.requires_grad = True
-            for p in self.imG.parameters():
-                p.requires_grad = True
-
-            self.imG.zero_grad()
-            self.tempG.zero_grad()
+    def sample_g(self):
         ims = None
         zs = None
         inds = None
@@ -249,23 +241,39 @@ class Trainer(object):
 
         return errTempD.item(), errD_real.item(), errD_fake.item(), err_rec_z.item()
 
-    def step_G(self):
-        fake, noise, ind = self.sample_g(grad=True)
+    def step_ImG(self):
+        for p in self.imG.parameters():
+            p.requires_grad = True
 
+        self.imG.zero_grad()
+        fake, noise, ind = self.sample_g()
         with autocast():
             #disc_im_fake, _ = self.imD(fake)
-            disc_temp_fake, zs, triplet = self.tempD(fake)
-            disc_temp_fake = disc_temp_fake.mean()
+            disc_temp_fake, _, _ = self.tempD(fake)
             #errImG = -disc_fake.mean() - disc_temp_fake.mean()
-            errImG = - disc_temp_fake.clone()
 
-            triplet_loss = self.reg_loss(zs, noise)
+            errImG = - disc_temp_fake.mean()
 
-            errTempG = - disc_temp_fake.clone() + triplet_loss
-
-        self.scalerImG.scale(errImG).backward(retain_graph=True)
+        self.scalerImG.scale(errImG).backward()
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
+
+        for p in self.imG.parameters():
+            p.requires_grad = False
+
+        return errImG.item()
+
+    def step_TempG(self):
+        for p in self.tempG.parameters():
+            p.requires_grad = True
+
+        self.tempG.zero_grad()
+        fake, noise, ind = self.sample_g()
+
+        with autocast():
+            disc_temp_fake, zs, triplet = self.tempD(fake)
+            triplet_loss = self.reg_loss(zs, noise)
+            errTempG = - disc_temp_fake.mean() + triplet_loss
 
         self.scalerTempG.scale(errTempG).backward()
         self.scalerTempG.step(self.optimizerTempG)
@@ -273,10 +281,8 @@ class Trainer(object):
 
         for p in self.tempG.parameters():
             p.requires_grad = False
-        for p in self.imG.parameters():
-            p.requires_grad = False
 
-        return errImG.item(), errTempG.item()
+        return errTempG.item()
 
     def train(self):
         step_done = self.start_from_checkpoint()
@@ -288,11 +294,12 @@ class Trainer(object):
             for _ in range(self.p.iterD):    
                 data = next(gen)
                 real = data.to(self.device)
-                fake, zs, ind = self.sample_g(grad=False)
+                fake, zs, ind = self.sample_g()
                 errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind)
                 #self.step_imD(real, fake)
 
-            errImG, errTempG = self.step_G()
+            errImG = self.step_ImG()
+            errTempG = self.step_TempG
 
             self.G_losses.append((errImG, errTempG))
             self.D_losses.append(errD)
