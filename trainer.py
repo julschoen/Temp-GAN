@@ -186,11 +186,6 @@ class Trainer(object):
                     zs = torch.concat((zs,z[0].reshape(1,-1)))
                     inds = torch.concat((inds, ind.reshape(1,3)))
 
-        for p in self.tempG.parameters():
-                p.requires_grad = False
-        for p in self.imG.parameters():
-            p.requires_grad = False
-
         return ims, zs, inds
 
     def step_imD(self, real, fake, noise):
@@ -273,6 +268,11 @@ class Trainer(object):
         self.scalerTempG.scale(errTempG).backward()
         self.scalerTempG.step(self.optimizerTempG)
         self.scalerTempG.update()
+
+        for p in self.tempG.parameters():
+                p.requires_grad = False
+        for p in self.imG.parameters():
+            p.requires_grad = False
 
     def train(self):
         step_done = self.start_from_checkpoint()
