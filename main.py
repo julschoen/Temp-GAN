@@ -1,4 +1,4 @@
-from data_handler import DATA
+from temp_data_handler import DATA
 from trainer import Trainer
 import argparse
 
