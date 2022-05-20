@@ -248,7 +248,7 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = False
 
-        return errD_real.item(), errD_fake.item(), err_rec_z.item()
+        return errTempD.item(), errD_real.item(), errD_fake.item(), err_rec_z.item()
 
     def step_G(self):
         fake, noise, ind = self.sample_g(grad=True)
@@ -289,13 +289,13 @@ class Trainer(object):
                 data = next(gen)
                 real = data.to(self.device)
                 fake, zs, ind = self.sample_g(grad=False)
-                errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind)
+                errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind)
                 #self.step_imD(real, fake)
 
             errImG, errTempG = self.step_G()
 
             self.G_losses.append((errImG, errTempG))
-            self.D_losses.append(errD.item())
+            self.D_losses.append(errD)
 
             self.log(i, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
             if i%100 == 0 and i>0:
