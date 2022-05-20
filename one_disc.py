@@ -23,6 +23,8 @@ class Discriminator(nn.Module):
 
     self.blocks = []
     for index in range(len(self.arch['out_channels'])):
+      print(self.arch['in_channels'][index],self.arch['out_channels'][index],self.arch['downsample'][index])
+      
       self.blocks += [[DBlock(in_channels=self.arch['in_channels'][index] if d_index==0 else self.arch['out_channels'][index],
                        out_channels=self.arch['out_channels'][index],
                        preactivation=True,
