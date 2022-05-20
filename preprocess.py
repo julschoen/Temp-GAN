@@ -44,10 +44,11 @@ def main():
 			files = sorted([f for f in os.listdir(os.path.join(params.data_path,d,sub)) if f.startswith('cbct')],
 							key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
 			if len(files)>1:
-				os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 				ims = process(os.path.join(params.data_path, d, sub), files)
-				np.savez_compressed(os.path.join(params.save_path, d,f'{sub}.npz'), x=ims)
-				print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
+				if ims.shape[0] > 2:
+					os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
+					np.savez_compressed(os.path.join(params.save_path, d,f'{sub}.npz'), x=ims)
+					print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
 	
 	dirs = sorted([f for f in os.listdir(params.save_path) if os.path.isdir(os.path.join(params.save_path, f))],
 		key=lambda x: int(x))
