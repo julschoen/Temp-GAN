@@ -16,7 +16,7 @@ class Generator(nn.Module):
              'upsample' : [True] * 5,
              'resolution' : [8, 16, 32, 64, 128],
              'attention' : {2**i: (2**i in [int(item) for item in '32'.split('_')]) for i in range(3,8)}}
-    self.linear = snlinear(self.p.z_size, self.arch['in_channels'][0] * (4**3))
+    self.linear = snlinear(self.p.z_size, self.arch['in_channels'][0] * 32)
     self.blocks = []
     for index in range(len(self.arch['out_channels'])):
       self.blocks += [[GBlock(in_channels=self.arch['in_channels'][index],
@@ -51,7 +51,7 @@ class Generator(nn.Module):
     # First linear layer
     h = self.linear(z)
     # Reshape
-    h = h.view(h.size(0), -1, 4, 4, 4)    
+    h = h.view(h.size(0), -1, 4, 4, 2)    
     for index, blocklist in enumerate(self.blocks):
       for block in blocklist:
         h = block(h)
