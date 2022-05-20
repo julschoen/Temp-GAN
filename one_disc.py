@@ -11,20 +11,17 @@ class Discriminator(nn.Module):
     super(Discriminator, self).__init__()
     self.p = params
     # Architecture
-    self.arch = {'in_channels' :  [item * self.p.filterD for item in [3, 2, 4,  8, 16]],
+    self.arch = {'in_channels' :  [item * self.p.filterD for item in [1, 2, 4,  8, 16]],
                'out_channels' : [item * self.p.filterD for item in [2, 4, 8, 16, 16]],
                'downsample' : [True] * 5 + [False],
                'resolution' : [64, 32, 16, 8, 4, 4],
                'attention' : {2**i: 2**i in [int(item) for item in '16'.split('_')]
                               for i in range(2,8)}}
-    print(self.arch)
     # Prepare model
-    self.input_conv = snconv3d(1, self.arch['in_channels'][0])
+    self.input_conv = snconv3d(3, self.arch['in_channels'][0])
 
     self.blocks = []
     for index in range(len(self.arch['out_channels'])):
-      print(self.arch['in_channels'][index],self.arch['out_channels'][index],self.arch['downsample'][index])
-
       self.blocks += [[
                         DBlock(in_channels=self.arch['in_channels'][index],
                         out_channels=self.arch['out_channels'][index],
