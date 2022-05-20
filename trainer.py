@@ -76,7 +76,7 @@ class Trainer(object):
             for data in self.generator_train:
                 yield data
         
-    def log_train(self, step, fake, real, D_x, D_G_z1, D_G_z2):
+    def log_train(self, step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG):
         with torch.no_grad():
             self.fid.append(
                 FID.fid(
