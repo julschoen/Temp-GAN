@@ -13,7 +13,7 @@ import torchvision
 import torchvision.utils as vutils
 
 from image_disc import Discriminator as ImD
-from temp_disc import Discriminator as TempD
+from one_disc import Discriminator as TempD
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
 
@@ -33,18 +33,18 @@ class Trainer(object):
         os.makedirs(self.images_dir, exist_ok=True)
 
         ### Make Models ###
-        self.imD = ImD(self.p).to(self.device)
+        #self.imD = ImD(self.p).to(self.device)
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
         if self.p.ngpu>1:
-            self.imD = nn.DataParallel(self.imD)
+            #self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
 
-        self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrD,
-                                         betas=(0., 0.9))
+        #self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrD,
+        #                                 betas=(0., 0.9))
         self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
 
@@ -53,7 +53,7 @@ class Trainer(object):
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
 
-        self.scalerImD = GradScaler()
+        #self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
         self.scalerTempD = GradScaler()
         self.scalerTempG = GradScaler()
@@ -164,22 +164,34 @@ class Trainer(object):
 
             self.imG.zero_grad()
             self.tempG.zero_grad()
-
+        ims = None
+        zs = None
+        inds = None
         with autocast():
-            zs = torch.randn(1, self.p.z_size, 1, 1,1,
-                                    dtype=torch.float, device=self.device)
+            for _ in range(self.params.batch_size):
+                z = torch.randn(1, self.p.z_size, 1, 1,1,
+                                        dtype=torch.float, device=self.device)
 
-            for i in range(torch.randint(low=2, high=11, size=())):
-                zs = torch.concat((zs, self.tempG(zs[-1])))
-
-            ims = self.imG(zs)
+                for i in range(torch.randint(low=2, high=11, size=())):
+                    z = torch.concat((z, self.tempG(z[-1])))
+                ind = torch.randint(len(z), (3,))
+                z = z[ind]
+                im = self.imG(z)
+                if ims is None:
+                    ims = im.reshape(1,3,128,128,-1)
+                    zs = z[0].reshape(1,-1,1,1,1)
+                    inds = ind.reshape(1,3)
+                else:
+                    ims = torch.concat((ims,im.reshape(1,3,128,128,-1)))
+                    zs = torch.concat((zs,z[0]))
+                    inds = torch.concat((inds, ind.reshape(1,3)))
 
         for p in self.tempG.parameters():
                 p.requires_grad = False
         for p in self.imG.parameters():
             p.requires_grad = False
 
-        return ims, zs
+        return ims, zs, inds
 
 
     def step_imD(self, real, fake, noise):
@@ -220,12 +232,36 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = False
 
-    def step_G(self):
-        fake, _ = self.sample_g(grad=True)
-        disc_im_fake, _ = self.imD(fake)
-        disc_temp_fake, triplet = self.tempD(fake)
+    def step_D(self, real, fake, noise, ind):
+        for p in self.tempD.parameters():
+            p.requires_grad = True
+        self.tempD.zero_grad()
+        with autocast():
+            disc_fake, zs, triplet = self.tempD(fake)
+            disc_real, zs, triplet = self.tempD(real)
+            errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
+            errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
+            err_rec_z = self.reg_loss(zs, noise)
 
-        errImG = -disc_fake.mean() - disc_temp_fake.mean()
+            #triplet_real = self.reg_loss(zs, noise)
+            #triplet_fake = self.reg_loss(zs, noise)
+
+            errTempD = errD_fake + errD_real + err_rec_z#+ triplet_real + triplet_fake
+        self.scalerTempD.scale(errTempD).backward()
+        self.scalerTempD.step(self.optimizerTempD)
+        self.scalerTempD.update()
+
+        for p in self.tempD.parameters():
+            p.requires_grad = False
+
+
+    def step_G(self):
+        fake, noise, ind = self.sample_g(grad=True)
+        #disc_im_fake, _ = self.imD(fake)
+        disc_temp_fake, zs, triplet = self.tempD(fake)
+
+        #errImG = -disc_fake.mean() - disc_temp_fake.mean()
+        errImG = - disc_temp_fake.mean()
         self.scalerImG.scale(errImG).backward()
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
@@ -247,9 +283,9 @@ class Trainer(object):
             for _ in range(self.p.iterD):    
                 data = next(gen)
                 real = data.to(self.device)
-                fake, zs = torch.sample_g(grad=False)
-                self.step_imD(real, fake, noise)
-                self.step_imD(real, fake)
+                fake, zs, ind = torch.sample_g(grad=False)
+                self.step_D(real, fake, noise, ind)
+                #self.step_imD(real, fake)
 
             self.step_G()
 
