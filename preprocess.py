@@ -40,7 +40,7 @@ def clean(path, dirs):
 					new_path = os.path.join(path, d+f'_{i}')
 					os.makedirs(new_path, exist_ok=True)
 					os.replace(os.path.join(path, d, f), os.path.join(new_path, f))
-					new_dirs = np.append(new_dirs, new_path)
+					new_dirs = np.append(new_dirs, d+f'_{i}')
 
 	return new_dirs
 
