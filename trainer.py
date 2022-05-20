@@ -260,7 +260,7 @@ class Trainer(object):
 
             triplet_loss = self.reg_loss(zs, noise)
 
-            errTempG = -triplet_loss.mean() - disc_temp_fake.mean()
+            errTempG = - disc_temp_fake.mean()
 
         self.scalerImG.scale(errImG).backward(retain_graph=True)
         self.scalerImG.step(self.optimizerImG)
