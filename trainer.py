@@ -193,7 +193,6 @@ class Trainer(object):
 
         return ims, zs, inds
 
-
     def step_imD(self, real, fake, noise):
         for p in self.imD.parameters():
             p.requires_grad = True
@@ -254,7 +253,6 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = False
 
-
     def step_G(self):
         fake, noise, ind = self.sample_g(grad=True)
         #disc_im_fake, _ = self.imD(fake)
@@ -284,7 +282,7 @@ class Trainer(object):
                 data = next(gen)
                 real = data.to(self.device)
                 fake, zs, ind = self.sample_g(grad=False)
-                self.step_D(real, fake, noise, ind)
+                self.step_D(real, fake, zs, ind)
                 #self.step_imD(real, fake)
 
             self.step_G()
