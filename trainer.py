@@ -176,16 +176,14 @@ class Trainer(object):
                     )
                 ind = torch.randint(len(z), (3,))
                 z = z[ind]
-                print(z.shape)
                 im = self.imG(z)
-                print(im.shape)
                 if ims is None:
                     ims = im.reshape(1,3,128,128,-1)
                     zs = z[0].reshape(1,-1)
                     inds = ind.reshape(1,3)
                 else:
                     ims = torch.concat((ims,im.reshape(1,3,128,128,-1)))
-                    zs = torch.concat((zs,z[0]))
+                    zs = torch.concat((zs,z[0].reshape(1,-1)))
                     inds = torch.concat((inds, ind.reshape(1,3)))
 
         for p in self.tempG.parameters():
