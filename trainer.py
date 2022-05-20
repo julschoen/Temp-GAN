@@ -255,18 +255,21 @@ class Trainer(object):
 
     def step_G(self):
         fake, noise, ind = self.sample_g(grad=True)
-        #disc_im_fake, _ = self.imD(fake)
-        disc_temp_fake, zs, triplet = self.tempD(fake)
 
-        #errImG = -disc_fake.mean() - disc_temp_fake.mean()
-        errImG = - disc_temp_fake.mean()
+        with autocast():
+            #disc_im_fake, _ = self.imD(fake)
+            disc_temp_fake, zs, triplet = self.tempD(fake)
+            #errImG = -disc_fake.mean() - disc_temp_fake.mean()
+            errImG = - disc_temp_fake.mean()
+
+            triplet_loss = self.reg_loss(zs, noise)
+
+            errTempG = -triplet_loss.mean() - disc_temp_fake.mean()
+
         self.scalerImG.scale(errImG).backward()
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
-        triplet_loss = self.reg_loss(zs, noise)
-
-        errTempG = -triplet_loss.mean() - disc_temp_fake.mean()
         self.scalerTempG.scale(errTempG).backward()
         self.scalerTempG.step(self.optimizerTempG)
         self.scalerTempG.update()
