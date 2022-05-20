@@ -261,7 +261,7 @@ class Trainer(object):
 
             errTempG = -triplet_loss.mean() - disc_temp_fake.mean()
 
-        self.scalerImG.scale(errImG).backward()
+        self.scalerImG.scale(errImG).backward(retain_graph=True)
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
