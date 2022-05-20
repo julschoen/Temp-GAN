@@ -257,17 +257,17 @@ class Trainer(object):
             disc_temp_fake, zs, triplet = self.tempD(fake)
             disc_temp_fake = disc_temp_fake.mean()
             #errImG = -disc_fake.mean() - disc_temp_fake.mean()
-            errImG = - disc_temp_fake
+            errImG = - disc_temp_fake.copy()
 
             triplet_loss = self.reg_loss(zs, noise)
 
-            #errTempG = - disc_temp_fake
+            errTempG = - disc_temp_fake.copy() + triplet_loss
 
         self.scalerImG.scale(errImG).backward(retain_graph=True)
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
-        self.scalerTempG.scale(triplet_loss).backward()
+        self.scalerTempG.scale(errTempG).backward()
         self.scalerTempG.step(self.optimizerTempG)
         self.scalerTempG.update()
 
@@ -276,7 +276,7 @@ class Trainer(object):
         for p in self.imG.parameters():
             p.requires_grad = False
 
-        return errImG.item(), triplet_loss.item()
+        return errImG.item(), errTempG.item()
 
     def train(self):
         step_done = self.start_from_checkpoint()
