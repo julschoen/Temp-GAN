@@ -299,7 +299,7 @@ class Trainer(object):
                 #self.step_imD(real, fake)
 
             errImG = self.step_ImG()
-            errTempG = self.step_TempG
+            errTempG = self.step_TempG()
 
             self.G_losses.append((errImG, errTempG))
             self.D_losses.append(errD)
