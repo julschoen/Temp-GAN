@@ -13,13 +13,13 @@ def main():
 	new_train = []
 
 	for t in test:
-		if t.startswith('data_'):
+		if t.startswith('data/'):
 			new_test.append(t[5:])
 		else:
 			new_test.append(t)
 
 	for t in train:
-		if t.startswith('data_'):
+		if t.startswith('data/'):
 			new_train.append(t[5:])
 		else:
 			new_train.append(t)
