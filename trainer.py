@@ -85,9 +85,9 @@ class Trainer(object):
                     )
                 )
 
-        print('[%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f\tFID %.4f'
+        print('[%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f\tD z rec: %.4f\tFID %.4f'
                     % (step, self.p.niters,
-                        self.D_losses[-1], self.G_losses[-1], D_x, D_G_z1, D_G_z2, self.fid[-1]))
+                        self.D_losses[-1], self.G_losses[-1], errD_real, errD_fake, errD_z, self.fid[-1]))
 
     def log_interpolation(self, step):
         noise = torch.randn(self.p.batch_size, self.p.z_size, 1, 1,1,
@@ -143,15 +143,15 @@ class Trainer(object):
         'fid': self.fid_epoch,
         }, os.path.join(self.models_dir, 'checkpoint.pt'))
 
-    def log(self, step, fake, real, D_x, D_G_z1, D_G_z2):
+    def log(self, step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG):
         if step % self.p.steps_per_log == 0:
-            self.log_train(step, fake, real, D_x, D_G_z1, D_G_z2)
+            self.log_train(step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
 
         if step % self.p.steps_per_img_log == 0:
             self.log_interpolation(step)
 
-    def log_final(self, step, fake, real, D_x, D_G_z1, D_G_z2):
-        self.log_train(step, fake, real, D_x, D_G_z1, D_G_z2)
+    def log_final(self, step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG):
+        self.log_train(step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
         self.log_interpolation(step)
         self.save_checkpoint(step)
 
@@ -248,6 +248,8 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = False
 
+        return errD_real.item(), errD_fake.item(), err_rec_z.item()
+
     def step_G(self):
         fake, noise, ind = self.sample_g(grad=True)
 
@@ -261,7 +263,7 @@ class Trainer(object):
 
             errTempG = -triplet_loss.mean() - disc_temp_fake.mean()
 
-        self.scalerImG.scale(errImG).backward(retain_graph=True)
+        self.scalerImG.scale(errImG).backward(retai_graph=True)
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
@@ -270,9 +272,11 @@ class Trainer(object):
         self.scalerTempG.update()
 
         for p in self.tempG.parameters():
-                p.requires_grad = False
+            p.requires_grad = False
         for p in self.imG.parameters():
             p.requires_grad = False
+
+        return errImG.item(), errTempG.item()
 
     def train(self):
         step_done = self.start_from_checkpoint()
@@ -285,19 +289,19 @@ class Trainer(object):
                 data = next(gen)
                 real = data.to(self.device)
                 fake, zs, ind = self.sample_g(grad=False)
-                self.step_D(real, fake, zs, ind)
+                errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind)
                 #self.step_imD(real, fake)
 
-            self.step_G()
+            errImG, errTempG = self.step_G()
 
-            self.G_losses.append(errG.item())
+            self.G_losses.append((errImG, errTempG))
             self.D_losses.append(errD.item())
 
-            self.log(i, fake, real, errD_real.item(), errD_fake.item(), errG.item())
+            self.log(i, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
             if i%100 == 0 and i>0:
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
         
-        self.log_final(i, fake, real, errD_real.item(), errD_fake.item(), errG.item())
+        self.log_final(i, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
         print('...Done')
