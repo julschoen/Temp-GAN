@@ -15,7 +15,7 @@ def process(path, files):
 		shape = img.shape
 		img = interpolate(
 			img.reshape(1,1,shape[0],shape[1],shape[2]),
-			size=(128,128,128),
+			size=(128,128,64),
 			mode='trilinear'
 		)
 		img = torch.clamp(img, -1000,1000)
@@ -26,26 +26,6 @@ def process(path, files):
 			ims = img
 
 	return ims.numpy()
-
-def combine(dirs, params):
-	data = None
-	for d in dirs:
-		files = sorted([f for f in os.listdir(os.path.join(params.save_path, d)) if f.endswith('.npz')],
-						key=lambda x: int(x[:-4]))
-		pat = None
-		for f in files:
-			ims = np.load(os.path.join(params.save_path, d, f))['x']
-			if pat is None:
-				pat = ims.reshape(1,-1,1,128,128,128)
-			else:
-				pat = np.concatenate((pat, ims.reshape(1,-1,1,128,128,128)))
-
-		if data is None:
-			data = pat.reshape(1,pat.shape[0],-1,1,128,128,128)
-		else:
-			print(data.shape)
-			data = np.concatenate((data, pat.reshape(1,pat.shape[0],-1,1,128,128,128)))
-	return data
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -73,8 +53,6 @@ def main():
 		key=lambda x: int(x))
 
 	choice = np.random.choice(dirs, size=int(len(dirs)*0.1))
-	np.savez_compressed(os.path.join(params.save_path, 'test_pat.npz'), x=np.array(choice))
-	
 	train = []
 
 	for d in dirs:
