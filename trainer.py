@@ -168,7 +168,7 @@ class Trainer(object):
         zs = None
         inds = None
         with autocast():
-            for _ in range(self.params.batch_size):
+            for _ in range(self.p.batch_size):
                 z = torch.randn(1, self.p.z_size, 1, 1,1,
                                         dtype=torch.float, device=self.device)
 
