@@ -85,9 +85,9 @@ class Trainer(object):
                     )
                 )
 
-        print('[%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f\tD z rec: %.4f\tFID %.4f'
+        print('[%d/%d]\tLoss_D: %.4f\tD(x): %.4f\tD(G(z)): %.4f\tD z rec: %.4f\tG_IM(x): %.4f\tG_T(x): %.4f\tFID %.4f'
                     % (step, self.p.niters,
-                        self.D_losses[-1], self.G_losses[-1], errD_real, errD_fake, errD_z, self.fid[-1]))
+                        self.D_losses[-1], errD_real, errD_fake, errD_z, errImG, errTempG, self.fid[-1]))
 
     def log_interpolation(self, step):
         noise = torch.randn(self.p.batch_size, self.p.z_size, 1, 1,1,
