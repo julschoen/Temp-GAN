@@ -107,7 +107,7 @@ class Trainer(object):
             state_dict = torch.load(checkpoint)
             step = state_dict['step']
             self.imG.load_state_dict(state_dict['imG'])
-            self.imD.load_state_dict(state_dict['imD'])
+            #self.imD.load_state_dict(state_dict['imD'])
 
             self.tempG.load_state_dict(state_dict['tempG'])
             self.tempD.load_state_dict(state_dict['tempD'])
@@ -129,7 +129,7 @@ class Trainer(object):
         torch.save({
         'step': step,
         'imG': self.imG.state_dict(),
-        'imD': self.imD.state_dict(),
+        #'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
