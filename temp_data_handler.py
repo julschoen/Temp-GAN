@@ -7,7 +7,7 @@ import os
 class DATA(Dataset):
   def __init__(self, path): 
     self.path = path
-    self.files = [os.path.join(path, f) for f in os.listdir(path) if os.isdir(os.path.join(path,f))]
+    self.files = [os.path.join(path, f) for f in os.listdir(path) if os.path.isdir(os.path.join(path,f))]
     self.len = len(self.files)
 
   def __getitem__(self, index):
