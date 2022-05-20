@@ -171,7 +171,7 @@ class Trainer(object):
             for _ in range(self.p.batch_size):
                 z = torch.randn(1, self.p.z_size, 1, 1,1,
                                         dtype=torch.float, device=self.device)
-
+                print(self.p.z_size, z.shape)
                 for i in range(torch.randint(low=2, high=11, size=())):
                     z = torch.concat((z, self.tempG(z[-1])))
                 ind = torch.randint(len(z), (3,))
