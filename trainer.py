@@ -255,12 +255,13 @@ class Trainer(object):
         with autocast():
             #disc_im_fake, _ = self.imD(fake)
             disc_temp_fake, zs, triplet = self.tempD(fake)
+            disc_temp_fake = disc_temp_fake.mean()
             #errImG = -disc_fake.mean() - disc_temp_fake.mean()
-            errImG = - disc_temp_fake.mean()
+            errImG = - disc_temp_fake
 
             triplet_loss = self.reg_loss(zs, noise)
 
-            errTempG = triplet_loss
+            errTempG = - disc_temp_fake
 
         self.scalerImG.scale(errImG).backward(retain_graph=True)
         self.scalerImG.step(self.optimizerImG)
