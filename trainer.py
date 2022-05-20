@@ -283,7 +283,7 @@ class Trainer(object):
             for _ in range(self.p.iterD):    
                 data = next(gen)
                 real = data.to(self.device)
-                fake, zs, ind = torch.sample_g(grad=False)
+                fake, zs, ind = self.sample_g(grad=False)
                 self.step_D(real, fake, noise, ind)
                 #self.step_imD(real, fake)
 
