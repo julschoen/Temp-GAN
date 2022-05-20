@@ -90,13 +90,12 @@ class Trainer(object):
                         self.D_losses[-1], errD_real, errD_fake, errD_z, errImG, errTempG, self.fid[-1]))
 
     def log_interpolation(self, step):
-        noise = torch.randn(self.p.batch_size, self.p.z_size, 1, 1,1,
-                            dtype=torch.float, device=self.device)
+        noise = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
         if self.fixed_test_noise is None:
             self.fixed_test_noise = noise.clone()
     
         with torch.no_grad():
-            fake = self.netG(self.fixed_test_noise).detach().cpu()
+            fake = self.imG(self.fixed_test_noise).detach().cpu()
         torchvision.utils.save_image(
             vutils.make_grid(torch.reshape(fake, (-1,1,128,128)), padding=2, normalize=True)
             , os.path.join(self.images_dir, f'{step}.png'))
