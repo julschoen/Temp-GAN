@@ -276,7 +276,7 @@ class Trainer(object):
         for p in self.imG.parameters():
             p.requires_grad = False
 
-        return errImG.item(), errTempG.item()
+        return errImG.item(), triplet_loss.item()
 
     def train(self):
         step_done = self.start_from_checkpoint()
