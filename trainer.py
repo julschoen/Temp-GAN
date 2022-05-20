@@ -178,9 +178,10 @@ class Trainer(object):
                 z = z[ind]
                 print(z.shape)
                 im = self.imG(z)
+                print(im.shape)
                 if ims is None:
                     ims = im.reshape(1,3,128,128,-1)
-                    zs = z[0].reshape(1,-1,1,1,1)
+                    zs = z[0].reshape(1,-1)
                     inds = ind.reshape(1,3)
                 else:
                     ims = torch.concat((ims,im.reshape(1,3,128,128,-1)))
