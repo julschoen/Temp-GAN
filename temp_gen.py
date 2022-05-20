@@ -8,5 +8,5 @@ class Generator(nn.Module):
         self.lin = nn.Linear(in_features=nz, out_features=nz)
 
     def forward(self, input):
-        output = self.main(input)
+        output = self.lin(input)
         return output
