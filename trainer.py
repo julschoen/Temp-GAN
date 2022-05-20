@@ -173,7 +173,7 @@ class Trainer(object):
                                         dtype=torch.float, device=self.device)
                 print(self.p.z_size, z.shape)
                 for i in range(torch.randint(low=2, high=11, size=())):
-                    z = torch.concat((z, self.tempG(z[-1])))
+                    z = torch.concat((z, self.tempG(z[-1].unsqueeze(0))))
                 ind = torch.randint(len(z), (3,))
                 z = z[ind]
                 im = self.imG(z)
