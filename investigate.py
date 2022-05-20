@@ -6,30 +6,8 @@ from torch.nn.functional import interpolate
 import nibabel as nib
 
 def main():
-	path = '../../../media/7tb_encrypted/julians_project/anon_images_updated'
-
-	dirs = sorted([f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))],
-		key=lambda x: int(x))
-	num = 0
-	ds = []
-	for d in dirs:
-		subdirs = sorted([f for f in os.listdir(os.path.join(path, d)) 
-									if os.path.isdir(os.path.join(path,d,f))],
-				key=lambda x: int(x))
-		for sub in subdirs:
-			files = sorted([f for f in os.listdir(os.path.join(path,d,sub)) if f.startswith('cbct')],
-							key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
-			if len(files)>1:
-				for f in files:
-					if not f.endswith('.gz'):
-						continue
-					img = nib.load(os.path.join(path,d,sub,f))
-					if not (img.header['pixdim'] ==  [1., 1.171875,1.171875,2.5,1.,1.,1.,1.]).all():
-						print(d,f)
-						ds.append(int(d))
-						num +=1
-	print(np.unique(ds))
-	print(num)
+	print(np.load('data/test_pat.npz')['x'])
+	print(np.load('data/train_pat.npz')['x'])
 
 if __name__ == '__main__':
 	main()
