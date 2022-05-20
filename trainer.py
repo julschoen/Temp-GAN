@@ -169,17 +169,14 @@ class Trainer(object):
         inds = None
         with autocast():
             for _ in range(self.p.batch_size):
-                z = torch.randn(1, self.p.z_size, 1, 1,1,
-                                        dtype=torch.float, device=self.device)
-                print(self.p.z_size, z.shape)
+                z = torch.randn(1, self.p.z_size, dtype=torch.float, device=self.device)
                 for i in range(torch.randint(low=2, high=11, size=())):
                     z = torch.concat(
-                        (z, 
-                        self.tempG(z[-1].squeeze().unsqueeze(0)).reshape(1,-1,1,1,1)
-                        )
+                        (z, self.tempG(z[-1].unsqueeze(0)).reshape(1,-1))
                     )
                 ind = torch.randint(len(z), (3,))
                 z = z[ind]
+                print(z.shape)
                 im = self.imG(z)
                 if ims is None:
                     ims = im.reshape(1,3,128,128,-1)
