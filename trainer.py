@@ -289,6 +289,7 @@ class Trainer(object):
                 data = next(gen)
                 real = data.to(self.device)
                 fake, zs, ind = self.sample_g(grad=False)
+                print(real.shape, fake.shape)
                 errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind)
                 #self.step_imD(real, fake)
 
