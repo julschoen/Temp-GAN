@@ -113,7 +113,7 @@ class Trainer(object):
             self.tempD.load_state_dict(state_dict['tempD'])
 
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
-            self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
+            #self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
 
             self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
