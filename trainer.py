@@ -293,10 +293,13 @@ class Trainer(object):
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
             for _ in range(self.p.iterD):    
-                data = next(gen)
+                data, ind_r = next(gen)
                 real = data.to(self.device)
+                ind_r.to(self.device)
                 fake, zs, ind = self.sample_g()
-                errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind)
+                print(ind_r.shape)
+                print(ind.shape)
+                errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind_r, ind)
                 #self.step_imD(real, fake)
 
             errImG = self.step_ImG()
