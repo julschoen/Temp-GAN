@@ -232,6 +232,7 @@ class Trainer(object):
 
             triplet_real = self.tripl_loss(triplet_r, ind_r)
             triplet_fake = self.tripl_loss(triplet_f, ind_f)
+            print(triplet_real, triplet_fake)
             errTempD = errD_fake + errD_real + err_rec_z + triplet_real + triplet_fake
 
         self.scalerTempD.scale(errTempD).backward()
