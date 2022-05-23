@@ -10,9 +10,6 @@ class TripletLoss(torch.nn.Module):
       super(TripletLoss,self).__init__()
 
     def dist(self, t1, t2):
-      print(t1.shape)
-      d = (t1-t2).pow(1)
-      print((d<0).sum())
       return (t1 - t2).pow(1).sum(1).sqrt()
     
     def forward(self, pred, inds):
@@ -20,8 +17,6 @@ class TripletLoss(torch.nn.Module):
       mid = inds[:,1] == inds[:,2]/2
       low = inds[:,1] < inds[:,2]/2
       high = inds[:,1] > inds[:,2]/2
-      print(pred.shape)
-      #pred = pred.unsqueeze(-1)
       loss = self.dist(pred[:,1], pred[:,0]) + self.dist(pred[:,1], pred[:,2]) - 2*self.dist(pred[:,2], pred[:,0])
       loss[low] = self.dist(pred[low,1], pred[low,0]) - self.dist(pred[low,1], pred[low,2])
       loss[high] = self.dist(pred[high,1], pred[high,2]) - self.dist(pred[high,1], pred[high,0])
