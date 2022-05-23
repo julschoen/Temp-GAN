@@ -258,7 +258,7 @@ class Trainer(object):
         with autocast():
             disc_im_fake, zs = self.imD(fake[:,0].unsqueeze(1))
             rec_loss = self.reg_loss(zs, noise)
-            errImG = - disc_temp_fake.mean() + rec_loss
+            errImG = - disc_im_fake.mean() + rec_loss
 
         self.scalerImG.scale(errImG).backward()
         self.scalerImG.step(self.optimizerImG)
