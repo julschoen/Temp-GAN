@@ -189,6 +189,7 @@ class Trainer(object):
         with autocast():
             fake, noise, ind = self.sample_g()
             fake = fake[:,0]
+            print(fake.shape, real.shape)
             disc_fake, zs = self.imD(fake.unsqueeze(1))
             disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
