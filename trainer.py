@@ -13,7 +13,7 @@ import torchvision
 import torchvision.utils as vutils
 
 from image_disc import Discriminator as ImD
-from one_disc import Discriminator as TempD
+from temp_disc import Discriminator as TempD
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
 from utils import TripletLoss
@@ -34,18 +34,18 @@ class Trainer(object):
         os.makedirs(self.images_dir, exist_ok=True)
 
         ### Make Models ###
-        #self.imD = ImD(self.p).to(self.device)
+        self.imD = ImD(self.p).to(self.device)
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
         if self.p.ngpu>1:
-            #self.imD = nn.DataParallel(self.imD)
+            self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
 
-        #self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrD,
-        #                                 betas=(0., 0.9))
+        self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrD,
+                                         betas=(0., 0.9))
         self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
 
@@ -54,7 +54,7 @@ class Trainer(object):
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
 
-        #self.scalerImD = GradScaler()
+        self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
         self.scalerTempD = GradScaler()
         self.scalerTempG = GradScaler()
@@ -109,13 +109,13 @@ class Trainer(object):
             state_dict = torch.load(checkpoint)
             step = state_dict['step']
             self.imG.load_state_dict(state_dict['imG'])
-            #self.imD.load_state_dict(state_dict['imD'])
+            self.imD.load_state_dict(state_dict['imD'])
 
             self.tempG.load_state_dict(state_dict['tempG'])
             self.tempD.load_state_dict(state_dict['tempD'])
 
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
-            #self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
+            self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
 
             self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
@@ -131,11 +131,11 @@ class Trainer(object):
         torch.save({
         'step': step,
         'imG': self.imG.state_dict(),
-        #'imD': self.imD.state_dict(),
+        'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
-        #'optimizerImD': self.optimizerImD.state_dict(),
+        'optimizerImD': self.optimizerImD.state_dict(),
         'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
         'lossG': self.G_losses,
@@ -200,24 +200,26 @@ class Trainer(object):
         for p in self.imD.parameters():
             p.requires_grad = False
 
+        return errD_real.item(), errD_fake.item(), rec_loss.item()
+
     def step_tempD(self, real, fake):
         for p in self.tempD.parameters():
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
-            disc_fake, triplet = self.tempD(fake)
-            disc_real, triplet = self.tempD(real)
+            disc_fake = self.tempD(fake)
+            disc_real = self.tempD(real)
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            triplet_real = self.reg_loss(zs, noise)
-            triplet_fake = self.reg_loss(zs, noise)
-            errTempD = errD_fake + errD_real + triplet_real + triplet_fake
+            errTempD = errD_fake + errD_real
         self.scalerTempD.scale(errTempD).backward()
         self.scalerTempD.step(self.optimizerTempD)
         self.scalerTempD.update()
 
         for p in self.tempD.parameters():
             p.requires_grad = False
+
+        return errD_real.item(), errD_fake.item()
 
     def step_D(self, real, fake, noise, ind_r, ind_f):
         for p in self.tempD.parameters():
@@ -232,7 +234,7 @@ class Trainer(object):
 
             triplet_real = self.tripl_loss(triplet_r, ind_r)
             triplet_fake = self.tripl_loss(triplet_f, ind_f)
-            
+
             errTempD = errD_fake + errD_real + err_rec_z + triplet_real + triplet_fake
 
         self.scalerTempD.scale(errTempD).backward()
@@ -251,8 +253,9 @@ class Trainer(object):
         self.imG.zero_grad()
         fake, noise, ind = self.sample_g()
         with autocast():
-            disc_temp_fake, _, _ = self.tempD(fake)
-            errImG = - disc_temp_fake.mean()
+            disc_im_fake, zs = self.imD(fake[:0])
+            rec_loss = self.reg_loss(zs, noise)
+            errImG = - disc_temp_fake.mean() + rec_loss
 
         self.scalerImG.scale(errImG).backward()
         self.scalerImG.step(self.optimizerImG)
@@ -271,10 +274,8 @@ class Trainer(object):
         fake, noise, ind = self.sample_g()
 
         with autocast():
-            disc_temp_fake, zs, triplet = self.tempD(fake)
-            rec_loss = self.reg_loss(zs, noise)
-            triplet_loss = self.tripl_loss(triplet, ind)
-            errTempG = - disc_temp_fake.mean() + rec_loss + triplet_loss
+            disc_temp_fake = self.tempD(fake)
+            errTempG = - disc_temp_fake.mean()
 
         self.scalerTempG.scale(errTempG).backward()
         self.scalerTempG.step(self.optimizerTempG)
@@ -297,16 +298,18 @@ class Trainer(object):
                 real = data.to(self.device)
                 ind_r.to(self.device)
                 fake, zs, ind = self.sample_g()
-                errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind_r, ind)
-                #self.step_imD(real, fake)
+
+                errImD_real, errImD_fake, errD_z = step_imD(real[:,0], fake[:,0], noise)
+                errTempD_real, errTempD_fake = step_tempD(real, fake)
+                #errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind_r, ind)
 
             errImG = self.step_ImG()
             errTempG = self.step_TempG()
 
             self.G_losses.append((errImG, errTempG))
-            self.D_losses.append(errD)
+            self.D_losses.append(errImD_real + errImD_fake + errD_z)
 
-            self.log(i, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
+            self.log(i, fake, real, errImD_real, errImD_fake, errD_z, errImG, errTempG)
             if i%100 == 0 and i>0:
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
