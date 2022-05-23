@@ -57,4 +57,4 @@ class Discriminator(nn.Module):
     # Apply global sum pooling as in SN-GAN
     print(h.shape)
     h = torch.sum(self.activation(h), [2, 3, 4])
-    return self.linear(h), self.linear_z(h), h
+    return self.linear(h), self.linear_z(h)

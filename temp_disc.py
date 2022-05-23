@@ -34,7 +34,7 @@ class Discriminator(nn.Module):
 
     self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
     self.linear = snlinear(self.arch['out_channels'][-1], 1)
-    self.linear2 = nn.Linear(self.arch['out_channels'][-1],1)
+    #self.linear2 = nn.Linear(self.arch['out_channels'][-1],1)
     self.activation = nn.ReLU(inplace=True)
     self.init_weights()
 
@@ -56,4 +56,4 @@ class Discriminator(nn.Module):
         h = block(h)
     # Apply global sum pooling as in SN-GAN
     h = torch.sum(self.activation(h), [2, 3, 4])
-    return self.linear(h), self.linear2(h)
+    return self.linear(h)
