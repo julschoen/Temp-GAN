@@ -187,8 +187,8 @@ class Trainer(object):
         
         self.imD.zero_grad()
         with autocast():
-            disc_fake, zs = self.imD(fake)
-            disc_real, _ = self.imD(real)
+            disc_fake, zs = self.imD(fake.unsqueeze(1))
+            disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
             rec_loss = self.reg_loss(zs, noise)
@@ -253,7 +253,7 @@ class Trainer(object):
         self.imG.zero_grad()
         fake, noise, ind = self.sample_g()
         with autocast():
-            disc_im_fake, zs = self.imD(fake[:0])
+            disc_im_fake, zs = self.imD(fake[:0].unsqueeze(1))
             rec_loss = self.reg_loss(zs, noise)
             errImG = - disc_temp_fake.mean() + rec_loss
 
