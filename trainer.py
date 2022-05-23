@@ -230,8 +230,8 @@ class Trainer(object):
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
             err_rec_z = self.reg_loss(zs, noise)
 
-            triplet_real = self.tripl_loss(triplet_real, ind_r)
-            triplet_fake = self.tripl_loss(triplet_fake, ind_f)
+            triplet_real = self.tripl_loss(triplet_r, ind_r)
+            triplet_fake = self.tripl_loss(triplet_f, ind_f)
 
             errTempD = errD_fake + errD_real + err_rec_z + triplet_real + triplet_fake
 
