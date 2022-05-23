@@ -19,7 +19,7 @@ class TripletLoss(torch.nn.Module):
       losses[mid] = 0
 
       loss = torch.mean(losses)
-      loss = loss + torch.mean(torch.log(torch.exp(torch.cdist(pred[mid,1], pred[mid,0]) - torch.cdist(pred[mid,2], pred[mid,0]))))
+      #loss = loss + torch.mean(torch.log(torch.exp(torch.cdist(pred[mid,1], pred[mid,0]) - torch.cdist(pred[mid,2], pred[mid,0]))))
       return loss
 
 def snconv3d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1, bias=True):
