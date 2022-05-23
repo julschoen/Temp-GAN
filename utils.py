@@ -19,7 +19,6 @@ class TripletLoss(torch.nn.Module):
       high = inds[:,1] > inds[:,2]/2
       pred = pred.unsqueeze(-1)
       loss = self.dist(pred[:,1], pred[:,0]) + self.dist(pred[:,1], pred[:,2]) - 2*self.dist(pred[:,2], pred[:,0])
-      print(loss.shape)
       loss[low] = self.dist(pred[low,1], pred[low,0]) - self.dist(pred[low,1], pred[low,2])
       loss[high] = self.dist(pred[high,1], pred[high,2]) - self.dist(pred[high,1], pred[high,0])
       return torch.mean(loss)
