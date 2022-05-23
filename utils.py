@@ -10,6 +10,7 @@ class TripletLoss(torch.nn.Module):
       super(TripletLoss,self).__init__()
 
     def dist(self, t1, t2):
+      print(t1.shape)
       d = (t1-t2).pow(1)
       print((d<0).sum())
       return (t1 - t2).pow(1).sum(1).sqrt()
