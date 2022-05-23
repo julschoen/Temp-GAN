@@ -181,12 +181,14 @@ class Trainer(object):
 
         return ims, zs, inds
 
-    def step_imD(self, real, fake, noise):
+    def step_imD(self, real):
         for p in self.imD.parameters():
             p.requires_grad = True
         
         self.imD.zero_grad()
         with autocast():
+            fake, noise, ind = self.sample_g()
+            fake = fake[:,0]
             disc_fake, zs = self.imD(fake.unsqueeze(1))
             disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
@@ -202,11 +204,12 @@ class Trainer(object):
 
         return errD_real.item(), errD_fake.item(), rec_loss.item()
 
-    def step_tempD(self, real, fake):
+    def step_tempD(self, real):
         for p in self.tempD.parameters():
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
+            fake, _, _ = self.sample_g()
             disc_fake = self.tempD(fake)
             disc_real = self.tempD(real)
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
@@ -297,10 +300,8 @@ class Trainer(object):
                 data, ind_r = next(gen)
                 real = data.to(self.device)
                 ind_r.to(self.device)
-                fake, zs, ind = self.sample_g()
-
-                errImD_real, errImD_fake, errD_z = self.step_imD(real[:,0], fake[:,0], zs)
-                errTempD_real, errTempD_fake = self.step_tempD(real, fake)
+                errImD_real, errImD_fake, errD_z = self.step_imD(real[:,0])
+                errTempD_real, errTempD_fake = self.step_tempD(real)
                 #errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind_r, ind)
 
             errImG = self.step_ImG()
