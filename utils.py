@@ -12,7 +12,7 @@ class TripletLoss(torch.nn.Module):
     def forward(self, pred, inds):
       inds = inds - inds[:,0].repeat(3).reshape(3,-1).T
       mid = inds[:,1] < inds[:,2]/2
-      print(pred)
+      pred = pred.unsqueeze(-1)
       losses = -torch.log(torch.exp(torch.cdist(pred[:,1], pred[:,0]))/
         (torch.exp(torch.cdist(pred[:,1], pred[:,2]))+torch.exp(torch.cdist(pred[:,1], pred[:,0]))))
 
