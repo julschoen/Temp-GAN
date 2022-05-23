@@ -5,6 +5,23 @@ import torch.nn.utils.spectral_norm as SpectralNorm
 import functools
 from torch.nn import Parameter as P
 
+class TripletLoss(torch.nn.Module):
+    def __init__(self):
+      super(TripletLoss,self).__init__()
+    
+    def forward(self, pred, inds):
+      inds = inds - inds[:,0]
+      mid = inds[:,1] < inds[:,2]/2
+
+      losses = -torch.log(torch.exp(torch.cdist(pred[:,1], pred[:,0]))/
+        (torch.exp(torch.cdist(pred[:,1], pred[:,2]))+torch.exp(torch.cdist(pred[:,1], pred[:,0]))))
+
+      losses[mid] = 0
+
+      loss = torch.mean(losses)
+      loss = loss + torch.mean(torch.log(torch.exp(torch.cdist(pred[mids,1], pred[mids,0]) - torch.cdist(pred[mids,2], pred[mids,0]))))
+      return loss
+
 def snconv3d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1, bias=True):
     return SpectralNorm(nn.Conv3d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
                                    stride=stride, padding=padding, dilation=dilation, bias=bias))

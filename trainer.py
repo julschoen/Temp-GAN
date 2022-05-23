@@ -16,6 +16,7 @@ from image_disc import Discriminator as ImD
 from one_disc import Discriminator as TempD
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
+from utils import TripletLoss
 
 
 class Trainer(object):
@@ -70,6 +71,7 @@ class Trainer(object):
         self.fid = []
         self.fid_epoch = []
         self.reg_loss = nn.MSELoss()
+        self.tripl_loss = TripletLoss()
 
     def inf_train_gen(self):
         while True:
@@ -217,21 +219,22 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = False
 
-    def step_D(self, real, fake, noise, ind):
+    def step_D(self, real, fake, noise, ind_r, ind_f):
         for p in self.tempD.parameters():
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
-            disc_fake, zs, triplet = self.tempD(fake)
-            disc_real, zs, triplet = self.tempD(real)
+            disc_fake, zs, triplet_f = self.tempD(fake)
+            disc_real, _, triplet_r = self.tempD(real)
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
             err_rec_z = self.reg_loss(zs, noise)
 
-            #triplet_real = self.reg_loss(zs, noise)
-            #triplet_fake = self.reg_loss(zs, noise)
+            triplet_real = self.tripl_loss(triplet_real, ind_r)
+            triplet_fake = self.tripl_loss(triplet_fake, ind_f)
 
-            errTempD = errD_fake + errD_real + err_rec_z#+ triplet_real + triplet_fake
+            errTempD = errD_fake + errD_real + err_rec_z + triplet_real + triplet_fake
+
         self.scalerTempD.scale(errTempD).backward()
         self.scalerTempD.step(self.optimizerTempD)
         self.scalerTempD.update()
@@ -248,10 +251,7 @@ class Trainer(object):
         self.imG.zero_grad()
         fake, noise, ind = self.sample_g()
         with autocast():
-            #disc_im_fake, _ = self.imD(fake)
             disc_temp_fake, _, _ = self.tempD(fake)
-            #errImG = -disc_fake.mean() - disc_temp_fake.mean()
-
             errImG = - disc_temp_fake.mean()
 
         self.scalerImG.scale(errImG).backward()
@@ -272,8 +272,9 @@ class Trainer(object):
 
         with autocast():
             disc_temp_fake, zs, triplet = self.tempD(fake)
-            triplet_loss = self.reg_loss(zs, noise)
-            errTempG = - disc_temp_fake.mean() + triplet_loss
+            rec_loss = self.reg_loss(zs, noise)
+            triplet_loss = self.tripl_loss(triplet, ind)
+            errTempG = - disc_temp_fake.mean() + rec_loss + triplet_loss
 
         self.scalerTempG.scale(errTempG).backward()
         self.scalerTempG.step(self.optimizerTempG)
