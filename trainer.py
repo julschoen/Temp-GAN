@@ -299,7 +299,7 @@ class Trainer(object):
                 ind_r.to(self.device)
                 fake, zs, ind = self.sample_g()
 
-                errImD_real, errImD_fake, errD_z = self.step_imD(real[:,0], fake[:,0], noise)
+                errImD_real, errImD_fake, errD_z = self.step_imD(real[:,0], fake[:,0], zs)
                 errTempD_real, errTempD_fake = self.step_tempD(real, fake)
                 #errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind_r, ind)
 
