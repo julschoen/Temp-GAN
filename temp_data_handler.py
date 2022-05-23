@@ -16,7 +16,7 @@ class DATA(Dataset):
       ind = np.random.choice(x.shape[0], 3)
       xs = x[ind]
       xs = np.clip(xs, -1,1)
-      return torch.from_numpy(xs).float().squeeze()
+      return torch.from_numpy(xs).float().squeeze(), torch.Tensor(ind)
 
   def __len__(self):
       return self.len
