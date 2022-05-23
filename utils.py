@@ -14,7 +14,7 @@ class TripletLoss(torch.nn.Module):
       mid = inds[:,1] == inds[:,2]/2
       low = inds[:,1] < inds[:,2]/2
       high = inds[:,1] > inds[:,2]/2
-      
+      pred = pred.unsqueeze(-1)
       loss = torch.cdist(pred[:,1], pred[:,0]) + torch.cdist(pred[:,1], pred[:,2]) - 2*torch.cdist(pred[:,2], pred[:,0])
       loss[low] = torch.cdist(pred[low,1], pred[low,0]) - torch.cdist(pred[low,1], pred[low,2])
       loss[high] = torch.cdist(pred[high,1], pred[high,2]) - torch.cdist(pred[high,1], pred[high,0])
