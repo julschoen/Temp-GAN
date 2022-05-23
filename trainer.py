@@ -267,7 +267,7 @@ class Trainer(object):
         for p in self.imG.parameters():
             p.requires_grad = False
 
-        return errImG.item()
+        return errImG.item(), fake
 
     def step_TempG(self):
         for p in self.tempG.parameters():
@@ -304,7 +304,7 @@ class Trainer(object):
                 errTempD_real, errTempD_fake = self.step_tempD(real)
                 #errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind_r, ind)
 
-            errImG = self.step_ImG()
+            errImG, fake = self.step_ImG()
             errTempG = self.step_TempG()
 
             self.G_losses.append((errImG, errTempG))
