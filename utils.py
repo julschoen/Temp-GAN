@@ -8,6 +8,9 @@ from torch.nn import Parameter as P
 class TripletLoss(torch.nn.Module):
     def __init__(self):
       super(TripletLoss,self).__init__()
+
+    def dist(t1, t2):
+      return dist = (t1 - t2).pow(1).sum(1).sqrt()
     
     def forward(self, pred, inds):
       inds = inds - inds[:,0].repeat(3).reshape(3,-1).T
@@ -15,11 +18,10 @@ class TripletLoss(torch.nn.Module):
       low = inds[:,1] < inds[:,2]/2
       high = inds[:,1] > inds[:,2]/2
       pred = pred.unsqueeze(-1)
-      loss = torch.cdist(pred[:,1], pred[:,0]) + torch.cdist(pred[:,1], pred[:,2]) - 2*torch.cdist(pred[:,2], pred[:,0])
+      loss = self.dist(pred[:,1], pred[:,0]) + self.dist(pred[:,1], pred[:,2]) - 2*self.dist(pred[:,2], pred[:,0])
       print(loss.shape)
-      loss[low] = torch.cdist(pred[low,1], pred[low,0]) - torch.cdist(pred[low,1], pred[low,2])
-      loss[high] = torch.cdist(pred[high,1], pred[high,2]) - torch.cdist(pred[high,1], pred[high,0])
-
+      loss[low] = self.dist(pred[low,1], pred[low,0]) - self.dist(pred[low,1], pred[low,2])
+      loss[high] = self.dist(pred[high,1], pred[high,2]) - self.dist(pred[high,1], pred[high,0])
       return torch.mean(loss)
 
 def snconv3d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1, bias=True):
