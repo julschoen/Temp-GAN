@@ -34,7 +34,7 @@ class Discriminator(nn.Module):
 
     self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
     self.linear = snlinear(self.arch['out_channels'][-1], 1)
-    self.linear_z = nn.Linear(self.arch['out_channels'][-1], 1)
+    self.linear_z = nn.Linear(self.arch['out_channels'][-1], self.p.z_size)
     self.activation = nn.ReLU(inplace=True)
     self.init_weights()
 
