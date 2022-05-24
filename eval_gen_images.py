@@ -41,7 +41,7 @@ def generate_ims(netG, params, save_name, noise=None):
 			with autocast():
 				ims = netG(noise)
 		ims = ims.detach().cpu().numpy()
-		np.savez_compressed(os.path.join(params.log_dir, 'save_name'), x=ims)
+		np.savez_compressed(os.path.join(params.log_dir, save_name), x=ims)
 
 def get_embedding(ims, imD):
 	with torch.no_grad():
