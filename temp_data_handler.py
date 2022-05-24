@@ -13,7 +13,6 @@ class DATA(Dataset):
   def __getitem__(self, index):
       pat = [os.path.join(self.path, self.files[index], f) for f in os.listdir(os.path.join(self.path, self.files[index])) if f.endswith('npz')][0]
       x = np.load(pat)['x']
-      print(x.shape)
       ind = np.random.choice(x.shape[0], 3)
       xs = x[ind]
       xs_ = np.empty((3,64,128,128))
