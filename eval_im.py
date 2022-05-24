@@ -19,7 +19,7 @@ def load_gen(path, ngpu):
 	if ngpu > 1:
 		netG = nn.DataParallel(netG)
 	state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
-	netG.load_state_dict(state['ImG'])
+	netG.load_state_dict(state['imG'])
 
 	return netG
 
