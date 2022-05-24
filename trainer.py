@@ -33,6 +33,14 @@ class Trainer(object):
         os.makedirs(self.models_dir, exist_ok=True)
         os.makedirs(self.images_dir, exist_ok=True)
 
+        ### load/save params
+        if params.load_params:
+            with open(os.path.join(params.log_dir, 'params.pkl'), 'rb') as file:
+                params = pickle.load(file)
+        else:
+            with open(os.path.join(params.log_dir,'params.pkl'), 'wb') as file:
+                pickle.dump(params, file)
+
         ### Make Models ###
         self.imD = ImD(self.p).to(self.device)
         self.tempD = TempD(self.p).to(self.device)
