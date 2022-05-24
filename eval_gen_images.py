@@ -2,6 +2,7 @@ import numpy as np
 import os
 import argparse
 import pickle
+import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch.cuda.amp import autocast
