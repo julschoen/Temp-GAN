@@ -21,7 +21,7 @@ def ssim(real, fake):
     with torch.no_grad():
         real = (real+1)/2
         fake = (fake+1)/2
-        ms_ssim_module = MS_SSIM(data_range=1, win_size=(5,5,5), size_average=True, channel=1, spatial_dims=3)
+        ms_ssim_module = MS_SSIM(data_range=1, win_size=5, size_average=True, channel=1, spatial_dims=3)
         ms_ssim_ = ms_ssim_module(real.cpu().to(torch.float32), fake.cpu().to(torch.float32)).item()
     return ms_ssim_
  
