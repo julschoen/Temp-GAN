@@ -3,9 +3,9 @@ import torch.nn as nn
 class Generator(nn.Module):
     def __init__(self, params):
         super(Generator, self).__init__()
-        nz = params.z_size
+        self.dim_z = params.z_size
         self.ngpu = params.ngpu
-        self.lin = nn.Linear(in_features=nz, out_features=nz)
+        self.lin = nn.Linear(in_features=self.dim_z, out_features=self.dim_z)
 
     def forward(self, input):
         output = self.lin(input)

@@ -10,6 +10,7 @@ class Generator(nn.Module):
   def __init__(self, params):
     super(Generator, self).__init__()
     self.p = params
+    self.dim_z = self.p.z_size
 
     self.arch = {'in_channels' :  [item * self.p.filterG for item in [16, 16, 8, 4, 2]],
              'out_channels' : [item * self.p.filterG for item in [16, 8, 4,  2, 1]],
