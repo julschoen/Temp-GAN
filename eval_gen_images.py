@@ -37,11 +37,11 @@ def generate_ims(netG, params, save_name, noise=None):
 			noise = torch.randn(params.batch_size, netG.module.dim_z, dtype=torch.float, device=params.device)
 		else:
 			noise = torch.randn(params.batch_size, netG.dim_z, dtype=torch.float, device=params.device)
-		with torch.no_grad():
-			with autocast():
-				ims = netG(noise)
-		ims = ims.detach().cpu().numpy()
-		np.savez_compressed(os.path.join(params.log_dir, save_name), x=ims)
+	with torch.no_grad():
+		with autocast():
+			ims = netG(noise)
+	ims = ims.detach().cpu().numpy()
+	np.savez_compressed(os.path.join(params.log_dir, save_name), x=ims)
 
 def get_embedding(ims, imD):
 	with torch.no_grad():
