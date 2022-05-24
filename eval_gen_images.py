@@ -28,7 +28,7 @@ def load_models(path, ngpu):
 	tempG.load_state_dict(state['tempG'])
 	imD.load_state_dict(state['imD'])
 
-	return imG, tempG, imD
+	return imG.to(params.device), tempG.to(params.device), imD.to(params.device)
 
 def generate_ims(netG, params, save_name, noise=None):
 	if noise is None:
@@ -56,7 +56,7 @@ def eval(params):
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
-		imG, tempG, imD = load_gen(model_path, params.ngpu).to(params.device)
+		imG, tempG, imD = load_models(model_path, params.ngpu)
 		generate_ims(imG, params, f'random_gen_{model_path}.npz')
 		for _, (data, _) in enumerate(generator):
 			data = data[:,0].to(params.device)
