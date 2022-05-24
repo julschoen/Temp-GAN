@@ -316,5 +316,5 @@ class Trainer(object):
                 self.fid = []
                 self.save_checkpoint(i)
         
-        self.log_final(i, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
+        self.log_final(i, fake, real, errImD_real, errImD_fake, errD_z, errImG, errTempG)
         print('...Done')
