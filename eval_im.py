@@ -51,7 +51,6 @@ def eval(params):
 					else:
 						noise = torch.randn(data.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
 					x2 = netG(noise)
-					print(x1.shape, x2.shape)
 					if i % 16 == 0 and i>0:
 						s,p,f = ssim(large_data,large_fake), psnr(large_data,large_fake),fid_3d(fid_model, large_data, large_fake)
 						ssims.append(s)
