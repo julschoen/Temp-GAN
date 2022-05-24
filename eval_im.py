@@ -44,7 +44,7 @@ def eval(params):
 		large_fake = None
 		with torch.no_grad():
 			with autocast():
-				for i, (data, _)) in enumerate(generator):
+				for i, (data, _) in enumerate(generator):
 					x1 = data[:,0].unsqueeze(dim=1)
 					if params.ngpu > 1:
 						noise = torch.randn(data.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
