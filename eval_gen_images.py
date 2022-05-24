@@ -21,7 +21,7 @@ def load_models(path, ngpu):
 
 	if ngpu > 1:
 		imG = nn.DataParallel(imG)
-		TempG = nn.DataParallel(TempG)
+		tempG = nn.DataParallel(tempG)
 		imD = nn.DataParallel(imD)
 	state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
 	imG.load_state_dict(state['imG'])
