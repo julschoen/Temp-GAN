@@ -53,7 +53,6 @@ def eval(params):
 	dataset = DATA(path=params.data_path)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
-	fid_model = get_fid_model(params.fid_checkpoint).to(params.device)
 	if params.ngpu > 1:
 		fid_model = nn.DataParallel(fid_model)
 	os.makedirs(params.log_dir, exist_ok=True)
@@ -76,7 +75,6 @@ def main():
 	parser.add_argument('--log_dir', type=str, default='log', help='Save Location')
 	parser.add_argument('--device', type=str, default='cuda', help='Torch Device Choice')
 	parser.add_argument('-l', '--model_log', action='append', type=str, required=True, help='Model log directories to evaluate')
-	parser.add_argument('--fid_checkpoint', type=str, default='resnet_50.pth', help='Path to pretrained MedNet')
 	params = parser.parse_args()
 	eval(params)
 
