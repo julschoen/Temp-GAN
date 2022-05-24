@@ -44,15 +44,14 @@ def eval(params):
 		large_fake = None
 		with torch.no_grad():
 			with autocast():
-				for i, data in enumerate(generator):
-					x1 = data.unsqueeze(dim=1)
+				for i, (data, _)) in enumerate(generator):
+					x1 = data[:,0].unsqueeze(dim=1)
 					if params.ngpu > 1:
-						noise = torch.randn(data.shape[0], netG.module.dim_z,
-								1, 1, 1, dtype=torch.float, device=params.device)
+						noise = torch.randn(data.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
 					else:
-						noise = torch.randn(data.shape[0], netG.dim_z,
-								1, 1, 1, dtype=torch.float, device=params.device)
+						noise = torch.randn(data.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
 					x2 = netG(noise)
+					print(x1.shape, x2.shape)
 					if i % 16 == 0 and i>0:
 						s,p,f = ssim(large_data,large_fake), psnr(large_data,large_fake),fid_3d(fid_model, large_data, large_fake)
 						ssims.append(s)
