@@ -20,6 +20,7 @@ def main():
 	parser.add_argument('--log_dir', type=str, default='log', help='Save Location')
 	parser.add_argument('--device', type=str, default='cuda', help='Torch Device Choice')
 	parser.add_argument('--att', type=bool, default=True, help='Use Attention in BigGAN')
+	parser.add_argument('--load_params', type=bool, default=False, help='Load Parameters form pickle in log dir')
 	params = parser.parse_args()
 	print(params)
 	dataset_train = DATA(path=params.data_path)
