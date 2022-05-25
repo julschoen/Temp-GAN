@@ -50,7 +50,7 @@ def get_embedding(ims, imD):
 	return zs
 
 def reverse_z(netG, ims, niter=5000, lr=0.01):
-	mse_loss = nn.MSELoss().to(device)
+	mse_loss = nn.MSELoss().to('cuda')
 	z_approx = torch.randn(ims.shape[0], netG.dim_z,dtype=torch.float, device='cuda')
 	z_approx = Variable(z_approx)
 	z_approx.requires_grad = True
