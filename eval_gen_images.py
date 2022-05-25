@@ -63,8 +63,7 @@ def reverse_z(netG, ims, niter=5000, lr=0.01):
 			mse_g_z = mse_loss(g_z_approx.squeeze(), im)
 
 			if i % 500 == 0:
-			print("[Iter {}] mse_g_z: {}"
-			.format(i, mse_g_z.item()))
+				print("[Iter {}] mse_g_z: {}".format(i, mse_g_z.item()))
 
 			optimizer_approx.zero_grad()
 			mse_g_z.backward()
