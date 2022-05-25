@@ -203,7 +203,7 @@ class Trainer(object):
                     z = torch.concat(
                         (z, self.tempG(z[-1].unsqueeze(0)).reshape(1,-1))
                     )
-                ind = np.sort(np.random.choice(z.shape[0], 3, replace=False))
+                ind = torch.from_numpy(np.sort(np.random.choice(z.shape[0], 3, replace=False)))
                 z = z[ind]
                 im = self.imG(z)
                 if ims is None:
