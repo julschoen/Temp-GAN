@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pytorch_fid_wrapper as FID
 import pickle
+from carbontracker.tracker import CarbonTracker
 
 import torch 
 import torch.optim as optim
@@ -81,6 +82,7 @@ class Trainer(object):
         self.fid_epoch = []
         self.reg_loss = nn.MSELoss()
         self.tripl_loss = TripletLoss()
+        self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
     def inf_train_gen(self):
         while True:
@@ -202,7 +204,7 @@ class Trainer(object):
             disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            rec_loss = self.reg_loss(zs, noise)*10
+            rec_loss = self.reg_loss(zs, noise)*10ß
             errImD = errD_fake + errD_real + rec_loss
         self.scalerImD.scale(errImD).backward()
         self.scalerImD.step(self.optimizerImD)
@@ -305,6 +307,7 @@ class Trainer(object):
 
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
+            self.tracker.epoch_start()
             for _ in range(self.p.iterD):    
                 data, ind_r = next(gen)
                 real = data.to(self.device)
@@ -324,6 +327,9 @@ class Trainer(object):
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
+            self.tracker.epoch_end()
         
         self.log_final(i, fake, real, errImD_real, errImD_fake, errD_z, errImG, errTempG)
+        self.tracker.stop()
         print('...Done')
+
