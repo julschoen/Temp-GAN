@@ -339,7 +339,7 @@ class Trainer(object):
                 ind_r.to(self.device)
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errTempD_real, errTempD_fake = self.step_tempD(real)
-                err_rec = self.step_Enc(real[:,0])
+                err_rec = 0#self.step_Enc(real[:,0])
                 
 
             errImG, fake = self.step_ImG()
