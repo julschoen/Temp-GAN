@@ -82,7 +82,7 @@ class Trainer(object):
         self.fid_epoch = []
         self.reg_loss = nn.MSELoss()
         self.tripl_loss = TripletLoss()
-        self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
+        #self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
     def inf_train_gen(self):
         while True:
