@@ -49,9 +49,12 @@ def get_embedding(ims, imD):
 			_, zs = imD(ims.unsqueeze(1))
 	return zs
 
-def reverse_z(netG, ims, niter=5000, lr=0.01):
-	mse_loss = nn.MSELoss().to('cuda')
-	z_approx = torch.randn(ims.shape[0], netG.dim_z,dtype=torch.float, device='cuda')
+def reverse_z(netG, ims, params, niter=5000, lr=0.01):
+	mse_loss = nn.MSELoss().to(params.device)
+	if params.ngpu > 1:
+		z_approx = torch.randn(ims.shape[0], netG.module.dim_z,dtype=torch.float, device=params.device)
+	else:
+		z_approx = torch.randn(ims.shape[0], netG.dim_z,dtype=torch.float, device=params.device)
 	z_approx = Variable(z_approx)
 	z_approx.requires_grad = True
 
@@ -83,7 +86,7 @@ def eval(params):
 		for _, (data, _) in enumerate(generator):
 			data = data[:,0].to(params.device)
 			zs = get_embedding(data, imD)
-			rev_zs = reverse_z(imG, data)
+			rev_zs = reverse_z(imG, data, params)
 			generate_ims(imG, params, f'rec_gen_{model_path}.npz', noise=zs)
 			generate_ims(imG, params, f'rev_rec_gen_{model_path}.npz', noise=rev_zs)
 			np.savez_compressed(os.path.join(params.log_dir, f'rec_real_{model_path}.npz'), x=data.detach().cpu().numpy())
