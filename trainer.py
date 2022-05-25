@@ -387,9 +387,9 @@ class Trainer(object):
         for i in range(step_done, self.p.niters):
             #self.tracker.epoch_start()
             for _ in range(self.p.iterD):    
-                data, ind_r = next(gen)
+                data, _ = next(gen)
                 real = data.to(self.device)
-                ind_r.to(self.device)
+                
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errTempD_real, errTempD_fake = self.step_tempD(real)
                 err_rec = 0#step_TripletD(real)#self.step_Enc(real[:,0])
@@ -403,15 +403,15 @@ class Trainer(object):
             self.imD_losses.append((errImD_real, errImD_fake))
             self.tempD_losses.append((errTempD_real, errTempD_fake))
             self.Rec_losses.append(err_rec)
-            print(real.shape, fake.shape)
-            self.log(i, fake, real[:,0])
+
+            self.log(i, fake[:,0], real[:,0])
             if i%100 == 0 and i>0:
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
             #self.tracker.epoch_end()
         
-        self.log_final(i, fake, real)
+        self.log_final(i, fake[:,0], real[:,0])
         #self.tracker.stop()
         print('...Done')
 
