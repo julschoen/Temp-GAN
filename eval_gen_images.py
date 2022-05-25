@@ -64,7 +64,7 @@ def reverse_z(netG, ims, params, niter=5000, lr=0.01):
 	with autocast():
 		for i in range(niter):
 			g_z_approx = netG(z_approx)
-			mse_g_z = mse_loss(g_z_approx.squeeze(), im)
+			mse_g_z = mse_loss(g_z_approx.squeeze(), ims)
 
 			if i % 500 == 0:
 				print("[Iter {}] mse_g_z: {}".format(i, mse_g_z.item()))
