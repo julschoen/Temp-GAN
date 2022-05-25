@@ -59,7 +59,7 @@ def reverse_z(netG, ims, params, niter=5000, lr=0.01):
 	z_approx = Variable(z_approx)
 	z_approx.requires_grad = True
 
-	optimizer_approx = optim.Adam([z_approx], lr=lr,betas=(0.5, 0.999))
+	optimizer_approx = torch.optim.Adam([z_approx], lr=lr,betas=(0.5, 0.999))
 	netG.eval()
 	with autocast():
 		for i in range(niter):
