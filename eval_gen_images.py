@@ -49,6 +49,28 @@ def get_embedding(ims, imD):
 			_, zs = imD(ims.unsqueeze(1))
 	return zs
 
+def reverse_z(netG, ims, niter=5000, lr=0.01):
+	mse_loss = nn.MSELoss().to(device)
+	z_approx = torch.randn(ims.shape[0], netG.dim_z,dtype=torch.float, device='cuda')
+	z_approx = Variable(z_approx)
+	z_approx.requires_grad = True
+
+	optimizer_approx = optim.Adam([z_approx], lr=lr,betas=(0.5, 0.999))
+	netG.eval()
+	with autocast():
+		for i in range(niter):
+			g_z_approx = netG(z_approx)
+			mse_g_z = mse_loss(g_z_approx.squeeze(), im)
+
+			if i % 500 == 0:
+			print("[Iter {}] mse_g_z: {}"
+			.format(i, mse_g_z.item()))
+
+			optimizer_approx.zero_grad()
+			mse_g_z.backward()
+			optimizer_approx.step()
+	return z_approx
+
 
 def eval(params):
 	dataset = DATA(path=params.data_path)
@@ -62,7 +84,9 @@ def eval(params):
 		for _, (data, _) in enumerate(generator):
 			data = data[:,0].to(params.device)
 			zs = get_embedding(data, imD)
+			rev_zs = reverse_z(imG, data)
 			generate_ims(imG, params, f'rec_gen_{model_path}.npz', noise=zs)
+			generate_ims(imG, params, f'rev_rec_gen_{model_path}.npz', noise=rev_zs)
 			np.savez_compressed(os.path.join(params.log_dir, f'rec_real_{model_path}.npz'), x=data.detach().cpu().numpy())
 			break
 
