@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch.cuda.amp import autocast
+from torch.autograd import Variable
 
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
