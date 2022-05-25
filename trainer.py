@@ -364,9 +364,9 @@ class Trainer(object):
             fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
             f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
 
-            _, h1 = self.imD(f1)
-            _, h2 = self.imD(f2)
-            _, h3 = self.imD(f3)
+            h1 = self.tempD(f1)
+            h2 = self.tempD(f2)
+            h3 = self.tempD(f3)
 
             l1 = self.triplet_loss(h1,h2,h3)
             l2 = self.triplet_loss(h3,h2,h1)
