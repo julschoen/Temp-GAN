@@ -314,7 +314,7 @@ class Trainer(object):
         self.imG.zero_grad()
 
         with autocast():
-            zs = self.enc(real)
+            zs = self.enc(real.unsqueeze(1))
             rec = self.imG(zs)
             loss = self.reg_loss(rec,real)
 
@@ -347,7 +347,7 @@ class Trainer(object):
                 ind_r.to(self.device)
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errTempD_real, errTempD_fake = self.step_tempD(real)
-                errD_z = self.step_Enc(real)
+                errD_z = self.step_Enc(real[:,0])
                 
 
             errImG, fake = self.step_ImG()
