@@ -18,8 +18,9 @@ def process(path, files):
 			size=(128,128,64),
 			mode='trilinear'
 		)
-		img = torch.clamp(img, -1000,1000)
-		img = img/1000
+		img = torch.clamp(img, -1000,2000)
+		img = img+1000
+		img = img/2000
 		if ims is not None:
 			ims = torch.concat((ims,img))
 		else:
