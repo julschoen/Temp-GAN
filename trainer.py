@@ -99,13 +99,10 @@ class Trainer(object):
         
     def log_train(self, step, fake, real):
         with torch.no_grad():
-            r = torch.reshape(real.to(torch.float32), (-1,1,128,128)).expand(-1,3,-1,-1)
-            f = torch.reshape(fake.to(torch.float32), (-1,1,128,128)).expand(-1,3,-1,-1)
-            print(r.shape, f.shape)
             self.fid.append(
                 FID.fid(
-                    f, 
-                    real_images=r
+                    torch.reshape(fake.to(torch.float32), (-1,1,128,128)).expand(-1,3,-1,-1), 
+                    real_images=torch.reshape(real.to(torch.float32), (-1,1,128,128)).expand(-1,3,-1,-1)
                     )
                 )
         imDr = self.imD_losses[-1][0]
