@@ -204,7 +204,7 @@ class Trainer(object):
             disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            rec_loss = self.reg_loss(zs, noise)*10ß
+            rec_loss = self.reg_loss(zs, noise)*10
             errImD = errD_fake + errD_real + rec_loss
         self.scalerImD.scale(errImD).backward()
         self.scalerImD.step(self.optimizerImD)
