@@ -18,6 +18,7 @@ from image_disc import Discriminator as ImD
 from temp_disc import Discriminator as TempD
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
+from encoder import Encoder
 from utils import TripletLoss
 
 
@@ -48,11 +49,13 @@ class Trainer(object):
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
+        self.enc = Encoder(self.p).to(self.device)
         if self.p.ngpu>1:
             self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
+            self.enc = nn.DataParallel(self.enc)
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrD,
                                          betas=(0., 0.9))
@@ -63,11 +66,14 @@ class Trainer(object):
                                          betas=(0., 0.9))
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
+        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrG,
+                                         betas=(0., 0.9))
 
         self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
         self.scalerTempD = GradScaler()
         self.scalerTempG = GradScaler()
+        self.scalerEnc = GradScaler()
 
         ### Make Data Generator ###
         self.generator_train = DataLoader(dataset, batch_size=self.p.batch_size, shuffle=True, num_workers=4, drop_last=True)
@@ -200,12 +206,11 @@ class Trainer(object):
         with autocast():
             fake, noise, ind = self.sample_g()
             fake = fake[:,0]
-            disc_fake, zs = self.imD(fake.unsqueeze(1))
-            disc_real, _ = self.imD(real.unsqueeze(1))
+            disc_fake = self.imD(fake.unsqueeze(1))
+            disc_real = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            rec_loss = self.reg_loss(zs, noise)*10
-            errImD = errD_fake + errD_real + rec_loss
+            errImD = errD_fake + errD_real
         self.scalerImD.scale(errImD).backward()
         self.scalerImD.step(self.optimizerImD)
         self.scalerImD.update()
@@ -213,7 +218,7 @@ class Trainer(object):
         for p in self.imD.parameters():
             p.requires_grad = False
 
-        return errD_real.item(), errD_fake.item(), rec_loss.item()
+        return errD_real.item(), errD_fake.item()
 
     def step_tempD(self, real):
         for p in self.tempD.parameters():
@@ -267,9 +272,8 @@ class Trainer(object):
         self.imG.zero_grad()
         fake, noise, ind = self.sample_g()
         with autocast():
-            disc_im_fake, zs = self.imD(fake[:,0].unsqueeze(1))
-            rec_loss = self.reg_loss(zs, noise)
-            errImG = - disc_im_fake.mean() + rec_loss
+            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+            errImG = - disc_im_fake.mean()
 
         self.scalerImG.scale(errImG).backward()
         self.scalerImG.step(self.optimizerImG)
@@ -300,6 +304,35 @@ class Trainer(object):
 
         return errTempG.item()
 
+    def step_Enc(self, real):
+        for p in self.imG.parameters():
+            p.requires_grad = True
+        for p in self.enc.parameters():
+            p.requires_grad = True
+
+        self.enc.zero_grad()
+        self.imG.zero_grad()
+
+        with autocast():
+            zs = self.enc(real)
+            rec = self.imG(zs)
+            loss = self.reg_loss(rec,real)
+
+        self.scalerEnc.scale(loss).backward(retain_graph=True)
+        self.scalerEnc.step(self.optimizerEnc)
+        self.scalerEnc.update()
+
+        self.scalerImG.scale(loss).backward()
+        self.scalerImG.step(self.optimizerImG)
+        self.scalerImg.update()
+
+        for p in self.imG.parameters():
+            p.requires_grad = False
+        for p in self.enc.parameters():
+            p.requires_grad = False
+
+        return loss.item()
+
     def train(self):
         step_done = self.start_from_checkpoint()
         FID.set_config(device=self.device)
@@ -312,9 +345,10 @@ class Trainer(object):
                 data, ind_r = next(gen)
                 real = data.to(self.device)
                 ind_r.to(self.device)
-                errImD_real, errImD_fake, errD_z = self.step_imD(real[:,0])
+                errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errTempD_real, errTempD_fake = self.step_tempD(real)
-                #errD, errD_real, errD_fake, errD_z = self.step_D(real, fake, zs, ind_r, ind)
+                errD_z = self.step_Enc(real)
+                
 
             errImG, fake = self.step_ImG()
             errTempG = self.step_TempG()

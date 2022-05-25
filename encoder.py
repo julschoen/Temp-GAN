@@ -6,9 +6,9 @@ import torch.nn.utils.spectral_norm as SpectralNorm
 import functools
 from utils import Attention, DBlock, snconv3d, snlinear
 
-class Discriminator(nn.Module):
+class Encoder(nn.Module):
   def __init__(self, params):
-    super(Discriminator, self).__init__()
+    super(Encoder, self).__init__()
     self.p = params
     # Architecture
     self.arch = {'in_channels' :  [item * self.p.filterD for item in [1, 2, 4,  8, 16]],
@@ -33,7 +33,7 @@ class Discriminator(nn.Module):
           self.blocks[-1] += [Attention(self.arch['out_channels'][index])]
 
     self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
-    self.linear = snlinear(self.arch['out_channels'][-1], 1)
+    self.linear = snlinear(self.arch['out_channels'][-1], self.p.z_size)
     self.activation = nn.ReLU(inplace=True)
     self.init_weights()
 
