@@ -207,11 +207,11 @@ class Trainer(object):
                 z = z[ind]
                 im = self.imG(z)
                 if ims is None:
-                    ims = im.reshape(1,3,128,128,-1)
+                    ims = im.reshape(1,3,-1,128,128)
                     zs = z[0].reshape(1,-1)
                     inds = ind.reshape(1,3)
                 else:
-                    ims = torch.concat((ims,im.reshape(1,3,128,128,-1)))
+                    ims = torch.concat((ims,im.reshape(1,3,-1,128,128)))
                     zs = torch.concat((zs,z[0].reshape(1,-1)))
                     inds = torch.concat((inds, ind.reshape(1,3)))
 
