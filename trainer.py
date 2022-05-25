@@ -318,13 +318,10 @@ class Trainer(object):
             rec = self.imG(zs)
             loss = self.reg_loss(rec,real)
 
-        self.scalerEnc.scale(loss).backward(retain_graph=True)
+        self.scalerEnc.scale(loss).backward()
         self.scalerEnc.step(self.optimizerEnc)
+        self.scalerEnc.step(self.optimizerImG)
         self.scalerEnc.update()
-
-        self.scalerImG.scale(loss).backward()
-        self.scalerImG.step(self.optimizerImG)
-        self.scalerImg.update()
 
         for p in self.imG.parameters():
             p.requires_grad = False
