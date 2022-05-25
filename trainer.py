@@ -363,8 +363,8 @@ class Trainer(object):
                 real = data.to(self.device)
                 ind_r.to(self.device)
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
-                errTempD_real, errTempD_fake = 0, 0#self.step_tempD(real)
-                err_rec = step_TripletD(real)#self.step_Enc(real[:,0])
+                errTempD_real, errTempD_fake = self.step_tempD(real)
+                #err_rec = step_TripletD(real)#self.step_Enc(real[:,0])
                 
 
             errImG, fake = self.step_ImG()
