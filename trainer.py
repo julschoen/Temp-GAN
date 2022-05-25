@@ -203,7 +203,7 @@ class Trainer(object):
                     z = torch.concat(
                         (z, self.tempG(z[-1].unsqueeze(0)).reshape(1,-1))
                     )
-                ind = torch.randint(len(z), (3,))
+                ind = np.sort(np.random.choice(z.shape[0], 3, replace=False))
                 z = z[ind]
                 im = self.imG(z)
                 if ims is None:
@@ -225,8 +225,8 @@ class Trainer(object):
         with autocast():
             fake, noise, ind = self.sample_g()
             fake = fake[:,0]
-            disc_fake = self.imD(fake.unsqueeze(1))
-            disc_real = self.imD(real.unsqueeze(1))
+            disc_fake, _ = self.imD(fake.unsqueeze(1))
+            disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
             errImD = errD_fake + errD_real
@@ -266,7 +266,7 @@ class Trainer(object):
         self.imG.zero_grad()
         fake, noise, ind = self.sample_g()
         with autocast():
-            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+            disc_im_fake, _ = self.imD(fake[:,0].unsqueeze(1))
             errImG = - disc_im_fake.mean()
 
         self.scalerImG.scale(errImG).backward()
@@ -363,8 +363,8 @@ class Trainer(object):
                 real = data.to(self.device)
                 ind_r.to(self.device)
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
-                errTempD_real, errTempD_fake = self.step_tempD(real)
-                err_rec = 0#self.step_Enc(real[:,0])
+                errTempD_real, errTempD_fake = 0, 0#self.step_tempD(real)
+                err_rec = step_TripletD(real)#self.step_Enc(real[:,0])
                 
 
             errImG, fake = self.step_ImG()
