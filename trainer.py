@@ -19,7 +19,6 @@ from temp_disc import Discriminator as TempD
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
 from encoder import Encoder
-from utils import TripletLoss
 
 
 class Trainer(object):
@@ -90,7 +89,7 @@ class Trainer(object):
         self.fid_epoch = []
 
         self.reg_loss = nn.MSELoss()
-        self.tripl_loss = TripletLoss()
+        self.triplet_loss = nn.TripletMarginLoss(margin=0.5)
         #self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
     def inf_train_gen(self):
@@ -322,6 +321,32 @@ class Trainer(object):
             p.requires_grad = False
         for p in self.enc.parameters():
             p.requires_grad = False
+
+        return loss.item()
+
+    def step_TripletD(self, real):
+        for p in self.imG.parameters():
+            p.requires_grad = True
+
+        self.imG.zero_grad()
+        fake, noise, ind = self.sample_g()
+        with autocast():
+            real = real.reshape(-1,3,1,real.shape[-3],real.shape[-2],real.shape[-1])
+            fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
+            r1, r2, r3 = real[:,0], real[:,1], real[:,2]
+            f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
+
+            _, h1 = self.imD(torch.concat((r1,f1)))
+            _, h2 = self.imD(torch.concat((r2,f2)))
+            _, h3 = self.imD(torch.concat((r3,f3)))
+
+            l1 = self.triplet_loss(h1,h2,h3)
+            l2 = self.triplet_loss(h3,h2,h1)
+            loss = l1+l2
+
+        self.scalerImG.scale(loss).backward()
+        self.scalerImG.step(self.optimizerImG)
+        self.scalerImG.update()
 
         return loss.item()
 
