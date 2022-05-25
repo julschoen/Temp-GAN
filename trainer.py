@@ -404,14 +404,14 @@ class Trainer(object):
             self.tempD_losses.append((errTempD_real, errTempD_fake))
             self.Rec_losses.append(err_rec)
 
-            self.log(i, fake[:,0], real[:,0])
+            self.log(i, fake, real)
             if i%100 == 0 and i>0:
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
             #self.tracker.epoch_end()
         
-        self.log_final(i, fake[:,0], real[:,0])
+        self.log_final(i, fake, real)
         #self.tracker.stop()
         print('...Done')
 
