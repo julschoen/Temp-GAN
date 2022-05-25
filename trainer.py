@@ -81,11 +81,14 @@ class Trainer(object):
         ### Prep Training
         self.fixed_test_noise = None
         self.img_list = []
-        self.G_losses = []
-        self.D_losses = []
-        self.triplet_losses = []
+        self.imG_losses = []
+        self.tempG_losses = []
+        self.imD_losses = []
+        self.tempD_losses = []
+        self.Rec_losses = []
         self.fid = []
         self.fid_epoch = []
+
         self.reg_loss = nn.MSELoss()
         self.tripl_loss = TripletLoss()
         #self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
@@ -95,7 +98,7 @@ class Trainer(object):
             for data in self.generator_train:
                 yield data
         
-    def log_train(self, step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG):
+    def log_train(self, step, fake, real):
         with torch.no_grad():
             self.fid.append(
                 FID.fid(
@@ -103,10 +106,17 @@ class Trainer(object):
                     real_images=torch.reshape(real.to(torch.float32), (-1,1,128,128)).expand(-1,3,-1,-1)
                     )
                 )
+        imDr = self.imD_losses[-1][0]
+        imDf = self.imD_losses[-1][1]
 
-        print('[%d/%d]\tLoss_D: %.4f\tD(x): %.4f\tD(G(z)): %.4f\tD z rec: %.4f\tG_IM(x): %.4f\tG_T(x): %.4f\tFID %.4f'
-                    % (step, self.p.niters,
-                        self.D_losses[-1], errD_real, errD_fake, errD_z, errImG, errTempG, self.fid[-1]))
+        tempDr = self.tempD_losses[-1][0]
+        tempDf = self.tempD_losses[-1][1]
+
+        imDr = self.imD_losses[-1][0]
+        imDf = self.imD_losses[-1][1]
+
+        print('[%d/%d] imD(x): %.2f, imD(G(z)): %.2f, tempD(x): %.2f, tempD(G(z)): %.2f, Rec: %.2f imG: %.2f tempG(x): %.2f FID %.2f'
+                    % (step, self.p.niters, imDr, imDf, tempDr, tempDf, self.Rec_losses[-1], self.imG_losses[-1], self.tempG_losses[-1], self.fid[-1]))
 
     def log_interpolation(self, step):
         noise = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
@@ -131,15 +141,21 @@ class Trainer(object):
             self.tempG.load_state_dict(state_dict['tempG'])
             self.tempD.load_state_dict(state_dict['tempD'])
 
+            self.enc.load_state_dict(state_dict['enc'])
+
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
             self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
 
             self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
-            self.G_losses = state_dict['lossG']
-            self.D_losses = state_dict['lossD']
-            self.triplet_losses = state_dict['triplet']
+            self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
+
+            self.imG_losses = state_dict['lossImG']
+            self.tempG_losses = state_dict['lossTempG']
+            self.imD_losses = state_dict['lossImD']
+            self.tempD_losses = state_dict['lossTempD']
+            self.Rec_losses = state_dict['lossRec']
             self.fid_epoch = state_dict['fid']
             print('starting from step {}'.format(step))
         return step
@@ -151,25 +167,29 @@ class Trainer(object):
         'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
+        'enc': self.enc.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
         'optimizerImD': self.optimizerImD.state_dict(),
         'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
-        'lossG': self.G_losses,
-        'lossD': self.D_losses,
-        'triplet': self.triplet_losses,
+        'optimizerEnc': self.optimizerEnc.state_dict(),
+        'lossImG': self.imG_losses,
+        'lossTempG': self.tempG_losses,
+        'lossImD': self.imD_losses,
+        'lossTempD': self.tempD_losses,
+        'lossRec': self.Rec_losses,
         'fid': self.fid_epoch,
         }, os.path.join(self.models_dir, 'checkpoint.pt'))
 
-    def log(self, step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG):
+    def log(self, step, fake, real):
         if step % self.p.steps_per_log == 0:
-            self.log_train(step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
+            self.log_train(step, fake, real)
 
         if step % self.p.steps_per_img_log == 0:
             self.log_interpolation(step)
 
-    def log_final(self, step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG):
-        self.log_train(step, fake, real, errD_real, errD_fake, errD_z, errImG, errTempG)
+    def log_final(self, step, fake, real):
+        self.log_train(step, fake, real)
         self.log_interpolation(step)
         self.save_checkpoint(step)
 
@@ -239,31 +259,6 @@ class Trainer(object):
             p.requires_grad = False
 
         return errD_real.item(), errD_fake.item()
-
-    def step_D(self, real, fake, noise, ind_r, ind_f):
-        for p in self.tempD.parameters():
-            p.requires_grad = True
-        self.tempD.zero_grad()
-        with autocast():
-            disc_fake, zs, triplet_f = self.tempD(fake)
-            disc_real, _, triplet_r = self.tempD(real)
-            errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
-            errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            err_rec_z = self.reg_loss(zs, noise)
-
-            triplet_real = self.tripl_loss(triplet_r, ind_r)
-            triplet_fake = self.tripl_loss(triplet_f, ind_f)
-
-            errTempD = errD_fake + errD_real + err_rec_z + triplet_real + triplet_fake
-
-        self.scalerTempD.scale(errTempD).backward()
-        self.scalerTempD.step(self.optimizerTempD)
-        self.scalerTempD.update()
-
-        for p in self.tempD.parameters():
-            p.requires_grad = False
-
-        return errTempD.item(), errD_real.item(), errD_fake.item(), err_rec_z.item()
 
     def step_ImG(self):
         for p in self.imG.parameters():
@@ -344,23 +339,26 @@ class Trainer(object):
                 ind_r.to(self.device)
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errTempD_real, errTempD_fake = self.step_tempD(real)
-                errD_z = self.step_Enc(real[:,0])
+                err_rec = self.step_Enc(real[:,0])
                 
 
             errImG, fake = self.step_ImG()
             errTempG = self.step_TempG()
 
-            self.G_losses.append((errImG, errTempG))
-            self.D_losses.append(errImD_real + errImD_fake + errD_z)
+            self.imG_losses.append(errImG)
+            self.tempG_losses.append(errTempG)
+            self.imD_losses.append((errImD_real, errImD_fake))
+            self.tempD_losses.append((errTempD_real, errTempD_fake))
+            self.Rec_losses.append(err_rec)
 
-            self.log(i, fake, real, errImD_real, errImD_fake, errD_z, errImG, errTempG)
+            self.log(i, fake, real)
             if i%100 == 0 and i>0:
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
             #self.tracker.epoch_end()
         
-        self.log_final(i, fake, real, errImD_real, errImD_fake, errD_z, errImG, errTempG)
+        self.log_final(i, fake, real)
         #self.tracker.stop()
         print('...Done')
 
