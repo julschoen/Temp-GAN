@@ -403,7 +403,7 @@ class Trainer(object):
             self.imD_losses.append((errImD_real, errImD_fake))
             self.tempD_losses.append((errTempD_real, errTempD_fake))
             self.Rec_losses.append(err_rec)
-
+            print(real.shape, fake.shape)
             self.log(i, fake, real[:,0])
             if i%100 == 0 and i>0:
                 self.fid_epoch.append(np.array(self.fid).mean())
