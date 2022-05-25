@@ -259,7 +259,7 @@ class Trainer(object):
 
         return errD_real.item(), errD_fake.item()
 
-    def step_ImG(self):
+    def step_imG(self):
         for p in self.imG.parameters():
             p.requires_grad = True
 
@@ -278,7 +278,7 @@ class Trainer(object):
 
         return errImG.item(), fake
 
-    def step_TempG(self):
+    def step_tempG(self):
         for p in self.tempG.parameters():
             p.requires_grad = True
 
@@ -325,10 +325,10 @@ class Trainer(object):
         return loss.item()
 
     def step_TripletD(self, real):
-        for p in self.imG.parameters():
+        for p in self.imD.parameters():
             p.requires_grad = True
 
-        self.imG.zero_grad()
+        self.imD.zero_grad()
         fake, noise, ind = self.sample_g()
         with autocast():
             real = real.reshape(-1,3,1,real.shape[-3],real.shape[-2],real.shape[-1])
@@ -344,9 +344,37 @@ class Trainer(object):
             l2 = self.triplet_loss(h3,h2,h1)
             loss = l1+l2
 
-        self.scalerImG.scale(loss).backward()
-        self.scalerImG.step(self.optimizerImG)
-        self.scalerImG.update()
+        self.scalerImD.scale(loss).backward()
+        self.scalerImD.step(self.optimizerImD)
+        self.scalerImD.update()
+
+        return loss.item()
+
+    def step_TripletG(self):
+        for p in self.tempG.parameters():
+            p.requires_grad = True
+
+        self.tempG.zero_grad()
+        fake, noise, ind = self.sample_g()
+
+        with autocast():
+            fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
+            f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
+
+            _, h1 = self.imD(f1)
+            _, h2 = self.imD(f2)
+            _, h3 = self.imD(f3)
+
+            l1 = self.triplet_loss(h1,h2,h3)
+            l2 = self.triplet_loss(h3,h2,h1)
+            loss = l1+l2
+
+        self.scalerTempG.scale(loss).backward()
+        self.scalerTempG.step(self.optimizerTempG)
+        self.scalerTempG.update()
+
+        for p in self.tempG.parameters():
+            p.requires_grad = False
 
         return loss.item()
 
@@ -367,8 +395,8 @@ class Trainer(object):
                 err_rec = 0#step_TripletD(real)#self.step_Enc(real[:,0])
                 
 
-            errImG, fake = self.step_ImG()
-            errTempG = self.step_TempG()
+            errImG, fake = self.step_imG()
+            errTempG = self.step_tempG()
 
             self.imG_losses.append(errImG)
             self.tempG_losses.append(errTempG)
