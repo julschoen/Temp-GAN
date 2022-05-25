@@ -45,13 +45,13 @@ class Trainer(object):
 
         ### Make Models ###
         self.imD = ImD(self.p).to(self.device)
-        #self.tempD = TempD(self.p).to(self.device)
+        self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
         #self.enc = Encoder(self.p).to(self.device)
         if self.p.ngpu>1:
             self.imD = nn.DataParallel(self.imD)
-        #    self.tempD = nn.DataParallel(self.tempD)
+            self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
         #    self.enc = nn.DataParallel(self.enc)
@@ -61,8 +61,8 @@ class Trainer(object):
         self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
 
-        #self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrD,
-        #                                 betas=(0., 0.9))
+        self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrD,
+                                         betas=(0., 0.9))
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrG,
                                          betas=(0., 0.9))
         #self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrG,
@@ -70,7 +70,7 @@ class Trainer(object):
 
         self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
-        #self.scalerTempD = GradScaler()
+        self.scalerTempD = GradScaler()
         self.scalerTempG = GradScaler()
         #self.scalerEnc = GradScaler()
 
@@ -138,7 +138,7 @@ class Trainer(object):
             self.imD.load_state_dict(state_dict['imD'])
 
             self.tempG.load_state_dict(state_dict['tempG'])
-            #self.tempD.load_state_dict(state_dict['tempD'])
+            self.tempD.load_state_dict(state_dict['tempD'])
 
             #self.enc.load_state_dict(state_dict['enc'])
 
@@ -146,7 +146,7 @@ class Trainer(object):
             self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
 
             self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
-            #self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
+            self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
             #self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
 
@@ -165,12 +165,12 @@ class Trainer(object):
         'imG': self.imG.state_dict(),
         'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
-        #'tempD': self.tempD.state_dict(),
+        'tempD': self.tempD.state_dict(),
         #'enc': self.enc.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
         'optimizerImD': self.optimizerImD.state_dict(),
         'optimizerTempG': self.optimizerTempG.state_dict(),
-        #'optimizerTempD': self.optimizerTempD.state_dict(),
+        'optimizerTempD': self.optimizerTempD.state_dict(),
         #'optimizerEnc': self.optimizerEnc.state_dict(),
         'lossImG': self.imG_losses,
         'lossTempG': self.tempG_losses,
@@ -325,10 +325,10 @@ class Trainer(object):
         return loss.item()
 
     def step_TripletD(self, real):
-        for p in self.imD.parameters():
+        for p in self.tempD.parameters():
             p.requires_grad = True
 
-        self.imD.zero_grad()
+        self.tempD.zero_grad()
         fake, noise, ind = self.sample_g()
         with autocast():
             real = real.reshape(-1,3,1,real.shape[-3],real.shape[-2],real.shape[-1])
@@ -336,17 +336,20 @@ class Trainer(object):
             r1, r2, r3 = real[:,0], real[:,1], real[:,2]
             f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
 
-            _, h1 = self.imD(torch.concat((r1,f1)))
-            _, h2 = self.imD(torch.concat((r2,f2)))
-            _, h3 = self.imD(torch.concat((r3,f3)))
+            h1 = self.tempD(torch.concat((r1,f1)))
+            h2 = self.tempD(torch.concat((r2,f2)))
+            h3 = self.tempD(torch.concat((r3,f3)))
 
             l1 = self.triplet_loss(h1,h2,h3)
             l2 = self.triplet_loss(h3,h2,h1)
             loss = l1+l2
 
-        self.scalerImD.scale(loss).backward()
-        self.scalerImD.step(self.optimizerImD)
-        self.scalerImD.update()
+        self.scalerTempD.scale(loss).backward()
+        self.scalerTempD.step(self.optimizerTempD)
+        self.scalerTempD.update()
+
+        for p in self.tempD.parameters():
+            p.requires_grad = False
 
         return loss.item()
 
