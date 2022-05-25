@@ -307,7 +307,7 @@ class Trainer(object):
 
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
-            self.tracker.epoch_start()
+            #self.tracker.epoch_start()
             for _ in range(self.p.iterD):    
                 data, ind_r = next(gen)
                 real = data.to(self.device)
@@ -327,9 +327,9 @@ class Trainer(object):
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
-            self.tracker.epoch_end()
+            #self.tracker.epoch_end()
         
         self.log_final(i, fake, real, errImD_real, errImD_fake, errD_z, errImG, errTempG)
-        self.tracker.stop()
+        #self.tracker.stop()
         print('...Done')
 
