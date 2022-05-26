@@ -268,7 +268,7 @@ class Trainer(object):
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
             fake = self.imG(z)
             disc_fake = self.imD(fake)
-            errImG = - disc_im_fake.mean()
+            errImG = - disc_fake.mean()
 
         self.scalerImG.scale(errImG).backward()
         self.scalerImG.step(self.optimizerImG)
