@@ -399,7 +399,7 @@ class Trainer(object):
                 
 
             errImG, fake = self.step_imG()
-            errTempG = self.step_tempG()#self.step_TripletG()
+            errTempG = 0#self.step_tempG()#self.step_TripletG()
 
             self.imG_losses.append(errImG)
             self.tempG_losses.append(errTempG)
