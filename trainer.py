@@ -223,8 +223,8 @@ class Trainer(object):
         
         self.imD.zero_grad()
         with autocast():
-            fake, noise, ind = self.sample_g()
-            fake = fake[:,0]
+            z = torch.randn(real.shape[0], self.p.z_size, dtype=torch.float, device=self.device)
+            fake = self.imG(z)
             disc_fake = self.imD(fake.unsqueeze(1))
             disc_real = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
@@ -264,9 +264,10 @@ class Trainer(object):
             p.requires_grad = True
 
         self.imG.zero_grad()
-        fake, noise, ind = self.sample_g()
         with autocast():
-            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+            z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
+            fake = self.imG(z)
+            disc_fake = self.imD(fake.unsqueeze(1))
             errImG = - disc_im_fake.mean()
 
         self.scalerImG.scale(errImG).backward()
