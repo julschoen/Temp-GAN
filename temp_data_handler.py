@@ -18,7 +18,7 @@ class DATA(Dataset):
       xs_ = np.empty((3,64,128,128))
       for i, x in enumerate(xs):
         xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
-      xs = np.clip(xs, -1,1)
+      xs = np.clip(xs_, -1,1)
       return torch.from_numpy(xs).float().squeeze(), torch.Tensor(ind)
 
   def __len__(self):
