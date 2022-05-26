@@ -15,9 +15,9 @@ class DATA(Dataset):
       x = np.load(pat)['x']
       ind = np.sort(np.random.choice(x.shape[0], 3, replace=False))
       xs = x[ind]
-      xs_ = np.empty((3,64,128,128))
-      for i, x in enumerate(xs):
-        xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
+      #xs_ = np.empty((3,64,128,128))
+      #for i, x in enumerate(xs):
+      #  xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
       xs = np.clip(xs_, -1,1)
       return torch.from_numpy(xs).float().squeeze(), torch.Tensor(ind)
 
