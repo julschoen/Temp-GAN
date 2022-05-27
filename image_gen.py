@@ -52,7 +52,7 @@ class Generator(nn.Module):
     # First linear layer
     h = self.linear(z)
     # Reshape
-    h = h.view(h.size(0), -1, 2, 4, 4)    
+    h = h.view(h.size(0), -1, 4, 4, 2)    
     for index, blocklist in enumerate(self.blocks):
       for block in blocklist:
         h = block(h)
