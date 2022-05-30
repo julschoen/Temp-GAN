@@ -403,7 +403,7 @@ class Trainer(object):
                 errTempD_real, errTempD_fake = self.step_TripletD(real),0#self.step_tempD(real)
                 errTempG = self.step_tempG()
                 err_rec = self.step_TripletG()
-
+            self.tracker.epoch_end()
             self.imG_losses.append(errImG)
             self.tempG_losses.append(errTempG)
             self.imD_losses.append((errImD_real, errImD_fake))
@@ -415,7 +415,7 @@ class Trainer(object):
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
-            self.tracker.epoch_end()
+            
         
         self.log_final(i, fake, real)
         #self.tracker.stop()
