@@ -90,7 +90,7 @@ class Trainer(object):
 
         self.reg_loss = nn.MSELoss()
         self.triplet_loss = nn.TripletMarginLoss(margin=0.5)
-        #self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
+        self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
     def inf_train_gen(self):
         while True:
@@ -389,7 +389,7 @@ class Trainer(object):
 
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
-            #self.tracker.epoch_start()
+            self.tracker.epoch_start()
             for _ in range(self.p.im_iter):  
                 data, _ = next(gen)
                 real = data.to(self.device)
@@ -415,7 +415,7 @@ class Trainer(object):
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
-            #self.tracker.epoch_end()
+            self.tracker.epoch_end()
         
         self.log_final(i, fake, real)
         #self.tracker.stop()
