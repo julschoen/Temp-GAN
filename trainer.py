@@ -418,6 +418,6 @@ class Trainer(object):
             
         
         self.log_final(i, fake, real)
-        #self.tracker.stop()
+        self.tracker.stop()
         print('...Done')
 
