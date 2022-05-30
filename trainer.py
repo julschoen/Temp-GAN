@@ -56,14 +56,14 @@ class Trainer(object):
             self.tempG = nn.DataParallel(self.tempG)
         #    self.enc = nn.DataParallel(self.enc)
 
-        self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrD,
+        self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
                                          betas=(0., 0.9))
-        self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrG,
+        self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrImG,
                                          betas=(0., 0.9))
 
-        self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrD,
+        self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrTempD,
                                          betas=(0., 0.9))
-        self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrG,
+        self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
                                          betas=(0., 0.9))
         #self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrG,
         #                                 betas=(0., 0.9))
@@ -390,18 +390,19 @@ class Trainer(object):
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
             #self.tracker.epoch_start()
-            for _ in range(self.p.iterD):    
+            for _ in range(self.p.im_iter):  
                 data, _ = next(gen)
                 real = data.to(self.device)
-                
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
-                errTempD_real, errTempD_fake = self.step_TripletD(real),0#self.step_tempD(real)
+                errImG, fake = self.step_imG()
+                
                 #err_rec = #self.step_Enc(real[:,0])
                 
 
-            errImG, fake = self.step_imG()
-            errTempG = self.step_tempG()
-            err_rec = self.step_TripletG()
+            for _ in range(self.p.temp_iter):
+                errTempD_real, errTempD_fake = self.step_TripletD(real),0#self.step_tempD(real)
+                errTempG = self.step_tempG()
+                err_rec = self.step_TripletG()
 
             self.imG_losses.append(errImG)
             self.tempG_losses.append(errTempG)
