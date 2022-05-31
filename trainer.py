@@ -160,6 +160,11 @@ class Trainer(object):
         return step
 
     def save_checkpoint(self, step):
+        if step < self.p.niters - 1001:
+            name = 'checkpoint.pt'
+        else:
+            name = f'checkpoint_{step}.pt'
+
         torch.save({
         'step': step,
         'imG': self.imG.state_dict(),
@@ -178,7 +183,7 @@ class Trainer(object):
         'lossTempD': self.tempD_losses,
         'lossRec': self.Rec_losses,
         'fid': self.fid_epoch,
-        }, os.path.join(self.models_dir, 'checkpoint.pt'))
+        }, os.path.join(self.models_dir, name))
 
     def log(self, step, fake, real):
         if step % self.p.steps_per_log == 0:
