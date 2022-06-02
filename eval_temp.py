@@ -40,7 +40,7 @@ def eval(params):
 						z = torch.randn(1, imG.module.dim_z, dtype=torch.float, device=params.device)
 					else:
 						z = torch.randn(1, imG.dim_z, dtype=torch.float, device=params.device)
-					for i in range(params.time):
+					for i in range(params.time-1):
 						z = torch.concat(
 							(z, tempG(z[-1].unsqueeze(0)).reshape(1,-1))
 						)
