@@ -4,6 +4,7 @@ import argparse
 import pickle
 import torch.nn as nn
 from torch.cuda.amp import autocast
+import torch
 
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
