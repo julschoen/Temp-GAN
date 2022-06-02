@@ -32,17 +32,17 @@ def eval(params):
 		with torch.no_grad():
 			with autocast():
 				ims = None
-	            for _ in range(params.batch_size):
-	                z = torch.randn(1, imG.dim_z, dtype=torch.float, device=params.device)
-	                for i in range(params.time):
-	                    z = torch.concat(
-	                        (z, tempG(z[-1].unsqueeze(0)).reshape(1,-1))
-	                    )
-	                im = imG(z)
-	                if ims is None:
-	                    ims = im.reshape(1,params.time,-1,128,128)
-	                else:
-	                    ims = torch.concat((ims,im.reshape(1,params.time,-1,128,128)))
+				for _ in range(params.batch_size):
+					z = torch.randn(1, imG.dim_z, dtype=torch.float, device=params.device)
+					for i in range(params.time):
+						z = torch.concat(
+							(z, tempG(z[-1].unsqueeze(0)).reshape(1,-1))
+						)
+					im = imG(z)
+					if ims is None:
+						ims = im.reshape(1,params.time,-1,128,128)
+					else:
+						ims = torch.concat((ims,im.reshape(1,params.time,-1,128,128)))
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=ims)
 
