@@ -47,11 +47,10 @@ def eval(params):
 				for i, (data, _) in enumerate(generator):
 					x1 = data.reshape(-1,1,64,128,128)
 					if params.ngpu > 1:
-						noise = torch.randn(data.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
+						noise = torch.randn(x1.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
 					else:
-						noise = torch.randn(data.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
+						noise = torch.randn(x1.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
 					x2 = netG(noise)
-					print(x2.shape)
 					s,p,f = ssim(x1.cpu(),x2.cpu()), psnr(x1.cpu(),x2.cpu()),fid_3d(fid_model, x1.cpu(), x2.cpu())
 					ssims.append(s)
 					psnrs.append(p)
