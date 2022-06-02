@@ -29,7 +29,9 @@ def eval(params):
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
-		imG, tempG = load_gen(model_path, params.ngpu).to(params.device)
+		imG, tempG = load_gen(model_path, params.ngpu)
+		imG = imG.to(params.device)
+		tempG = tempG.to(params.device)
 		with torch.no_grad():
 			with autocast():
 				ims = None
