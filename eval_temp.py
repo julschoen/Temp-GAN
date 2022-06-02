@@ -36,7 +36,10 @@ def eval(params):
 			with autocast():
 				ims = None
 				for _ in range(params.batch_size):
-					z = torch.randn(1, imG.dim_z, dtype=torch.float, device=params.device)
+					if params.ngpu > 1:
+						noise = torch.randn(1, imG.module.dim_z, dtype=torch.float, device=params.device)
+					else:
+						noise = torch.randn(1, imG.dim_z, dtype=torch.float, device=params.device)
 					for i in range(params.time):
 						z = torch.concat(
 							(z, tempG(z[-1].unsqueeze(0)).reshape(1,-1))
