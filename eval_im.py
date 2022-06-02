@@ -51,7 +51,7 @@ def eval(params):
 					else:
 						noise = torch.randn(data.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
 					x2 = netG(noise)
-					
+					print(x2.shape)
 					s,p,f = ssim(x1.cpu(),x2.cpu()), psnr(x1.cpu(),x2.cpu()),fid_3d(fid_model, x1.cpu(), x2.cpu())
 					ssims.append(s)
 					psnrs.append(p)
