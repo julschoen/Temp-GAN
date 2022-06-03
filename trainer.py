@@ -296,7 +296,7 @@ class Trainer(object):
         fake, noise, ind = self.sample_g()
 
         with autocast():
-            disc_temp_fake_ = self.imD(fake[:,0].unsqueeze(1))
+            disc_temp_fake, _ = self.imD(fake[:,0].unsqueeze(1))
             errTempG = - disc_temp_fake.mean()
 
         self.scalerTempG.scale(errTempG).backward()
