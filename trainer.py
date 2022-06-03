@@ -114,8 +114,11 @@ class Trainer(object):
         imDr = self.imD_losses[-1][0]
         imDf = self.imD_losses[-1][1]
 
-        print('[%d/%d] imD(x): %.2f\timD(G(z)): %.2f\ttempD(x): %.2f\ttempD(G(z)): %.2f\tRec: %.2f\timG: %.2f\ttempG(x): %.2f\tFID %.2f'
-                    % (step, self.p.niters, imDr, imDf, tempDr, tempDf, self.Rec_losses[-1], self.imG_losses[-1], self.tempG_losses[-1], self.fid[-1]))
+        tempG_im = self.tempD_losses[-1][0]
+        tempG_temp = self.tempD_losses[-1][1]
+
+        print('[%d/%d] imD(x): %.2f\timD(G(z)): %.2f\ttempD(x): %.2f\ttempD(G(z)): %.2f\tRec: %.2f\timG: %.2f\ttempG(x) Im: %.2f\ttempG(x) Temp: %.2f\tFID %.2f'
+                    % (step, self.p.niters, imDr, imDf, tempDr, tempDf, self.Rec_losses[-1], self.imG_losses[-1], tempG_im, tempG_temp, self.fid[-1]))
 
     def log_interpolation(self, step):
         noise = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
@@ -230,11 +233,12 @@ class Trainer(object):
         with autocast():
             z = torch.randn(real.shape[0], self.p.z_size, dtype=torch.float, device=self.device)
             fake = self.imG(z)
-            disc_fake = self.imD(fake)
-            disc_real = self.imD(real.unsqueeze(1))
+            disc_fake, z_ = self.imD(fake)
+            disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            errImD = errD_fake + errD_real
+            errD_rec = self.reg_loss(z_,z)
+            errImD = errD_fake + errD_real + errD_rec
         self.scalerImD.scale(errImD).backward()
         self.scalerImD.step(self.optimizerImD)
         self.scalerImD.update()
@@ -242,7 +246,7 @@ class Trainer(object):
         for p in self.imD.parameters():
             p.requires_grad = False
 
-        return errD_real.item(), errD_fake.item()
+        return errD_real.item(), errD_fake.item(), errD_rec.item()
 
     def step_tempD(self, real):
         for p in self.tempD.parameters():
@@ -272,7 +276,7 @@ class Trainer(object):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
             fake = self.imG(z)
-            disc_fake = self.imD(fake)
+            disc_fake, _ = self.imD(fake)
             errImG = - disc_fake.mean()
 
         self.scalerImG.scale(errImG).backward()
@@ -292,7 +296,7 @@ class Trainer(object):
         fake, noise, ind = self.sample_g()
 
         with autocast():
-            disc_temp_fake = self.imD(fake[:,0].unsqueeze(1))
+            disc_temp_fake_ = self.imD(fake[:,0].unsqueeze(1))
             errTempG = - disc_temp_fake.mean()
 
         self.scalerTempG.scale(errTempG).backward()
@@ -398,7 +402,7 @@ class Trainer(object):
             for _ in range(self.p.im_iter):  
                 data, _ = next(gen)
                 real = data.to(self.device)
-                errImD_real, errImD_fake = self.step_imD(real[:,0])
+                errImD_real, errImD_fake, err_rec = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
                 
                 #err_rec = #self.step_Enc(real[:,0])
@@ -406,11 +410,11 @@ class Trainer(object):
 
             for _ in range(self.p.temp_iter):
                 errTempD_real, errTempD_fake = self.step_TripletD(real),0#self.step_tempD(real)
-                errTempG = self.step_tempG()
-                err_rec = self.step_TripletG()
+                errTempG_im = self.step_tempG()
+                errTempG_temp = self.step_TripletG()
             self.tracker.epoch_end()
             self.imG_losses.append(errImG)
-            self.tempG_losses.append(errTempG)
+            self.tempG_losses.append((errTempG_im, errTempG_temp))
             self.imD_losses.append((errImD_real, errImD_fake))
             self.tempD_losses.append((errTempD_real, errTempD_fake))
             self.Rec_losses.append(err_rec)
