@@ -20,7 +20,7 @@ def process(path, files):
 		)
 		img = torch.clamp(img, -1000,2000)
 		img = img+1000
-		img = img/2000
+		img = img/3000
 		if ims is not None:
 			ims = torch.concat((ims,img))
 		else:
