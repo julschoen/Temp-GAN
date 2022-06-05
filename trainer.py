@@ -138,7 +138,7 @@ class Trainer(object):
             checkpoint = os.path.join(self.models_dir, 'checkpoint.pt')
         else:
             files.remove('checkpoint.pt')
-            files sorted(files, key=lambda x: int(x.split('_')[1].split('.')[0]))
+            files = sorted(files, key=lambda x: int(x.split('_')[1].split('.')[0]))
             checkpoint = os.path.join(self.models_dir, files[-1])
         if os.path.isfile(checkpoint):
             state_dict = torch.load(checkpoint)
