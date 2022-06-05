@@ -48,13 +48,13 @@ class Trainer(object):
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
-        #self.enc = Encoder(self.p).to(self.device)
+        self.enc = Encoder(self.p).to(self.device)
         if self.p.ngpu>1:
             self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
-        #    self.enc = nn.DataParallel(self.enc)
+            self.enc = nn.DataParallel(self.enc)
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
                                          betas=(0., 0.9))
@@ -65,14 +65,14 @@ class Trainer(object):
                                          betas=(0., 0.9))
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
                                          betas=(0., 0.9))
-        #self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrG,
-        #                                 betas=(0., 0.9))
+        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrG,
+                                         betas=(0., 0.9))
 
         self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
         self.scalerTempD = GradScaler()
         self.scalerTempG = GradScaler()
-        #self.scalerEnc = GradScaler()
+        self.scalerEnc = GradScaler()
 
         ### Make Data Generator ###
         self.generator_train = DataLoader(dataset, batch_size=self.p.batch_size, shuffle=True, num_workers=4, drop_last=True)
@@ -133,7 +133,13 @@ class Trainer(object):
 
     def start_from_checkpoint(self):
         step = 0
-        checkpoint = os.path.join(self.models_dir, 'checkpoint.pt')
+        files = [f for f in os.listdir(self.models_dir)]
+        if len(files) < 2:
+            checkpoint = os.path.join(self.models_dir, 'checkpoint.pt')
+        else:
+            files.remove('checkpoint.pt')
+            files sorted(files, key=lambda x: int(x.split('_')[1].split('.')[0]))
+            checkpoint = os.path.join(self.models_dir, files[-1])
         if os.path.isfile(checkpoint):
             state_dict = torch.load(checkpoint)
             step = state_dict['step']
@@ -143,7 +149,7 @@ class Trainer(object):
             self.tempG.load_state_dict(state_dict['tempG'])
             self.tempD.load_state_dict(state_dict['tempD'])
 
-            #self.enc.load_state_dict(state_dict['enc'])
+            self.enc.load_state_dict(state_dict['enc'])
 
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
             self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
@@ -151,7 +157,7 @@ class Trainer(object):
             self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
-            #self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
+            self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
 
             self.imG_losses = state_dict['lossImG']
             self.tempG_losses = state_dict['lossTempG']
@@ -174,12 +180,12 @@ class Trainer(object):
         'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
-        #'enc': self.enc.state_dict(),
+        'enc': self.enc.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
         'optimizerImD': self.optimizerImD.state_dict(),
         'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
-        #'optimizerEnc': self.optimizerEnc.state_dict(),
+        'optimizerEnc': self.optimizerEnc.state_dict(),
         'lossImG': self.imG_losses,
         'lossTempG': self.tempG_losses,
         'lossImD': self.imD_losses,
@@ -233,12 +239,12 @@ class Trainer(object):
         with autocast():
             z = torch.randn(real.shape[0], self.p.z_size, dtype=torch.float, device=self.device)
             fake = self.imG(z)
-            disc_fake, z_ = self.imD(fake)
+            disc_fake = self.imD(fake)
             disc_real, _ = self.imD(real.unsqueeze(1))
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            errD_rec = self.reg_loss(z_,z)
-            errImD = errD_fake + errD_real + errD_rec
+            
+            errImD = errD_fake + errD_real
         self.scalerImD.scale(errImD).backward()
         self.scalerImD.step(self.optimizerImD)
         self.scalerImD.update()
@@ -246,7 +252,7 @@ class Trainer(object):
         for p in self.imD.parameters():
             p.requires_grad = False
 
-        return errD_real.item(), errD_fake.item(), errD_rec.item()
+        return errD_real.item(), errD_fake.item()
 
     def step_tempD(self, real):
         for p in self.tempD.parameters():
@@ -276,7 +282,7 @@ class Trainer(object):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
             fake = self.imG(z)
-            disc_fake, _ = self.imD(fake)
+            disc_fake = self.imD(fake)
             errImG = - disc_fake.mean()
 
         self.scalerImG.scale(errImG).backward()
@@ -296,7 +302,7 @@ class Trainer(object):
         fake, noise, ind = self.sample_g()
 
         with autocast():
-            disc_temp_fake, _ = self.imD(fake[:,0].unsqueeze(1))
+            disc_temp_fake = self.imD(fake[:,0].unsqueeze(1))
             errTempG = - disc_temp_fake.mean()
 
         self.scalerTempG.scale(errTempG).backward()
@@ -403,10 +409,10 @@ class Trainer(object):
                 for _ in range(self.p.iterD):  
                     data, _ = next(gen)
                     real = data.to(self.device)
-                    errImD_real, errImD_fake, err_rec = self.step_imD(real[:,0])
+                    errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
                 
-                #err_rec = #self.step_Enc(real[:,0])‚
+                err_rec = self.step_Enc(real[:,0])
                 
 
             for _ in range(self.p.temp_iter):
