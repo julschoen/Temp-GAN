@@ -65,7 +65,7 @@ class Trainer(object):
                                          betas=(0., 0.9))
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
                                          betas=(0., 0.9))
-        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrG,
+        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrImG,
                                          betas=(0., 0.9))
 
         self.scalerImD = GradScaler()
