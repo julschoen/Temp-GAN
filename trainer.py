@@ -399,18 +399,19 @@ class Trainer(object):
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
             self.tracker.epoch_start()
-            for _ in range(self.p.im_iter):  
-                data, _ = next(gen)
-                real = data.to(self.device)
-                errImD_real, errImD_fake, err_rec = self.step_imD(real[:,0])
+            for _ in range(self.p.im_iter):
+                for _ in range(self.p.iterD):  
+                    data, _ = next(gen)
+                    real = data.to(self.device)
+                    errImD_real, errImD_fake, err_rec = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
                 
-                #err_rec = #self.step_Enc(real[:,0])
+                #err_rec = #self.step_Enc(real[:,0])‚
                 
 
             for _ in range(self.p.temp_iter):
                 errTempD_real, errTempD_fake = self.step_TripletD(real),0#self.step_tempD(real)
-                errTempG_im = self.step_tempG()
+                errTempG_im = 0#self.step_tempG()
                 errTempG_temp = self.step_TripletG()
             self.tracker.epoch_end()
             self.imG_losses.append(errImG)
