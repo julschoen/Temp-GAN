@@ -372,6 +372,8 @@ class Trainer(object):
     def step_TripletG(self):
         for p in self.tempG.parameters():
             p.requires_grad = True
+        for p in self.imG.parameters():
+            p.requires_grad = True
 
         self.tempG.zero_grad()
         fake, noise, ind = self.sample_g()
@@ -390,9 +392,12 @@ class Trainer(object):
 
         self.scalerTempG.scale(loss).backward()
         self.scalerTempG.step(self.optimizerTempG)
+        self.scalerTempG.step(self.optimizerImG)
         self.scalerTempG.update()
 
         for p in self.tempG.parameters():
+            p.requires_grad = False
+        for p in self.imG.parameters():
             p.requires_grad = False
 
         return loss.item()
