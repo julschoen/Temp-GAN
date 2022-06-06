@@ -89,6 +89,7 @@ def eval(params):
 			data = data[:,0].to(params.device)
 			zs = get_embedding(data, enc)
 			rev_zs = reverse_z(imG, data, params)
+			print(torch.mean(zs),torch.std(zs), torch.mean(rev_zs), torch.std(rev_zs))
 			generate_ims(imG, params, f'rec_gen_{model_path}.npz', noise=zs)
 			generate_ims(imG, params, f'rev_rec_gen_{model_path}.npz', noise=rev_zs)
 			np.savez_compressed(os.path.join(params.log_dir, f'rec_real_{model_path}.npz'), x=data.detach().cpu().numpy())
