@@ -75,7 +75,6 @@ def reverse_z(netG, ims, params, niter=5000, lr=0.01):
 			optimizer_approx.step()
 	return z_approx
 
-
 def eval(params):
 	dataset = DATA(path=params.data_path)
 	print(dataset.__len__())
