@@ -33,7 +33,7 @@ class Encoder(nn.Module):
           self.blocks[-1] += [Attention(self.arch['out_channels'][index])]
 
     self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
-    self.linear = snlinear(self.arch['out_channels'][-1], self.p.z_size)
+    self.linear = nn.Linear(self.arch['out_channels'][-1], self.p.z_size)
     self.activation = nn.ReLU(inplace=True)
     self.init_weights()
 
