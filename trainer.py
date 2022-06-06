@@ -326,7 +326,7 @@ class Trainer(object):
         with autocast():
             zs = self.enc(real.unsqueeze(1))
             rec = self.imG(zs)
-            loss = self.reg_loss(rec.squeeze(),real.squeeze())
+            loss = torch.log(self.reg_loss(rec.squeeze(),real.squeeze()))
 
         self.scalerEnc.scale(loss).backward()
         self.scalerEnc.step(self.optimizerEnc)
