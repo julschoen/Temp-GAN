@@ -10,6 +10,7 @@ from torch.autograd import Variable
 
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
+from encoder import Encoder
 from image_disc import Discriminator as ImD
 from temp_data_handler import DATA
 
@@ -19,18 +20,18 @@ def load_models(path, ngpu):
 	
 	imG = ImG(params)
 	tempG = TempG(params)
-	imD = ImD(params)
+	enc = Encoder(params)
 
 	if ngpu > 1:
 		imG = nn.DataParallel(imG)
 		tempG = nn.DataParallel(tempG)
-		imD = nn.DataParallel(imD)
+		enc = nn.DataParallel(enc)
 	state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
 	imG.load_state_dict(state['imG'])
 	tempG.load_state_dict(state['tempG'])
-	imD.load_state_dict(state['imD'])
+	enc.load_state_dict(state['enc'])
 
-	return imG.to(params.device), tempG.to(params.device), imD.to(params.device)
+	return imG.to(params.device), tempG.to(params.device), enc.to(params.device)
 
 def generate_ims(netG, params, save_name, noise=None):
 	if noise is None:
@@ -44,10 +45,10 @@ def generate_ims(netG, params, save_name, noise=None):
 	ims = ims.detach().cpu().numpy()
 	np.savez_compressed(os.path.join(params.log_dir, save_name), x=ims)
 
-def get_embedding(ims, imD):
+def get_embedding(ims, enc):
 	with torch.no_grad():
 		with autocast():
-			_, zs = imD(ims.unsqueeze(1))
+			zs = enc(ims.unsqueeze(1))
 	return zs
 
 def reverse_z(netG, ims, params, niter=5000, lr=0.01):
@@ -82,11 +83,11 @@ def eval(params):
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
-		imG, tempG, imD = load_models(model_path, params.ngpu)
+		imG, tempG, enc = load_models(model_path, params.ngpu)
 		generate_ims(imG, params, f'random_gen_{model_path}.npz')
 		for _, (data, _) in enumerate(generator):
 			data = data[:,0].to(params.device)
-			zs = get_embedding(data, imD)
+			zs = get_embedding(data, enc)
 			rev_zs = reverse_z(imG, data, params)
 			generate_ims(imG, params, f'rec_gen_{model_path}.npz', noise=zs)
 			generate_ims(imG, params, f'rev_rec_gen_{model_path}.npz', noise=rev_zs)
