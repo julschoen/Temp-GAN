@@ -35,6 +35,7 @@ class Encoder(nn.Module):
     self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
     self.linear = nn.Linear(self.arch['out_channels'][-1], self.p.z_size)
     self.activation = nn.ReLU(inplace=True)
+    self.tanh = nn.Tanh()
     self.init_weights()
 
   def init_weights(self):
@@ -55,4 +56,4 @@ class Encoder(nn.Module):
         h = block(h)
     # Apply global sum pooling as in SN-GAN
     h = torch.sum(self.activation(h), [2, 3, 4])
-    return self.linear(h)
+    return self.tanh(self.linear(h))
