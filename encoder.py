@@ -10,32 +10,26 @@ class Encoder(nn.Module):
   def __init__(self, params):
     super(Encoder, self).__init__()
     self.p = params
-    # Architecture
-    self.arch = {'in_channels' :  [item * self.p.filterD for item in [1, 2, 4,  8, 16]],
-               'out_channels' : [item * self.p.filterD for item in [2, 4, 8, 16, 16]],
-               'downsample' : [True] * 5 + [False],
-               'resolution' : [64, 32, 16, 8, 4, 4],
-               'attention' : {2**i: 2**i in [int(item) for item in '16'.split('_')]
-                              for i in range(2,8)}}
-    
-    # Prepare model
-    self.input_conv = snconv3d(1, self.arch['in_channels'][0])
-
-    self.blocks = []
-    for index in range(len(self.arch['out_channels'])):
-      self.blocks += [[DBlock(in_channels=self.arch['in_channels'][index] if d_index==0 else self.arch['out_channels'][index],
-                       out_channels=self.arch['out_channels'][index],
-                       preactivation=True,
-                       downsample=(nn.AvgPool3d(2) if self.arch['downsample'][index] and d_index==0 else None))
-                       for d_index in range(1)]]
-      if self.p.att:
-        if self.arch['attention'][self.arch['resolution'][index]]:
-          self.blocks[-1] += [Attention(self.arch['out_channels'][index])]
-
-    self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
-    self.linear = nn.Linear(self.arch['out_channels'][-1], self.p.z_size)
-    self.activation = nn.ReLU(inplace=True)
-    self.tanh = nn.Tanh()
+    self.main = nn.Sequential(
+        # input is 128 x 128 x 128
+        SpectralNorm(nn.Conv3d(nc, ndf, 4, stride=2, padding=1, bias=False)), 
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf) x 64 x 64 x 64
+        SpectralNorm(nn.Conv3d(ndf, ndf * 2, 4, stride=2, padding=1, bias=False)),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf*2) x 32 x 32 x 32
+        SpectralNorm(nn.Conv3d(ndf * 2, ndf * 4, 4, stride=2, padding=1, bias=False)),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf*4) x 16 x 16 x 16
+        SpectralNorm(nn.Conv3d(ndf * 4, ndf * 8, 4, stride=2, padding=1, bias=False)),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf*8) x 8 x 8 x 8
+        SpectralNorm(nn.Conv3d(ndf * 8, ndf * 16, 4, stride=2, padding=1, bias=False)),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf*16) x 4 x 4 x 4
+        SpectralNorm(nn.Conv3d(ndf * 16, self.p.z_size, (4,4,4), stride=1, padding=0, bias=False)),
+        nn.Tanh()
+    )
     self.init_weights()
 
   def init_weights(self):
@@ -48,12 +42,4 @@ class Encoder(nn.Module):
     print('Param count for D''s initialized parameters: %d' % self.param_count)
 
   def forward(self, x):
-    # Run input conv
-    h = self.input_conv(x)
-    # Loop over blocks
-    for index, blocklist in enumerate(self.blocks):
-      for block in blocklist:
-        h = block(h)
-    # Apply global sum pooling as in SN-GAN
-    h = torch.sum(self.activation(h), [2, 3, 4])
-    return self.tanh(self.linear(h))
+    return self.main(x)
