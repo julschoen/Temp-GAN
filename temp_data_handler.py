@@ -7,7 +7,7 @@ import os
 class DATA(Dataset):
   def __init__(self, path): 
     self.files = np.load(path)['x']
-    self.path = path.split('/')[0]
+    self.path = path[:-len(path.split('/')[-1])]
     self.len = len(self.files)
 
   def __getitem__(self, index):
