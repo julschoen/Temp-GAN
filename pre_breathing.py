@@ -55,7 +55,7 @@ def main():
 
 	pat = [f for f in os.listdir(params.save_path) if f.endswith('npz')]
 	print(f'Done Processing {len(pat)} patients')
-	test = np.random.choice(pat, size=int(len(pat*0.1))
+	test = np.random.choice(pat, size=int(len(pat*0.1)))
 	train = []
 	for d in pat:
 		if d in test:
