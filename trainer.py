@@ -224,7 +224,7 @@ class Trainer(object):
             im2 = self.imG(z+shift2).reshape(-1,1,128,128,64)
 
             ims = torch.concat((im, im1, im2), dim=1)
-            print(dim.shape)
+            print(ims.shape)
         return ims, shifts
 
     def step_imD(self, real):
