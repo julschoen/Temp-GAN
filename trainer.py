@@ -338,7 +338,12 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = True
 
+        for p in self.imD.parameters():
+            p.requires_grad = True
+
         self.tempD.zero_grad()
+        self.imD.zero_grad()
+
         fake = self.sample_g()
         with autocast():
             real = real.reshape(-1,3,1,real.shape[-3],real.shape[-2],real.shape[-1])
@@ -356,9 +361,13 @@ class Trainer(object):
 
         self.scalerTempD.scale(loss).backward()
         self.scalerTempD.step(self.optimizerTempD)
+        self.scalerTempD.step(self.optimizerImD)
         self.scalerTempD.update()
 
         for p in self.tempD.parameters():
+            p.requires_grad = False
+
+        for p in self.imD.parameters():
             p.requires_grad = False
 
         return loss.item()
