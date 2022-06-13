@@ -219,9 +219,9 @@ class Trainer(object):
 
             shift1 = self.tempG(shifts1)
             shift2 = self.tempG(shifts2)
-            im = self.imG(z).reshape(-1,1,128,128,64)
-            im1 = self.imG(z+shift1).reshape(-1,1,128,128,64)
-            im2 = self.imG(z+shift2).reshape(-1,1,128,128,64)
+            im = self.imG(z).reshape(-1,1,64,128,128)
+            im1 = self.imG(z+shift1).reshape(-1,1,64,128,128)
+            im2 = self.imG(z+shift2).reshape(-1,1,64,128,128)
             ims = torch.concat((im, im1, im2), dim=1)
         return ims
 
