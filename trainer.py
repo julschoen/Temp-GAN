@@ -379,6 +379,7 @@ class Trainer(object):
             p.requires_grad = True
 
         self.tempG.zero_grad()
+        self.imG.zero_grad()
         fake = self.sample_g()
 
         with autocast():
