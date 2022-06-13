@@ -214,8 +214,8 @@ class Trainer(object):
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
 
             # Max Shift is 7
-            shifts1 = torch.randint(1,5, (self.p.batch_size, 1))
-            shifts2 = shifts1 + torch.randint(1,4, (self.p.batch_size, 1))
+            shifts1 = torch.randint(1,5, (self.p.batch_size, 1)).float()
+            shifts2 = shifts1 + torch.randint(1,4, (self.p.batch_size, 1)).float()
 
             shift1 = self.tempG(shifts1)
             shift2 = self.tempG(shifts2)
