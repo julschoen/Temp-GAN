@@ -211,25 +211,21 @@ class Trainer(object):
         zs = None
         inds = None
         with autocast():
-            for _ in range(self.p.batch_size):
-                z = torch.randn(1, self.p.z_size, dtype=torch.float, device=self.device)
-                for i in range(torch.randint(low=2, high=11, size=())):
-                    z = torch.concat(
-                        (z, self.tempG(z[-1].unsqueeze(0)).reshape(1,-1))
-                    )
-                ind = torch.from_numpy(np.sort(np.random.choice(z.shape[0], 3, replace=False)))
-                z = z[ind]
-                im = self.imG(z)
-                if ims is None:
-                    ims = im.reshape(1,3,-1,128,128)
-                    zs = z[0].reshape(1,-1)
-                    inds = ind.reshape(1,3)
-                else:
-                    ims = torch.concat((ims,im.reshape(1,3,-1,128,128)))
-                    zs = torch.concat((zs,z[0].reshape(1,-1)))
-                    inds = torch.concat((inds, ind.reshape(1,3)))
+            z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
 
-        return ims, zs, inds
+            # Max Shift is 7
+            shifts1 = torch.randint(1,5, (self.p.batch_size, 1))
+            shifts2 = shifts1 + torch.randint(1,4, (self.p.batch_size, 1))
+
+            shift1 = self.tempG(shifts1)
+            shift2 = self.tempG(shifts2)
+            im = self.imG(z).reshape(-1,1,128,128,64)
+            im1 = self.imG(z+shift1).reshape(-1,1,128,128,64)
+            im2 = self.imG(z+shift2).reshape(-1,1,128,128,64)
+
+            ims = torch.concat((im, im1, im2), dim=1)
+            print(dim.shape)
+        return ims, shifts
 
     def step_imD(self, real):
         for p in self.imD.parameters():
@@ -259,7 +255,7 @@ class Trainer(object):
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
-            fake, _, _ = self.sample_g()
+            fake, _ = self.sample_g()
             disc_fake = self.tempD(fake)
             disc_real = self.tempD(real)
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
@@ -299,7 +295,7 @@ class Trainer(object):
             p.requires_grad = True
 
         self.tempG.zero_grad()
-        fake, noise, ind = self.sample_g()
+        fake, shift = self.sample_g()
 
         with autocast():
             disc_temp_fake = self.imD(fake[:,0].unsqueeze(1))
@@ -345,7 +341,7 @@ class Trainer(object):
             p.requires_grad = True
 
         self.tempD.zero_grad()
-        fake, noise, ind = self.sample_g()
+        fake, shift = self.sample_g()
         with autocast():
             real = real.reshape(-1,3,1,real.shape[-3],real.shape[-2],real.shape[-1])
             fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
