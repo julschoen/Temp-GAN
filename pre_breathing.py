@@ -53,9 +53,11 @@ def main():
 			np.savez_compressed(os.path.join(params.save_path,f'{p}.npz'), x=ims)
 			print(f'Patient {p}, Number of Scans {ims.shape[0]}')
 
-	test = np.random.choice(pat.keys(), size=int(len(pat.keys())*0.1))
+	pat = [f for f in os.listdir(params.save_path) if f.endswith('npz')]
+	print(f'Done Processing {len(pat)} patients')
+	test = np.random.choice(pat, size=int(len(pat*0.1))
 	train = []
-	for d in pat.keys():
+	for d in pat:
 		if d in test:
 			continue
 		else:
