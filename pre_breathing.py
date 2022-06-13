@@ -8,6 +8,7 @@ import re
 
 def process(path, patient, phases):
 	ims = None
+	phases = np.sorted(phases)
 	for phase in phases:
 		img = nib.load(os.path.join(path,f'patient{patient}phase{phase}.0.nii.gz'))
 		img = torch.Tensor(np.asanyarray(img.dataobj))
@@ -27,23 +28,6 @@ def process(path, patient, phases):
 			ims = img
 
 	return ims.numpy()
-
-def clean(path, dirs):
-	new_dirs = np.copy(dirs)
-	for d in dirs:
-		files = sorted([f for f in os.listdir(os.path.join(path,d)) if f.endswith('npz')],
-							key=lambda x: int(x[:-4]))
-		if len(files) > 1:
-			for i, f in enumerate(files):
-				if i == 0:
-					continue
-				else:
-					new_path = os.path.join(path, d+f'_{i}')
-					os.makedirs(new_path, exist_ok=True)
-					os.replace(os.path.join(path, d, f), os.path.join(new_path, f))
-					new_dirs = np.append(new_dirs, d+f'_{i}')
-
-	return new_dirs
 
 def main():
 	parser = argparse.ArgumentParser()
