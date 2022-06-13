@@ -222,10 +222,8 @@ class Trainer(object):
             im = self.imG(z).reshape(-1,1,128,128,64)
             im1 = self.imG(z+shift1).reshape(-1,1,128,128,64)
             im2 = self.imG(z+shift2).reshape(-1,1,128,128,64)
-
             ims = torch.concat((im, im1, im2), dim=1)
-            print(ims.shape)
-        return ims, shifts
+        return ims
 
     def step_imD(self, real):
         for p in self.imD.parameters():
@@ -255,7 +253,7 @@ class Trainer(object):
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
-            fake, _ = self.sample_g()
+            fake = self.sample_g()
             disc_fake = self.tempD(fake)
             disc_real = self.tempD(real)
             errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
@@ -295,7 +293,7 @@ class Trainer(object):
             p.requires_grad = True
 
         self.tempG.zero_grad()
-        fake, shift = self.sample_g()
+        fake = self.sample_g()
 
         with autocast():
             disc_temp_fake = self.imD(fake[:,0].unsqueeze(1))
@@ -341,7 +339,7 @@ class Trainer(object):
             p.requires_grad = True
 
         self.tempD.zero_grad()
-        fake, shift = self.sample_g()
+        fake = self.sample_g()
         with autocast():
             real = real.reshape(-1,3,1,real.shape[-3],real.shape[-2],real.shape[-1])
             fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
@@ -372,7 +370,7 @@ class Trainer(object):
             p.requires_grad = True
 
         self.tempG.zero_grad()
-        fake, noise, ind = self.sample_g()
+        fake = self.sample_g()
 
         with autocast():
             fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
