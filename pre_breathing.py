@@ -34,7 +34,7 @@ def main():
 	parser.add_argument('-d', '--data_path', type=str, default='')
 	parser.add_argument('-s', '--save_path', type=str, default='data')
 	params = parser.parse_args()
-
+	"""
 	pat = {}
 	for f in os.listdir(params.data_path):
 		if not f.endswith('gz'):
@@ -52,10 +52,10 @@ def main():
 		if ims.shape[0] > 2:
 			np.savez_compressed(os.path.join(params.save_path,f'{p}.npz'), x=ims)
 			print(f'Patient {p}, Number of Scans {ims.shape[0]}')
-
+	"""
 	pat = [f for f in os.listdir(params.save_path) if f.endswith('npz')]
 	print(f'Done Processing {len(pat)} patients')
-	test = np.random.choice(pat, size=int(len(pat*0.1)))
+	test = np.random.choice(pat, size=int(len(pat)*0.1))
 	train = []
 	for d in pat:
 		if d in test:
