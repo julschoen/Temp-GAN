@@ -11,10 +11,11 @@ class DATA(Dataset):
     self.len = len(self.files)
 
   def __getitem__(self, index):
-      pat = [os.path.join(self.path, self.files[index], f) for f in os.listdir(os.path.join(self.path, self.files[index])) if f.endswith('npz')][0]
+      #pat = [os.path.join(self.path, self.files[index], f) for f in os.listdir(os.path.join(self.path, self.files[index])) if f.endswith('npz')][0]
+      pat = os.path.join(self.path, self.files[index])
       x = np.load(pat)['x']
-      ind = np.sort(np.random.choice(x.shape[0], 3, replace=False))
-      xs = x[ind]
+      ind = np.sort(np.random.choice(x.shape[0]//2, 3, replace=False))
+      xs = x[ind+5]
       xs_ = np.empty((3,64,128,128))
       for i, x in enumerate(xs):
         xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
