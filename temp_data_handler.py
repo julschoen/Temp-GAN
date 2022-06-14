@@ -21,7 +21,7 @@ class DATA(Dataset):
         x = np.load(pat)['x']
         ind = np.sort(np.random.choice(x.shape[0]//2, 3, replace=False))
       x = np.load(pat)['x']
-      xs = x[ind+5]
+      xs = x[ind+4]
       xs_ = np.empty((3,64,128,128))
       for i, x in enumerate(xs):
         xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
