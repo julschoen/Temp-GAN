@@ -313,7 +313,7 @@ class Trainer(object):
             rec = self.imG(zs)
             errGAN = -self.imD(rec).mean()
             errRec = torch.log(self.reg_loss(rec.squeeze(),real.squeeze()))
-            loss = errRec + errGAN
+            loss = errRec + errGAN * 0.1
 
         self.scalerEnc.scale(loss).backward()
         self.scalerEnc.step(self.optimizerEnc)
