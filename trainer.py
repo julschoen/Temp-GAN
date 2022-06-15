@@ -393,7 +393,7 @@ class Trainer(object):
         for p in self.imG.parameters():
             p.requires_grad = False
 
-        return loss.item()
+        return errTempG.item()
 
     def train(self):
         step_done = self.start_from_checkpoint()
