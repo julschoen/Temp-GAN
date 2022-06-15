@@ -213,12 +213,8 @@ class Trainer(object):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
 
-            # Max Shift is 7
-            shifts1 = torch.randint(1,5, (self.p.batch_size, 1)).float()
-            shifts2 = shifts1 + torch.randint(1,4, (self.p.batch_size, 1)).float()
-
-            shift1 = self.tempG(shifts1)
-            shift2 = self.tempG(shifts2)
+            shift1 = self.tempG(torch.Tensor([1.]).to(self.p.device))
+            shift2 = self.tempG(torch.Tensor([2.]).to(self.p.device))
             im = self.imG(z).reshape(-1,1,64,128,128)
             im1 = self.imG(z+shift1).reshape(-1,1,64,128,128)
             im2 = self.imG(z+shift2).reshape(-1,1,64,128,128)
@@ -372,18 +368,21 @@ class Trainer(object):
         fake = self.sample_g()
 
         with autocast():
-            fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
-            f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
+            #fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
+            #f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
 
-            h1 = self.tempD(f1)
-            h2 = self.tempD(f2)
-            h3 = self.tempD(f3)
+            #h1 = self.tempD(fake)
+            #h2 = self.tempD(f2)
+            #h3 = self.tempD(f3)
 
-            l1 = self.triplet_loss(h1,h2,h3)
-            l2 = self.triplet_loss(h3,h2,h1)
-            loss = l1+l2
+            disc_temp_fake = self.tempD(fake)
+            errTempG = - disc_temp_fake.mean()
 
-        self.scalerTempG.scale(loss).backward()
+            #l1 = self.triplet_loss(h1,h2,h3)
+            #l2 = self.triplet_loss(h3,h2,h1)
+            #loss = l1+l2
+
+        self.scalerTempG.scale(errTempG).backward()
         self.scalerTempG.step(self.optimizerTempG)
         self.scalerTempG.step(self.optimizerImG)
         self.scalerTempG.update()
@@ -414,8 +413,8 @@ class Trainer(object):
                 
 
             for _ in range(self.p.temp_iter):
-                errTempD_real, errTempD_fake = self.step_TripletD(real),0#self.step_tempD(real)
-                errTempG_im = 0#self.step_tempG()
+                errTempD_real, errTempD_fake = self.step_tempD(real)
+                errTempG_im = self.step_tempG()
                 errTempG_temp = self.step_TripletG()
             self.tracker.epoch_end()
             self.imG_losses.append(errImG)
