@@ -293,8 +293,7 @@ class Trainer(object):
         fake = self.sample_g()
 
         with autocast():
-            torch.randint()
-            disc_temp_fake = self.imD(fake[:,1+torch.randint(2, (1,))].unsqueeze(1))
+            disc_temp_fake = self.imD(fake[:,1+torch.randint(2, ())].unsqueeze(1))
             errTempG = - disc_temp_fake.mean()
 
         self.scalerTempG.scale(errTempG).backward()
