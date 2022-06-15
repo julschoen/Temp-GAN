@@ -48,13 +48,13 @@ class Trainer(object):
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
-        #self.enc = Encoder(self.p).to(self.device)
+        self.enc = Encoder(self.p).to(self.device)
         if self.p.ngpu>1:
             self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
-            #self.enc = nn.DataParallel(self.enc)
+            self.enc = nn.DataParallel(self.enc)
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
                                          betas=(0., 0.9))
@@ -65,14 +65,14 @@ class Trainer(object):
                                          betas=(0., 0.9))
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
                                          betas=(0., 0.9))
-        #self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrImG,
-        #                                 betas=(0., 0.9))
+        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrImG,
+                                         betas=(0., 0.9))
 
         self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
         self.scalerTempD = GradScaler()
         self.scalerTempG = GradScaler()
-        #self.scalerEnc = GradScaler()
+        self.scalerEnc = GradScaler()
 
         ### Make Data Generator ###
         self.generator_train = DataLoader(dataset, batch_size=self.p.batch_size, shuffle=True, num_workers=4, drop_last=True)
@@ -149,7 +149,7 @@ class Trainer(object):
             self.tempG.load_state_dict(state_dict['tempG'])
             self.tempD.load_state_dict(state_dict['tempD'])
 
-            #self.enc.load_state_dict(state_dict['enc'])
+            self.enc.load_state_dict(state_dict['enc'])
 
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
             self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
@@ -157,7 +157,7 @@ class Trainer(object):
             self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
-            #self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
+            self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
 
             self.imG_losses = state_dict['lossImG']
             self.tempG_losses = state_dict['lossTempG']
@@ -180,12 +180,12 @@ class Trainer(object):
         'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
-        #'enc': self.enc.state_dict(),
+        'enc': self.enc.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
         'optimizerImD': self.optimizerImD.state_dict(),
         'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
-        #'optimizerEnc': self.optimizerEnc.state_dict(),
+        'optimizerEnc': self.optimizerEnc.state_dict(),
         'lossImG': self.imG_losses,
         'lossTempG': self.tempG_losses,
         'lossImD': self.imD_losses,
@@ -317,7 +317,8 @@ class Trainer(object):
         with autocast():
             zs = self.enc(real.unsqueeze(1))
             rec = self.imG(zs)
-            loss = torch.log(self.reg_loss(rec.squeeze(),real.squeeze()))
+            errGAN = -self.imD(rec).mean()
+            loss = torch.log(self.reg_loss(rec.squeeze(),real.squeeze())) + errGAN
 
         self.scalerEnc.scale(loss).backward()
         self.scalerEnc.step(self.optimizerEnc)
@@ -410,7 +411,7 @@ class Trainer(object):
                     errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
                 
-                err_rec = 0#self.step_Enc(real[:,0])
+                err_rec = self.step_Enc(real[:,0])
                 
 
             for _ in range(self.p.temp_iter):
