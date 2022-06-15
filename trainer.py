@@ -105,20 +105,14 @@ class Trainer(object):
                     real_images=torch.reshape(real.to(torch.float32), (-1,1,128,128)).expand(-1,3,-1,-1)
                     )
                 )
-        imDr = self.imD_losses[-1][0]
-        imDf = self.imD_losses[-1][1]
+        imDr, imDf = self.imD_losses[-1]
+        tempDr, tempDf = self.tempD_losses[-1]
+        tempG_im, tempG_temp = self.tempG_losses[-1]
+        err_rec, err_gan = self.Rec_losses[-1]
 
-        tempDr = self.tempD_losses[-1][0]
-        tempDf = self.tempD_losses[-1][1]
-
-        imDr = self.imD_losses[-1][0]
-        imDf = self.imD_losses[-1][1]
-
-        tempG_im = self.tempG_losses[-1][0]
-        tempG_temp = self.tempG_losses[-1][1]
-
-        print('[%d/%d] imD: %.2f|%.2f\ttempD: %.2f|%.2f\tRec: %.2f\timG: %.2f\ttempG (im|temp): %.2f|%.2f\tFID %.2f'
-                    % (step, self.p.niters, imDr, imDf, tempDr, tempDf, self.Rec_losses[-1], self.imG_losses[-1], tempG_im, tempG_temp, self.fid[-1]))
+        print('[%d/%d] imD: %.2f|%.2f\ttempD: %.2f|%.2f\tRec: %.2f|%.2f\timG: %.2f\ttempG (im|temp): %.2f|%.2f\tFID %.2f'
+                    % (step, self.p.niters, imDr, imDf, tempDr, tempDf, err_rec, err_gan,\
+                        self.imG_losses[-1], tempG_im, tempG_temp, self.fid[-1]))
 
     def log_interpolation(self, step):
         noise = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
@@ -318,7 +312,8 @@ class Trainer(object):
             zs = self.enc(real.unsqueeze(1))
             rec = self.imG(zs)
             errGAN = -self.imD(rec).mean()
-            loss = torch.log(self.reg_loss(rec.squeeze(),real.squeeze())) + errGAN
+            errRec = torch.log(self.reg_loss(rec.squeeze(),real.squeeze()))
+            loss = errRec + errGAN
 
         self.scalerEnc.scale(loss).backward()
         self.scalerEnc.step(self.optimizerEnc)
@@ -330,7 +325,7 @@ class Trainer(object):
         for p in self.enc.parameters():
             p.requires_grad = False
 
-        return loss.item()
+        return errRec.item(), errGAN.item()
 
     def step_TripletD(self, real):
         for p in self.tempD.parameters():
@@ -411,7 +406,7 @@ class Trainer(object):
                     errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
                 
-                err_rec = self.step_Enc(real[:,0])
+                err_rec, err_gan = self.step_Enc(real[:,0])
                 
 
             for _ in range(self.p.temp_iter):
@@ -423,7 +418,7 @@ class Trainer(object):
             self.tempG_losses.append((errTempG_im, errTempG_temp))
             self.imD_losses.append((errImD_real, errImD_fake))
             self.tempD_losses.append((errTempD_real, errTempD_fake))
-            self.Rec_losses.append(err_rec)
+            self.Rec_losses.append((err_rec, err_gan))
 
             self.log(i, fake, real)
             if i%100 == 0 and i>0:
