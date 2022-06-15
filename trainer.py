@@ -212,9 +212,10 @@ class Trainer(object):
         inds = None
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-
-            shift1 = self.tempG(torch.Tensor([1.]*self.p.batch_size).to(self.p.device))
-            shift2 = self.tempG(torch.Tensor([2.]*self.p.batch_size).to(self.p.device))
+            one = torch.ones(self.p.batch_size).to(self.p.device).reshape(-1,1)
+            two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
+            shift1 = self.tempG(one)
+            shift2 = self.tempG(two)
             im = self.imG(z).reshape(-1,1,64,128,128)
             im1 = self.imG(z+shift1).reshape(-1,1,64,128,128)
             im2 = self.imG(z+shift2).reshape(-1,1,64,128,128)
