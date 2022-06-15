@@ -16,12 +16,12 @@ class DATA(Dataset):
       x = np.load(pat)['x']
       ind = np.random.randint(0, min(x.shape[0]-2, 4))
       xs = x[ind:ind+3]
-      print(xs.shape)
+      
       xs_ = np.empty((3,64,128,128))
       for i, x in enumerate(xs):
         xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
       xs = np.clip(xs_, -1,1)
-      return torch.from_numpy(xs).float().squeeze(), torch.Tensor(ind)
+      return torch.from_numpy(xs).float().squeeze(), torch.Tensor([ind])
 
   def __len__(self):
       return self.len
