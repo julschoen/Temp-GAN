@@ -405,6 +405,7 @@ class Trainer(object):
             for _ in range(self.p.im_iter):
                 for _ in range(self.p.iterD):  
                     data, _ = next(gen)
+                    print(data.shape)
                     real = data.to(self.device)
                     errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
