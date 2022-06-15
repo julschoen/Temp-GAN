@@ -117,7 +117,7 @@ class Trainer(object):
         tempG_im = self.tempG_losses[-1][0]
         tempG_temp = self.tempG_losses[-1][1]
 
-        print('[%d/%d] imD(x): %.2f\timD(G(z)): %.2f\ttempD(x): %.2f\ttempD(G(z)): %.2f\tRec: %.2f\timG: %.2f\ttempG(x) Im: %.2f\ttempG(x) Temp: %.2f\tFID %.2f'
+        print('[%d/%d] imD: %.2f|%.2f\ttempD: %.2f|%.2f\tRec: %.2f\timG: %.2f\ttempG (im|temp): %.2f|%.2f\tFID %.2f'
                     % (step, self.p.niters, imDr, imDf, tempDr, tempDf, self.Rec_losses[-1], self.imG_losses[-1], tempG_im, tempG_temp, self.fid[-1]))
 
     def log_interpolation(self, step):
