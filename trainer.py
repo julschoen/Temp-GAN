@@ -282,22 +282,34 @@ class Trainer(object):
     def step_tempG(self):
         for p in self.tempG.parameters():
             p.requires_grad = True
+        for p in self.imG.parameters():
+            p.requires_grad = True
 
         self.tempG.zero_grad()
+        self.imG.zero_grad()
         fake = self.sample_g()
 
         with autocast():
-            disc_temp_fake = self.imD(fake[:,1+torch.randint(2, ())].unsqueeze(1))
-            errTempG = - disc_temp_fake.mean()
+            disc_im_fake = self.imD(fake[:,1+torch.randint(2, ())].unsqueeze(1))
+            err_im = - disc_im_fake.mean()
 
-        self.scalerTempG.scale(errTempG).backward()
+            disc_temp_fake = self.tempD(fake)
+            err_temp = - disc_temp_fake.mean()
+
+            loss = err_temp + 0.1*err_im
+
+
+        self.scalerTempG.scale(loss).backward()
         self.scalerTempG.step(self.optimizerTempG)
+        self.scalerTempG.step(self.optimizerImG)
         self.scalerTempG.update()
 
         for p in self.tempG.parameters():
             p.requires_grad = False
+        for p in self.imG.parameters():
+            p.requires_grad = False
 
-        return errTempG.item()
+        return err_im.item(), err_temp.item()
 
     def step_Enc(self, real):
         for p in self.imG.parameters():
@@ -365,21 +377,18 @@ class Trainer(object):
         fake = self.sample_g()
 
         with autocast():
-            #fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
-            #f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
+            fake = fake.reshape(-1,3,1,fake.shape[-3],fake.shape[-2],fake.shape[-1])
+            f1, f2, f3 = fake[:,0], fake[:,1], fake[:,2]
 
-            #h1 = self.tempD(fake)
-            #h2 = self.tempD(f2)
-            #h3 = self.tempD(f3)
+            h1 = self.tempD(fake)
+            h2 = self.tempD(f2)
+            h3 = self.tempD(f3)
 
-            disc_temp_fake = self.tempD(fake)
-            errTempG = - disc_temp_fake.mean()
+            l1 = self.triplet_loss(h1,h2,h3)
+            l2 = self.triplet_loss(h3,h2,h1)
+            loss = l1+l2
 
-            #l1 = self.triplet_loss(h1,h2,h3)
-            #l2 = self.triplet_loss(h3,h2,h1)
-            #loss = l1+l2
-
-        self.scalerTempG.scale(errTempG).backward()
+        self.scalerTempG.scale(loss).backward()
         self.scalerTempG.step(self.optimizerTempG)
         self.scalerTempG.step(self.optimizerImG)
         self.scalerTempG.update()
@@ -389,7 +398,7 @@ class Trainer(object):
         for p in self.imG.parameters():
             p.requires_grad = False
 
-        return errTempG.item()
+        return loss.item()
 
     def train(self):
         step_done = self.start_from_checkpoint()
@@ -410,8 +419,8 @@ class Trainer(object):
 
             for _ in range(self.p.temp_iter):
                 errTempD_real, errTempD_fake = self.step_tempD(real)
-                errTempG_im = self.step_tempG()
-                errTempG_temp = self.step_TripletG()
+                errTempG_im, errTempG_temp = self.step_tempG()
+                #errTempG_temp = self.step_TripletG()
             self.tracker.epoch_end()
             self.imG_losses.append(errImG)
             self.tempG_losses.append((errTempG_im, errTempG_temp))
