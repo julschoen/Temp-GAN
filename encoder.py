@@ -13,7 +13,6 @@ class Encoder(nn.Module):
         layer1 = []
         layer2 = []
         layer3 = []
-        last = []
 
         layer1.append(Normalization(nn.Conv3d(1, conv_dim, 4, 2, 1)))
         layer1.append(nn.LeakyReLU(0.1))
@@ -45,8 +44,7 @@ class Encoder(nn.Module):
         self.l5 = nn.Sequential(*layer4)
         curr_dim = curr_dim * 2
 
-        last.append(nn.Conv3d(curr_dim, 1, 4))
-        self.last = nn.Sequential(*last)
+        self.last = nn.Linear(curr_dim)
 
 
     def forward(self, x):
@@ -56,6 +54,6 @@ class Encoder(nn.Module):
         out = self.l4(out)
         out = self.attn1(out)
         out = self.l5(out)
-        print(out.shape)
+        out = torch.sum(out, [2, 3, 4])
         out = self.last(out)
         return out.squeeze()
