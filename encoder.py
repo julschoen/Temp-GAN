@@ -1,59 +1,61 @@
-import torch 
+import torch
+import numpy as np
 import torch.nn as nn
-from torch.nn import init
-import torch.nn.functional as F
 import torch.nn.utils.spectral_norm as SpectralNorm
-import functools
-from utils import Attention, DBlock, snconv3d, snlinear
+from utils import Attention as Self_Attn
+
 
 class Encoder(nn.Module):
-  def __init__(self, params):
-    super(Encoder, self).__init__()
-    self.p = params
-    # Architecture
-    self.arch = {'in_channels' :  [item * self.p.filterD for item in [1, 2, 4,  8, 16]],
-               'out_channels' : [item * self.p.filterD for item in [2, 4, 8, 16, 16]],
-               'downsample' : [True] * 5 + [False],
-               'resolution' : [64, 32, 16, 8, 4, 4],
-               'attention' : {2**i: 2**i in [int(item) for item in '16'.split('_')]
-                              for i in range(2,8)}}
-    
-    # Prepare model
-    self.input_conv = snconv3d(1, self.arch['in_channels'][0])
+    def __init__(self, params):
+        super(Encoder, self).__init__()
+        conv_dim = params.filterD
+        Normalization = SpectralNorm
+        layer1 = []
+        layer2 = []
+        layer3 = []
+        last = []
 
-    self.blocks = []
-    for index in range(len(self.arch['out_channels'])):
-      self.blocks += [[DBlock(in_channels=self.arch['in_channels'][index] if d_index==0 else self.arch['out_channels'][index],
-                       out_channels=self.arch['out_channels'][index],
-                       preactivation=True,
-                       downsample=(nn.AvgPool3d(2) if self.arch['downsample'][index] and d_index==0 else None))
-                       for d_index in range(1)]]
-      if self.p.att:
-        if self.arch['attention'][self.arch['resolution'][index]]:
-          self.blocks[-1] += [Attention(self.arch['out_channels'][index])]
+        layer1.append(Normalization(nn.Conv3d(1, conv_dim, 4, 2, 1)))
+        layer1.append(nn.LeakyReLU(0.1))
+        curr_dim = conv_dim
 
-    self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
-    self.linear = nn.Linear(self.arch['out_channels'][-1], self.p.z_size)
-    self.activation = nn.ReLU(inplace=True)
-    self.tanh = nn.Tanh()
-    self.init_weights()
+        layer2.append(Normalization(nn.Conv3d(curr_dim, curr_dim * 2, 4, 2, 1)))
+        layer2.append(nn.LeakyReLU(0.1))
+        curr_dim = curr_dim * 2
 
-  def init_weights(self):
-    self.param_count = 0
-    for module in self.modules():
-      if (isinstance(module, nn.Conv3d)
-          or isinstance(module, nn.Linear)):
-        init.orthogonal_(module.weight)
-        self.param_count += sum([p.data.nelement() for p in module.parameters()])
-    print('Param count for D''s initialized parameters: %d' % self.param_count)
+        layer3.append(Normalization(nn.Conv3d(curr_dim, curr_dim * 2, 4, 2, 1)))
+        layer3.append(nn.LeakyReLU(0.1))
+        curr_dim = curr_dim * 2
 
-  def forward(self, x):
-    # Run input conv
-    h = self.input_conv(x)
-    # Loop over blocks
-    for index, blocklist in enumerate(self.blocks):
-      for block in blocklist:
-        h = block(h)
-    # Apply global sum pooling as in SN-GAN
-    h = torch.sum(self.activation(h), [2, 3, 4])
-    return self.linear(h)
+        self.l1 = nn.Sequential(*layer1)
+        self.l2 = nn.Sequential(*layer2)
+        self.l3 = nn.Sequential(*layer3)
+
+        
+        layer4 = []
+        layer4.append(Normalization(nn.Conv3d(curr_dim, curr_dim * 2, 4, 2, 1)))
+        layer4.append(nn.LeakyReLU(0.1))
+        self.l4 = nn.Sequential(*layer4)
+        self.attn1 = Self_Attn(curr_dim*2)
+        curr_dim = curr_dim * 2
+
+        layer4 = []
+        layer4.append(Normalization(nn.Conv3d(curr_dim, curr_dim * 2, 4, 2, 1)))
+        layer4.append(nn.LeakyReLU(0.1))
+        self.l5 = nn.Sequential(*layer4)
+        curr_dim = curr_dim * 2
+
+        last.append(nn.Conv3d(curr_dim, 1, 4))
+        self.last = nn.Sequential(*last)
+
+
+    def forward(self, x):
+        out = self.l1(x)
+        out = self.l2(out)
+        out = self.l3(out)
+        out = self.l4(out)
+        out = self.attn1(out)
+        out = self.l5(out)
+        print(out.shape)
+        out = self.last(out)
+        return out.squeeze()
