@@ -44,7 +44,7 @@ class Encoder(nn.Module):
         self.l5 = nn.Sequential(*layer4)
         curr_dim = curr_dim * 2
 
-        self.last = nn.Linear(curr_dim)
+        self.last = nn.Linear(curr_dim, params.z_size)
 
 
     def forward(self, x):
