@@ -18,9 +18,9 @@ def process(path, patient, phases):
 			size=(128,128,64),
 			mode='trilinear'
 		)
-		img = torch.clamp(img, -1000,2000)
-		img = img-500
-		img = img/1500
+		img = torch.clamp(img, -1000,500)
+		img = img+250
+		img = img/750
 		img = torch.clamp(img, -1,1)
 		if ims is not None:
 			ims = torch.concat((ims,img))
