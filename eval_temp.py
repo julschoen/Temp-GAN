@@ -34,23 +34,18 @@ def eval(params):
 		tempG = tempG.to(params.device)
 		with torch.no_grad():
 			with autocast():
-				ims = None
-				for _ in range(params.batch_size):
-					if params.ngpu > 1:
-						z = torch.randn(1, imG.module.dim_z, dtype=torch.float, device=params.device)
-					else:
-						z = torch.randn(1, imG.dim_z, dtype=torch.float, device=params.device)
-					for i in range(params.time-1):
-						z = torch.concat(
-							(z, tempG(z[-1].unsqueeze(0)).reshape(1,-1))
-						)
-					print(z[0])
-					print(z.mean(), z.std())
-					im = imG(z)
-					if ims is None:
-						ims = im.reshape(1,params.time,-1,128,128)
-					else:
-						ims = torch.concat((ims,im.reshape(1,params.time,-1,128,128)))
+				if params.ngpu > 1:
+					z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
+				else:
+					z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
+				one = torch.ones(self.p.batch_size).to(self.p.device).reshape(-1,1)
+	            two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
+	            shift1 = self.tempG(one)
+	            shift2 = self.tempG(two)
+	            im = self.imG(z).reshape(-1,1,64,128,128)
+	            im1 = self.imG(z+shift1).reshape(-1,1,64,128,128)
+	            im2 = self.imG(z+shift2).reshape(-1,1,64,128,128)
+	            ims = torch.concat((im, im1, im2), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=ims.detach().cpu().numpy())
 
