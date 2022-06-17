@@ -45,6 +45,7 @@ class Encoder(nn.Module):
         curr_dim = curr_dim * 2
 
         self.last = nn.Linear(curr_dim, params.z_size)
+        self.tanh = nn.Tanh()
 
 
     def forward(self, x):
@@ -55,5 +56,5 @@ class Encoder(nn.Module):
         out = self.attn1(out)
         out = self.l5(out)
         out = torch.sum(out, [2, 3, 4])
-        out = self.last(out)
+        out = self.tanh(self.last(out))
         return out.squeeze()

@@ -57,16 +57,16 @@ class Trainer(object):
             self.enc = nn.DataParallel(self.enc)
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
-                                         betas=(0., 0.9))
+                                         betas=(0., 0.9), weight_decay=5e-5)
         self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrImG,
-                                         betas=(0., 0.9))
+                                         betas=(0., 0.9), weight_decay=5e-5)
 
         self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrTempD,
-                                         betas=(0., 0.9))
+                                         betas=(0., 0.9), weight_decay=5e-5)
         self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
-                                         betas=(0., 0.9))
-        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrImG,
-                                         betas=(0., 0.9))
+                                         betas=(0., 0.9), weight_decay=5e-5)
+        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrEnc,
+                                         betas=(0., 0.9), weight_decay=5e-5)
 
         self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
