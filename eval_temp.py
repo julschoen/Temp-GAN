@@ -39,13 +39,13 @@ def eval(params):
 				else:
 					z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
 				one = torch.ones(self.p.batch_size).to(self.p.device).reshape(-1,1)
-	            two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
-	            shift1 = self.tempG(one)
-	            shift2 = self.tempG(two)
-	            im = self.imG(z).reshape(-1,1,64,128,128)
-	            im1 = self.imG(z+shift1).reshape(-1,1,64,128,128)
-	            im2 = self.imG(z+shift2).reshape(-1,1,64,128,128)
-	            ims = torch.concat((im, im1, im2), dim=1)
+				two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
+				shift1 = self.tempG(one)
+				shift2 = self.tempG(two)
+				im = self.imG(z).reshape(-1,1,64,128,128)
+				im1 = self.imG(z+shift1).reshape(-1,1,64,128,128)
+				im2 = self.imG(z+shift2).reshape(-1,1,64,128,128)
+				ims = torch.concat((im, im1, im2), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=ims.detach().cpu().numpy())
 

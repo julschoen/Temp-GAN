@@ -87,7 +87,6 @@ def eval(params):
 		for _, (data, _) in enumerate(generator):
 			data = data[:,0].to(params.device)
 			zs = get_embedding(data, enc)
-			print(zs[0])
 			rev_zs = reverse_z(imG, data, params)
 			print(torch.mean(zs),torch.std(zs), torch.mean(rev_zs), torch.std(rev_zs))
 			generate_ims(imG, params, f'rec_gen_{model_path}.npz', noise=zs)
