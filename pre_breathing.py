@@ -9,6 +9,7 @@ import re
 def process(path, patient, phases):
 	ims = None
 	phases = np.sort(phases)
+	print(phases)
 	for phase in phases:
 		img = nib.load(os.path.join(path,f'patient{patient}phase{phase}.0.nii.gz'))
 		img = torch.Tensor(np.asanyarray(img.dataobj))
