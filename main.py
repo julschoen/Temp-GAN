@@ -10,7 +10,7 @@ def main():
 	parser.add_argument('--z_size', type=int, default=512, help='Latent space dimension')
 	parser.add_argument('--filterG', type=int, default=64, help='Number of filters G')
 	parser.add_argument('--filterD', type=int, default=64, help='Number of filters D')
-	parser.add_argument('--iterD', type=int, default=4, help='Number of D iters per iter')
+	parser.add_argument('--iterD', type=int, default=3, help='Number of D iters per iter')
 	parser.add_argument('--lrImG', type=float, default=5e-5, help='Learning rate imG')
 	parser.add_argument('--lrImD', type=float, default=1e-4, help='Learning rate imD')
 	parser.add_argument('--lrTempG', type=float, default=5e-5, help='Learning rate tempG')
