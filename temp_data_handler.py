@@ -23,7 +23,7 @@ class DATA(Dataset):
           xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
         xs = np.clip(xs_, -1,1)
       except:
-        return = self.__getitem__(index+1)
+        return self.__getitem__(index+1)
       return torch.from_numpy(xs).float().squeeze(), torch.Tensor([ind])
 
   def __len__(self):
