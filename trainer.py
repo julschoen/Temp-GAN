@@ -414,7 +414,7 @@ class Trainer(object):
                     real = data.to(self.device)
                     errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
-                err_rec, err_gan = self.step_Enc(real[:,0])
+                err_rec, err_gan = 0,0# self.step_Enc(real[:,0])
                 
 
             for _ in range(self.p.temp_iter):
