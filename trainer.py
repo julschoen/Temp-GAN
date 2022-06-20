@@ -421,8 +421,8 @@ class Trainer(object):
 
             for _ in range(self.p.temp_iter):
                 for _ in range(self.p.iterD):
-                    real_true = real[labels]
-                    real_fake = real[torch.logical_not(labels)]
+                    real_true = real[labels.reshape(-1)]
+                    real_fake = real[torch.logical_not(labels).reshape(-1)]
                     errTempD_real, errTempD_fake = self.step_tempD(real_true, real_fake)
                 errTempG_im, errTempG_temp = self.step_tempG()
                 #errTempG_temp = self.step_TripletG()
