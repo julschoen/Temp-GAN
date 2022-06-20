@@ -29,7 +29,7 @@ class DATA(Dataset):
   def __len__(self):
       return self.len
 
-class DataLIDC()
+class DataLIDC():
   def __init__(self, path):
     self.data = np.load(path)['X']
     self.len = self.data.shape[0]
