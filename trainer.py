@@ -293,7 +293,7 @@ class Trainer(object):
 
         with autocast():
             #disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
-            disc_im_fake = self.imD(fake[:,torch.randint(3, ())].unsqueeze(1))
+            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
             disc_temp_fake = self.tempD(fake)
