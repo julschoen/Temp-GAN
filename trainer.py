@@ -47,14 +47,15 @@ class Trainer(object):
         self.imD = ImD(self.p).to(self.device)
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
-        self.tempG = TempG(self.p).to(self.device)
-        self.enc = Encoder(self.p).to(self.device)
+        #self.tempG = TempG(self.p).to(self.device)
+        self.dir = (torch.randn(self.p.z_size)/10).to(self.device)
+        #self.enc = Encoder(self.p).to(self.device)
         if self.p.ngpu>1:
             self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
-            self.tempG = nn.DataParallel(self.tempG)
-            self.enc = nn.DataParallel(self.enc)
+            #self.tempG = nn.DataParallel(self.tempG)
+            #self.enc = nn.DataParallel(self.enc)
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
                                          betas=(0., 0.9))
@@ -63,16 +64,16 @@ class Trainer(object):
 
         self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrTempD,
                                          betas=(0., 0.9))
-        self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
-                                         betas=(0., 0.9))
-        self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrEnc,
-                                         betas=(0., 0.9))
+        #self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
+        #                                 betas=(0., 0.9))
+        #self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrEnc,
+        #                                 betas=(0., 0.9))
 
         self.scalerImD = GradScaler()
         self.scalerImG = GradScaler()
         self.scalerTempD = GradScaler()
-        self.scalerTempG = GradScaler()
-        self.scalerEnc = GradScaler()
+        #self.scalerTempG = GradScaler()
+        #self.scalerEnc = GradScaler()
 
         ### Make Data Generator ###
         self.generator_train = DataLoader(dataset, batch_size=self.p.batch_size, shuffle=True, num_workers=4, drop_last=True)
@@ -140,18 +141,19 @@ class Trainer(object):
             self.imG.load_state_dict(state_dict['imG'])
             self.imD.load_state_dict(state_dict['imD'])
 
-            self.tempG.load_state_dict(state_dict['tempG'])
+            #self.tempG.load_state_dict(state_dict['tempG'])
+            self.dir = state_dict['dir'].to(self.device)
             self.tempD.load_state_dict(state_dict['tempD'])
 
-            self.enc.load_state_dict(state_dict['enc'])
+            #self.enc.load_state_dict(state_dict['enc'])
 
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
             self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
 
-            self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
+            #self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
-            self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
+            #self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
 
             self.imG_losses = state_dict['lossImG']
             self.tempG_losses = state_dict['lossTempG']
@@ -172,14 +174,15 @@ class Trainer(object):
         'step': step,
         'imG': self.imG.state_dict(),
         'imD': self.imD.state_dict(),
-        'tempG': self.tempG.state_dict(),
+        #'tempG': self.tempG.state_dict(),
+        'dir': self.dir,
         'tempD': self.tempD.state_dict(),
-        'enc': self.enc.state_dict(),
+        #'enc': self.enc.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
         'optimizerImD': self.optimizerImD.state_dict(),
-        'optimizerTempG': self.optimizerTempG.state_dict(),
+        #'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
-        'optimizerEnc': self.optimizerEnc.state_dict(),
+        #'optimizerEnc': self.optimizerEnc.state_dict(),
         'lossImG': self.imG_losses,
         'lossTempG': self.tempG_losses,
         'lossImD': self.imD_losses,
@@ -201,18 +204,16 @@ class Trainer(object):
         self.save_checkpoint(step)
 
     def sample_g(self):
-        ims = None
-        zs = None
-        inds = None
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            one = torch.ones(self.p.batch_size).to(self.p.device).reshape(-1,1)
-            two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
-            shift1 = self.tempG(one)
-            shift2 = self.tempG(two)
+            #one = torch.ones(self.p.batch_size).to(self.p.device).reshape(-1,1)
+            #two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
+            #shift1 = self.tempG(one)
+            #shift2 = self.tempG(two)
+            alpha = torch.rand(2).sort()[0]
             im = self.imG(z).reshape(-1,1,128,128,128)
-            im1 = self.imG(z+shift1).reshape(-1,1,128,128,128)
-            im2 = self.imG(z+shift2).reshape(-1,1,128,128,128)
+            im1 = self.imG(z+self.dir*alpha[0]).reshape(-1,1,128,128,128)
+            im2 = self.imG(z+self.dir*alpha[1]).reshape(-1,1,128,128,128)
             ims = torch.concat((im, im1, im2), dim=1)
         return ims
 
@@ -239,15 +240,16 @@ class Trainer(object):
 
         return errD_real.item(), errD_fake.item()
 
-    def step_tempD(self, real):
+    def step_tempD(self, real_true, real_false):
         for p in self.tempD.parameters():
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
             fake = self.sample_g()
             disc_fake = self.tempD(fake)
-            disc_real = self.tempD(real)
-            errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
+            disc_real_true = self.tempD(real_true)
+            disc_real_false = self.tempD(real_false)
+            errD_real = (nn.ReLU()(1.0 - disc_real_true)).mean() + (nn.ReLU()(1.0 + disc_real_false)).mean()
             errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
             errTempD = errD_fake + errD_real
         self.scalerTempD.scale(errTempD).backward()
@@ -280,12 +282,12 @@ class Trainer(object):
         return errImG.item(), fake
 
     def step_tempG(self):
-        for p in self.tempG.parameters():
-            p.requires_grad = True
+        #for p in self.tempG.parameters():
+        #    p.requires_grad = True
         for p in self.imG.parameters():
             p.requires_grad = True
 
-        self.tempG.zero_grad()
+        #self.tempG.zero_grad()
         self.imG.zero_grad()
         fake = self.sample_g()
 
@@ -299,13 +301,13 @@ class Trainer(object):
             loss = err_temp + 0.1*err_im
 
 
-        self.scalerTempG.scale(loss).backward()
-        self.scalerTempG.step(self.optimizerTempG)
-        self.scalerTempG.step(self.optimizerImG)
-        self.scalerTempG.update()
+        self.scalerImG.scale(loss).backward()
+        #self.scalerImG.step(self.optimizerTempG)
+        self.scalerImG.step(self.optimizerImG)
+        self.scalerImG.update()
 
-        for p in self.tempG.parameters():
-            p.requires_grad = False
+        #for p in self.tempG.parameters():
+        #    p.requires_grad = False
         for p in self.imG.parameters():
             p.requires_grad = False
 
@@ -410,7 +412,7 @@ class Trainer(object):
             self.tracker.epoch_start()
             for _ in range(self.p.im_iter):
                 for _ in range(self.p.iterD):  
-                    data, _ = next(gen)
+                    data, labels = next(gen)
                     real = data.to(self.device)
                     errImD_real, errImD_fake = self.step_imD(real[:,0])
                 errImG, fake = self.step_imG()
@@ -419,7 +421,9 @@ class Trainer(object):
 
             for _ in range(self.p.temp_iter):
                 for _ in range(self.p.iterD):
-                    errTempD_real, errTempD_fake = self.step_tempD(real)
+                    real_true = real[labels]
+                    real_fake = real[torch.logical_not(labels)]
+                    errTempD_real, errTempD_fake = self.step_tempD(real_true, real_fake)
                 errTempG_im, errTempG_temp = self.step_tempG()
                 #errTempG_temp = self.step_TripletG()
             self.tracker.epoch_end()
