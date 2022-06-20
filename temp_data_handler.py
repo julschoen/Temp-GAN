@@ -41,7 +41,7 @@ class DataLIDC():
     x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
     x2 = np.pad(x1, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
     x3 = np.pad(x2, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
-    return nnp.concatenate((x1.reshape(1,128,128,128),x2.reshape(1,128,128,128),x3.reshape(1,128,128,128)))
+    return np.concatenate((x1.reshape(1,128,128,128),x2.reshape(1,128,128,128),x3.reshape(1,128,128,128)))
 
   def __getitem__(self, index):
     image = self.data[index]
