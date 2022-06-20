@@ -29,3 +29,26 @@ class DATA(Dataset):
   def __len__(self):
       return self.len
 
+class DataLIDC()
+  def __init__(self, path):
+    self.data = np.load(path)['X']
+    self.len = self.data.shape[0]
+
+  def __shift__(self, x):
+    s1 = np.random.randint(0,40,1)[0]
+    s2 = np.random.randint(0,20,1)[0]
+    s3 = np.random.randint(0,20,1)[0]
+    x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
+    x2 = np.pad(x1, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
+    x3 = np.pad(x2, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+    return nnp.concatenate((x1.reshape(1,128,128,128),x2.reshape(1,128,128,128),x3.reshape(1,128,128,128)))
+
+  def __getitem__(self, index):
+    image = self.data[index]
+    image = np.clip(image, -1,1)
+    image = self.__shift__(image)
+    return torch.from_numpy(image).float(), torch.Tensor([0])
+
+  def __len__(self):
+    return self.len
+
