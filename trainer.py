@@ -210,9 +210,9 @@ class Trainer(object):
             two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
             shift1 = self.tempG(one)
             shift2 = self.tempG(two)
-            im = self.imG(z).reshape(-1,1,64,128,128)
-            im1 = self.imG(z+shift1).reshape(-1,1,64,128,128)
-            im2 = self.imG(z+shift2).reshape(-1,1,64,128,128)
+            im = self.imG(z).reshape(-1,1,128,128,128)
+            im1 = self.imG(z+shift1).reshape(-1,1,128,128,128)
+            im2 = self.imG(z+shift2).reshape(-1,1,128,128,128)
             ims = torch.concat((im, im1, im2), dim=1)
         return ims
 
