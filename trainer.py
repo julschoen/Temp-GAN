@@ -292,15 +292,14 @@ class Trainer(object):
         fake = self.sample_g()
 
         with autocast():
-            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
-            disc_im_fake_dir = self.imD(fake[:,1+torch.randint(2, ())].unsqueeze(1))
+            #disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+            disc_im_fake = self.imD(fake[:,torch.randint(3, (self.p.batch_size))].unsqueeze(1))
             err_im = - disc_im_fake.mean()
-            err_temp_im = -disc_im_fake_dir.mean()
 
             disc_temp_fake = self.tempD(fake)
             err_temp = - disc_temp_fake.mean()
 
-            loss = err_temp + err_im + 0.1*err_temp_im
+            loss = err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()
@@ -313,7 +312,7 @@ class Trainer(object):
         for p in self.imG.parameters():
             p.requires_grad = False
 
-        return err_im.item(), err_temp.item(), err_temp_im.item(), fake[:,0]
+        return err_im.item(), err_temp.item(), fake[:,0]
 
     def step_Enc(self, real):
         for p in self.imG.parameters():
@@ -427,7 +426,8 @@ class Trainer(object):
                     real_fake = real[torch.logical_not(labels).reshape(-1)]
                     errTempD_real, errTempD_fake = self.step_tempD(real_true, real_fake)
                 #errTempG_im, errTempG_temp = self.step_tempG()
-            errImG, errTempG_temp, errTempG_im, fake = self.step_tempG()
+            errImG, errTempG_temp, fake = self.step_tempG()
+            errTempG_im = 0
                 #errTempG_temp = self.step_TripletG()
             self.tracker.epoch_end()
             self.imG_losses.append(errImG)
