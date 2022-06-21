@@ -43,7 +43,7 @@ class DataLIDC():
       i1 = np.random.randint(0, min(x.shape[0], 7))
       i2 = np.random.randint(0, min(x.shape[0], 7))
       i3 = np.random.randint(0, min(x.shape[0], 7))
-      while s1 < s2 and s2 < s3:
+      while i1 < i2 and i2 < i3:
         i1 = np.random.randint(0, min(x.shape[0], 7))
         i2 = np.random.randint(0, min(x.shape[0], 7))
         i3 = np.random.randint(0, min(x.shape[0], 7))
