@@ -54,8 +54,8 @@ class DataLIDC():
       return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
   def __getitem__(self, index):
-    image = self.data[index]
-    image = np.clip(image, -1,1)
+    pat = os.path.join(self.path, self.files[index])
+    image = np.load(pat)['x']
     if torch.rand(1)<0.51:
       image = self.__shift__(image)
       label = 1
