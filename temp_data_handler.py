@@ -31,7 +31,7 @@ class DATA(Dataset):
 
 class DataLIDC():
   def __init__(self, path):
-    self.data = np.load(path)['x']
+    self.files = np.load(path)['x']
     self.path = path[:-len(path.split('/')[-1])]
     self.len = len(self.files)
 
