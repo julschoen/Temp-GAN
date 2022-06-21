@@ -7,7 +7,7 @@ class Generator(nn.Module):
         self.dim_z = params.z_size
         self.ngpu = params.ngpu
         self.lin = nn.Linear(in_features=1, out_features=self.dim_z)
-        self.lin.weight.data = 0.01 * torch.randn_like(self.lin.weight.data)
+        self.lin.weight.data = 0.1 * torch.randn_like(self.lin.weight.data)
         self.tanh = nn.Tanh()
 
     def forward(self, input):
