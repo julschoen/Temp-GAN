@@ -49,8 +49,8 @@ class DataLIDC():
         i3 = np.random.randint(0, min(x.shape[0], 7))
 
       x1 = x[i1]
-      x1 = x[i2]
-      x1 = x[i3]
+      x2 = x[i2]
+      x3 = x[i3]
       return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
   def __getitem__(self, index):
