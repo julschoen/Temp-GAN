@@ -37,7 +37,7 @@ class DataLIDC():
 
   def __shift__(self, x, correct=True):
     if correct:
-      ind = np.random.randint(0, min(x.shape[0]-2, 4))
+      ind = np.random.randint(0, min(x.shape[0]-2, 3))
       return x[ind:ind+3]
     else:
       i1 = np.random.randint(0, min(x.shape[0], 6))
