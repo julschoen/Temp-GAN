@@ -212,7 +212,7 @@ class Trainer(object):
             #shift2 = self.tempG(two)
             alpha = torch.rand(2).sort()[0]
             im = self.imG(z)
-            im = im.reshape.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+            im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             im1 = self.imG(z+self.dir*alpha[0]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             im2 = self.imG(z+self.dir*alpha[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             ims = torch.concat((im, im1, im2), dim=1)
