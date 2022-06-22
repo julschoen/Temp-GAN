@@ -14,38 +14,35 @@ def load_gen(path, ngpu):
 		params = pickle.load(file)
 	
 	imG = ImG(params)
-	tempG = TempG(params)
+	#tempG = TempG(params)
 
 	if ngpu > 1:
 		imG = nn.DataParallel(imG)
-		tempG = nn.DataParallel(tempG)
+		#tempG = nn.DataParallel(tempG)
 	state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
 	imG.load_state_dict(state['imG'])
-	tempG.load_state_dict(state['tempG'])
+	direction = state['dir']
 
-	return imG, tempG
+	return imG, direction
 
 def eval(params):
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
-		imG, tempG = load_gen(model_path, params.ngpu)
+		imG, direction = load_gen(model_path, params.ngpu)
 		imG = imG.to(params.device)
-		tempG = tempG.to(params.device)
+		direction = direction.to(params.device)
 		with torch.no_grad():
 			with autocast():
 				if params.ngpu > 1:
 					z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
 				else:
 					z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
-				one = torch.ones(params.batch_size).to(params.device).reshape(-1,1)
-				two = torch.Tensor([2.]*params.batch_size).to(params.device).reshape([-1,1])
-				shift1 = tempG(one)
-				shift2 = tempG(two)
-				im = imG(z).reshape(-1,1,64,128,128)
-				im1 = imG(z+shift1).reshape(-1,1,64,128,128)
-				im2 = imG(z+shift2).reshape(-1,1,64,128,128)
-				ims = torch.concat((im, im1, im2), dim=1)
+				alpha = torch.rand(2).sort()[0]
+            im = self.imG(z).reshape(-1,1,128,128,128)
+            im1 = self.imG(z+self.dir*alpha[0]).reshape(-1,1,128,128,128)
+            im2 = self.imG(z+self.dir*alpha[1]).reshape(-1,1,128,128,128)
+            ims = torch.concat((im, im1, im2), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=ims.detach().cpu().numpy())
 
