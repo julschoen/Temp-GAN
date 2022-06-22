@@ -58,16 +58,4 @@ class DataLIDC():
   def __getitem__(self, index):
     image = self.data[index]
     image = np.clip(image, -1,1)
-    image = self.__shift__(image)
-    return torch.from_numpy(image).float(), torch.Tensor([0])
-    if torch.rand(1)<0.51:
-      image = self.__shift__(image)
-      label = 1
-    else:
-      image = self.__shift__(image, correct=False)
-      label = 0
-    return torch.from_numpy(image).float(), torch.Tensor([label]).bool()
-
-  def __len__(self):
-    return self.len
-
+    return torch.from_numpy(image).float(), torch.Tensor([ind])

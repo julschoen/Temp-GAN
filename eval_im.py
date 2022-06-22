@@ -24,7 +24,7 @@ def load_gen(path, ngpu):
 	return netG
 
 def eval(params):
-	dataset = DATA(path=params.data_path)
+	dataset = DataLIDC(path=params.data_path)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	fid_model = get_fid_model(params.fid_checkpoint).to(params.device)
