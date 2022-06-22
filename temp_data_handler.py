@@ -59,3 +59,6 @@ class DataLIDC():
     image = self.data[index]
     image = np.clip(image, -1,1)
     return torch.from_numpy(image).float(), torch.Tensor([ind])
+
+  def __len__(self):
+      return self.len
