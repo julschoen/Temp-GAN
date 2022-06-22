@@ -40,13 +40,13 @@ class DataLIDC():
       ind = np.random.randint(0, min(x.shape[0]-2, 4))
       return x[ind:ind+3]
     else:
-      i1 = np.random.randint(0, min(x.shape[0], 7))
-      i2 = np.random.randint(0, min(x.shape[0], 7))
-      i3 = np.random.randint(0, min(x.shape[0], 7))
+      i1 = np.random.randint(0, min(x.shape[0], 6))
+      i2 = np.random.randint(0, min(x.shape[0], 6))
+      i3 = np.random.randint(0, min(x.shape[0], 6))
       while i1 < i2 and i2 < i3:
-        i1 = np.random.randint(0, min(x.shape[0], 7))
-        i2 = np.random.randint(0, min(x.shape[0], 7))
-        i3 = np.random.randint(0, min(x.shape[0], 7))
+        i1 = np.random.randint(0, min(x.shape[0], 6))
+        i2 = np.random.randint(0, min(x.shape[0], 6))
+        i3 = np.random.randint(0, min(x.shape[0], 6))
 
       x1 = x[i1]
       x2 = x[i2]
