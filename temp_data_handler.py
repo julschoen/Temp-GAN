@@ -89,7 +89,10 @@ class DataLIDC():
         xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
       image = np.clip(xs_, -1,1)
     except:
-      return self.__getitem__(index+1)
+      if index < self.len -1:
+        return self.__getitem__(index+1)
+      else:
+        return self.__getitem__(0)
     return torch.from_numpy(image).float(), torch.Tensor([label]).bool()
 
   def __len__(self):
