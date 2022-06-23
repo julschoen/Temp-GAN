@@ -47,14 +47,14 @@ class Trainer(object):
         self.imD = ImD(self.p).to(self.device)
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
-        #self.tempG = TempG(self.p).to(self.device)
+        self.tempG = TempG(self.p).to(self.device)
         self.dir = (torch.randn(self.p.z_size)/10).to(self.device)
         #self.enc = Encoder(self.p).to(self.device)
         if self.p.ngpu>1:
             self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
-            #self.tempG = nn.DataParallel(self.tempG)
+            self.tempG = nn.DataParallel(self.tempG)
             #self.enc = nn.DataParallel(self.enc)
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
@@ -64,8 +64,8 @@ class Trainer(object):
 
         self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrTempD,
                                          betas=(0., 0.9))
-        #self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
-        #                                 betas=(0., 0.9))
+        self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
+                                         betas=(0., 0.9))
         #self.optimizerEnc = optim.Adam(self.enc.parameters(), lr=self.p.lrEnc,
         #                                 betas=(0., 0.9))
 
@@ -141,7 +141,7 @@ class Trainer(object):
             self.imG.load_state_dict(state_dict['imG'])
             self.imD.load_state_dict(state_dict['imD'])
 
-            #self.tempG.load_state_dict(state_dict['tempG'])
+            self.tempG.load_state_dict(state_dict['tempG'])
             self.dir = state_dict['dir'].to(self.device)
             self.tempD.load_state_dict(state_dict['tempD'])
 
@@ -150,7 +150,7 @@ class Trainer(object):
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
             self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
 
-            #self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
+            self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
             #self.optimizerEnc.load_state_dict(state_dict['optimizerEnc'])
@@ -174,13 +174,13 @@ class Trainer(object):
         'step': step,
         'imG': self.imG.state_dict(),
         'imD': self.imD.state_dict(),
-        #'tempG': self.tempG.state_dict(),
+        'tempG': self.tempG.state_dict(),
         'dir': self.dir,
         'tempD': self.tempD.state_dict(),
         #'enc': self.enc.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
         'optimizerImD': self.optimizerImD.state_dict(),
-        #'optimizerTempG': self.optimizerTempG.state_dict(),
+        'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
         #'optimizerEnc': self.optimizerEnc.state_dict(),
         'lossImG': self.imG_losses,
@@ -206,17 +206,17 @@ class Trainer(object):
     def sample_g(self):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            #one = torch.ones(self.p.batch_size).to(self.p.device).reshape(-1,1)
-            #two = torch.Tensor([2.]*self.p.batch_size).to(self.p.device).reshape([-1,1])
-            #shift1 = self.tempG(one)
-            #shift2 = self.tempG(two)
-            alpha = torch.rand(2).sort()[0]
+            alpha = torch.rand(1,self.p.batch_size)
+            labels = alpha[0]<alpha[1]
+            z1 = self.tempG(z, alpha[0])
+            z2 = self.tempG(z, alpha[1])
+
             im = self.imG(z)
             im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-            im1 = self.imG(z+self.dir*alpha[0]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-            im2 = self.imG(z+self.dir*alpha[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+            im1 = self.imG(z1).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+            im2 = self.imG(z2).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             ims = torch.concat((im, im1, im2), dim=1)
-        return ims
+        return ims, labels
 
     def step_imD(self, real):
         for p in self.imD.parameters():
@@ -241,17 +241,22 @@ class Trainer(object):
 
         return errD_real.item(), errD_fake.item()
 
-    def step_tempD(self, real_true, real_false):
+    def step_tempD(self, real, r_label):
         for p in self.tempD.parameters():
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
-            fake = self.sample_g()
-            disc_fake = self.tempD(fake)
-            disc_real_true = self.tempD(real_true)
-            disc_real_false = self.tempD(real_false)
-            errD_real = (nn.ReLU()(1.0 - disc_real_true)).mean() + (nn.ReLU()(1.0 + disc_real_false)).mean()
-            errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
+            real_true = real[r_label.reshape(-1)]
+            real_false = real[torch.logical_not(r_label).reshape(-1)]
+            fake, f_label = self.sample_g()
+            fake_true = fake[f_label.reshape(-1)]
+            fake_false = fake[torch.logical_not(f_label).reshape(-1)]
+
+            disc_true = self.tempD(torch.concat((real_true, fake_true), dim=0))
+            disc_false = self.tempD(torch.concat((real_false, fake_false), dim=0))
+            errD_true = (nn.ReLU()(1.0 - disc_real_true)).mean()
+            errD_false = (nn.ReLU()(1.0 + disc_fake_true)).mean()
+
             errTempD = errD_fake + errD_real
         self.scalerTempD.scale(errTempD).backward()
         self.scalerTempD.step(self.optimizerTempD)
@@ -283,33 +288,36 @@ class Trainer(object):
         return errImG.item(), fake
 
     def step_tempG(self):
-        #for p in self.tempG.parameters():
-        #    p.requires_grad = True
+        for p in self.tempG.parameters():
+            p.requires_grad = True
         for p in self.imG.parameters():
             p.requires_grad = True
 
-        #self.tempG.zero_grad()
+        self.tempG.zero_grad()
         self.imG.zero_grad()
-        fake = self.sample_g()
+        fake, label = self.sample_g()
 
         with autocast():
-            #disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
-            disc_temp_fake = self.tempD(fake)
-            err_temp = - disc_temp_fake.mean()
+            fake_true = fake[label.reshape(-1)]
+            fake_false = fake[torch.logical_not(label).reshape(-1)]
+
+            disc_true = self.tempD(fake_true)
+            disc_false = self.tempD(fake_false)
+            err_temp = (nn.ReLU()(1.0 - disc_real_true)).mean() + (nn.ReLU()(1.0 + disc_fake_true)).mean()
 
             loss = err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()
-        #self.scalerImG.step(self.optimizerTempG)
+        self.scalerImG.step(self.optimizerTempG)
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
-        #for p in self.tempG.parameters():
-        #    p.requires_grad = False
+        for p in self.tempG.parameters():
+            p.requires_grad = False
         for p in self.imG.parameters():
             p.requires_grad = False
 
@@ -423,9 +431,7 @@ class Trainer(object):
 
             for _ in range(self.p.temp_iter):
                 for _ in range(self.p.iterD):
-                    real_true = real[labels.reshape(-1)]
-                    real_fake = real[torch.logical_not(labels).reshape(-1)]
-                    errTempD_real, errTempD_fake = self.step_tempD(real_true, real_fake)
+                    errTempD_real, errTempD_fake = self.step_tempD(real, labels)
                 #errTempG_im, errTempG_temp = self.step_tempG()
             errImG, errTempG_temp, fake = self.step_tempG()
             errTempG_im = 0

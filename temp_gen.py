@@ -9,4 +9,5 @@ class Generator(nn.Module):
         self.lin = 0.1 * torch.randn(self.dim_z)
 
     def forward(self, z, alpha):
-        return z + alpha * self.lin
+        d = torch.mul(self.lin.reshape(1,-1).transpose(0,1), alpha).transpose(0,1)
+        return z + d
