@@ -6,7 +6,7 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.dim_z = params.z_size
         self.ngpu = params.ngpu
-        self.lin = = 0.1 * torch.randn(self.dim_z)
+        self.lin = 0.1 * torch.randn(self.dim_z)
 
     def forward(self, z, alpha):
         return z + alpha * self.lin
