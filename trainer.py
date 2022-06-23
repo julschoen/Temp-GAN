@@ -254,8 +254,8 @@ class Trainer(object):
 
             disc_true = self.tempD(torch.concat((real_true, fake_true), dim=0))
             disc_false = self.tempD(torch.concat((real_false, fake_false), dim=0))
-            errD_true = (nn.ReLU()(1.0 - disc_real_true)).mean()
-            errD_false = (nn.ReLU()(1.0 + disc_fake_true)).mean()
+            errD_true = (nn.ReLU()(1.0 - disc_true)).mean()
+            errD_false = (nn.ReLU()(1.0 + disc_false)).mean()
 
             errTempD = errD_fake + errD_real
         self.scalerTempD.scale(errTempD).backward()
@@ -306,7 +306,7 @@ class Trainer(object):
 
             disc_true = self.tempD(fake_true)
             disc_false = self.tempD(fake_false)
-            err_temp = (nn.ReLU()(1.0 - disc_real_true)).mean() + (nn.ReLU()(1.0 + disc_fake_true)).mean()
+            err_temp = (nn.ReLU()(1.0 - disc_true)).mean() + (nn.ReLU()(1.0 + disc_false)).mean()
 
             loss = err_temp + err_im
 
