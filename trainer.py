@@ -257,7 +257,7 @@ class Trainer(object):
             errD_true = (nn.ReLU()(1.0 - disc_true)).mean()
             errD_false = (nn.ReLU()(1.0 + disc_false)).mean()
 
-            errTempD = errD_fake + errD_real
+            errTempD = errD_true + errD_false
         self.scalerTempD.scale(errTempD).backward()
         self.scalerTempD.step(self.optimizerTempD)
         self.scalerTempD.update()
@@ -265,7 +265,7 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = False
 
-        return errD_real.item(), errD_fake.item()
+        return errD_true.item(), errD_false.item()
 
     def step_imG(self):
         for p in self.imG.parameters():
