@@ -206,7 +206,7 @@ class Trainer(object):
     def sample_g(self):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            alpha = torch.rand(1,self.p.batch_size)
+            alpha = torch.rand(2,self.p.batch_size)
             labels = alpha[0]<alpha[1]
             z1 = self.tempG(z, alpha[0])
             z2 = self.tempG(z, alpha[1])
