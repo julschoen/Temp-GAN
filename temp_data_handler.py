@@ -53,6 +53,24 @@ class DataLIDC():
       x3 = x[i3]
       return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
+  def __dif_pat__(self, x, index):
+    ind = np.random.choice(range(self.len))
+    while ind == index:
+      ind = np.random.choice(range(self.len))
+
+    pat = os.path.join(self.path, self.files[ind])
+    x_ = np.load(pat)['x']
+
+    ind = np.random.randint(0, min(x.shape[0]-2, x_.shape[0], 3))
+
+    x_true = x[ind:ind+3]
+    x_false = x_[ind:ind+3]
+    ind = np.random.randint(0,3)
+    x_true[ind] = x_false[ind]
+
+    return x_true
+
+
   def __getitem__(self, index):
     try:
       pat = os.path.join(self.path, self.files[index])
@@ -61,7 +79,10 @@ class DataLIDC():
         image = self.__shift__(image)
         label = 1
       else:
-        image = self.__shift__(image, correct=False)
+        if torch.rand(1)<0.51:
+          image = self.__shift__(image, correct=False)
+        else:
+          image = self.__dif_pat__(image, index)
         label = 0
       xs_ = np.empty((3,64,128,128))
       for i, x in enumerate(image):
