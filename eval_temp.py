@@ -32,17 +32,16 @@ def eval(params):
 		imG = imG.to(params.device)
 		tempG = tempG.to(params.device)
 		with torch.no_grad():
-			with autocast():
-				if params.ngpu > 1:
-					z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
-				else:
-					z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
-				alpha = torch.sort(-20*torch.rand(10, params.batch_size)+10)[0]
+			if params.ngpu > 1:
+				z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
+			else:
+				z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
+			alpha = torch.sort(-2*torch.rand(10, params.batch_size)+1)[0]
 
-				im = imG(z).reshape(-1,1,64,128,128)
-				for a in alpha:
-					im1 = imG(tempG(z,a)).reshape(-1,1,64,128,128)
-					im = torch.concat((im, im1), dim=1)
+			im = imG(z).reshape(-1,1,64,128,128)
+			for a in alpha:
+				im1 = imG(tempG(z,a)).reshape(-1,1,64,128,128)
+				im = torch.concat((im, im1), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=im.detach().cpu().numpy())
 
