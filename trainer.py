@@ -307,8 +307,9 @@ class Trainer(object):
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
-            disc_temp_fake = self.tempD(fake)
-            err_temp = - disc_temp_fake.mean()
+            pred = self.tempD(fake)
+            one = torch.ones_like(pred).to(self.device)
+            err_temp = self.cla_loss(pred, one)
 
             #fake_true = fake[label.reshape(-1)]
             #fake_false = fake[torch.logical_not(label).reshape(-1)]
