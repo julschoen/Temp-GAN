@@ -90,6 +90,7 @@ class Trainer(object):
         self.fid_epoch = []
 
         self.reg_loss = nn.MSELoss()
+        self.cla_loss = .nn.BCEWithLogitsLoss()
         self.triplet_loss = nn.TripletMarginLoss(margin=0.5)
         self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
@@ -246,8 +247,8 @@ class Trainer(object):
             p.requires_grad = True
         self.tempD.zero_grad()
         with autocast():
-            real_true = real[r_label.reshape(-1)]
-            real_false = real[torch.logical_not(r_label).reshape(-1)]
+            #real_true = real[r_label.reshape(-1)]
+            #real_false = real[torch.logical_not(r_label).reshape(-1)]
             #fake, f_label = self.sample_g()
             #fake_true = fake[f_label.reshape(-1)]
             #fake_false = fake[torch.logical_not(f_label).reshape(-1)]
@@ -255,12 +256,14 @@ class Trainer(object):
             #disc_true = self.tempD(torch.concat((real_true, fake_true), dim=0))
             #disc_false = self.tempD(torch.concat((real_false, fake_false), dim=0))
 
-            disc_true = self.tempD(real_true)
-            disc_false = self.tempD(real_false)
-            errD_true = (nn.ReLU()(1.0 - disc_true)).mean()
-            errD_false = (nn.ReLU()(1.0 + disc_false)).mean()
+            #disc_true = self.tempD(real_true)
+            #disc_false = self.tempD(real_false)
+            #errD_true = (nn.ReLU()(1.0 - disc_true)).mean()
+            #errD_false = (nn.ReLU()(1.0 + disc_false)).mean()
+            pred = self.tempD(real)
+            errTempD = self.cla_loss(pred, r_label.to(self.device))
 
-            errTempD = errD_true + errD_false
+            #errTempD = errD_true + errD_false
         self.scalerTempD.scale(errTempD).backward()
         self.scalerTempD.step(self.optimizerTempD)
         self.scalerTempD.update()
@@ -268,7 +271,7 @@ class Trainer(object):
         for p in self.tempD.parameters():
             p.requires_grad = False
 
-        return errD_true.item(), errD_false.item()
+        return errTempD.item(), 0#errD_false.item()
 
     def step_imG(self):
         for p in self.imG.parameters():
