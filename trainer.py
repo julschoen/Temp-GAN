@@ -206,7 +206,7 @@ class Trainer(object):
     def sample_g(self):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            alpha = torch.rand(2,self.p.batch_size)
+            alpha = torch.sort(torch.rand(2,self.p.batch_size))
             labels = alpha[0]<alpha[1]
             z1 = self.tempG(z, alpha[0])
             z2 = self.tempG(z, alpha[1])
@@ -248,12 +248,15 @@ class Trainer(object):
         with autocast():
             real_true = real[r_label.reshape(-1)]
             real_false = real[torch.logical_not(r_label).reshape(-1)]
-            fake, f_label = self.sample_g()
-            fake_true = fake[f_label.reshape(-1)]
-            fake_false = fake[torch.logical_not(f_label).reshape(-1)]
+            #fake, f_label = self.sample_g()
+            #fake_true = fake[f_label.reshape(-1)]
+            #fake_false = fake[torch.logical_not(f_label).reshape(-1)]
 
-            disc_true = self.tempD(torch.concat((real_true, fake_true), dim=0))
-            disc_false = self.tempD(torch.concat((real_false, fake_false), dim=0))
+            #disc_true = self.tempD(torch.concat((real_true, fake_true), dim=0))
+            #disc_false = self.tempD(torch.concat((real_false, fake_false), dim=0))
+
+            disc_true = self.tempD(torch.concat(real_true)
+            disc_false = self.tempD(torch.concat(real_false)
             errD_true = (nn.ReLU()(1.0 - disc_true)).mean()
             errD_false = (nn.ReLU()(1.0 + disc_false)).mean()
 
