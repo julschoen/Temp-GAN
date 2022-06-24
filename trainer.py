@@ -90,7 +90,7 @@ class Trainer(object):
         self.fid_epoch = []
 
         self.reg_loss = nn.MSELoss()
-        self.cla_loss = .nn.BCEWithLogitsLoss()
+        self.cla_loss = nn.BCEWithLogitsLoss()
         self.triplet_loss = nn.TripletMarginLoss(margin=0.5)
         self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
