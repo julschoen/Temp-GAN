@@ -93,7 +93,7 @@ class DataLIDC():
         return self.__getitem__(index+1)
       else:
         return self.__getitem__(0)
-    return torch.from_numpy(image).float(), torch.Tensor([label]).bool()
+    return torch.from_numpy(image).float(), torch.Tensor([label])
 
   def __len__(self):
       return self.len
