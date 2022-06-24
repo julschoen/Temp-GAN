@@ -206,7 +206,7 @@ class Trainer(object):
     def sample_g(self):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            alpha = torch.sort(torch.rand(2,self.p.batch_size))
+            alpha = torch.sort(torch.rand(self.p.batch_size,2))[0].transpose(0,1)
             labels = alpha[0]<alpha[1]
             z1 = self.tempG(z, alpha[0])
             z2 = self.tempG(z, alpha[1])
@@ -304,12 +304,15 @@ class Trainer(object):
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
-            fake_true = fake[label.reshape(-1)]
-            fake_false = fake[torch.logical_not(label).reshape(-1)]
+            disc_temp_fake = self.tempD(fake)
+            err_temp = - disc_temp_fake.mean()
 
-            disc_true = self.tempD(fake_true)
-            disc_false = self.tempD(fake_false)
-            err_temp = (nn.ReLU()(1.0 - disc_true)).mean() + (nn.ReLU()(1.0 + disc_false)).mean()
+            #fake_true = fake[label.reshape(-1)]
+            #fake_false = fake[torch.logical_not(label).reshape(-1)]
+
+            #disc_true = self.tempD(fake_true)
+            #disc_false = self.tempD(fake_false)
+            #err_temp = (nn.ReLU()(1.0 - disc_true)).mean() + (nn.ReLU()(1.0 + disc_false)).mean()
 
             loss = err_temp + err_im
 
