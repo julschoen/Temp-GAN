@@ -103,11 +103,10 @@ class Trainer(object):
                 )
         imDr, imDf = self.imD_losses[-1]
         tempD = self.tempD_losses[-1]
-        tempG_im, tempG_temp = self.tempG_losses[-1]
+        tempG_temp = self.tempG_losses[-1]
 
-        print('[%d/%d] imD: %.2f|%.2f\ttempD: %.2f\timG: %.2f\ttempG (im|temp): %.2f|%.2f\tFID %.2f'
-                    % (step, self.p.niters, imDr, imDf, tempD,\
-                        self.imG_losses[-1], tempG_im, tempG_temp, self.fid[-1]))
+        print('[%d/%d] imD: %.2f|%.2f\ttempD: %.2f\timG: %.2f\ttempG: %.2f\tFID %.2f'
+                    % (step, self.p.niters, imDr, imDf, tempD,self.imG_losses[-1], tempG_temp, self.fid[-1]))
 
     def log_interpolation(self, step):
         noise = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
@@ -297,12 +296,11 @@ class Trainer(object):
             for _ in range(self.p.temp_iter):
                 errTempD_real = self.step_tempD(real, labels)
 
-            errImG, errTempG_temp, fake = self.step_G()
-            errTempG_im = 0
+            errG_im, errG_temp, fake = self.step_G()
 
             self.tracker.epoch_end()
-            self.imG_losses.append(errImG)
-            self.tempG_losses.append((errTempG_im, errTempG_temp))
+            self.imG_losses.append(errG_im)
+            self.tempG_losses.append(errG_temp)
             self.imD_losses.append((errImD_real, errImD_fake))
             self.tempD_losses.append(errTempD_real)
 
