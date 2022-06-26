@@ -295,7 +295,7 @@ class Trainer(object):
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
 
             for _ in range(self.p.temp_iter):
-                errTempD_real = self.step_tempD(real, labels, i)
+                errTempD_real = self.step_tempD(real, labels)
 
             errImG, errTempG_temp, fake = self.step_G()
             errTempG_im = 0

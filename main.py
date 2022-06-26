@@ -24,7 +24,7 @@ def main():
 	parser.add_argument('--device', type=str, default='cuda', help='Torch Device Choice')
 	parser.add_argument('--att', type=bool, default=True, help='Use Attention in BigGAN')
 	parser.add_argument('--load_params', type=bool, default=False, help='Load Parameters form pickle in log dir')
-	parser.add_argument('--im_iter', type=int, default=1, help='Iterations for Image Part of Model')
+	parser.add_argument('--im_iter', type=int, default=2, help='Iterations for Image Part of Model')
 	parser.add_argument('--temp_iter', type=int, default=1, help='Iterations for Temporal Part of Model')
 	params = parser.parse_args()
 	print(params)
