@@ -19,7 +19,7 @@ class Discriminator(nn.Module):
                               for i in range(2,8)}}
     
     # Prepare model
-    self.input_conv = Conv3_1d(3, self.arch['in_channels'][0])
+    self.input_conv = Conv3_1d(1, self.arch['in_channels'][0])
 
     self.blocks = []
     for index in range(len(self.arch['out_channels'])):
