@@ -201,21 +201,21 @@ class Trainer(object):
                 if l and alpha[0,i]<0:
                     if alpha[1,i]<0:
                         zs[:,i] = torch.concat((
-                            z1[i].reshape(1,self.p.batch_size,-1),
-                            z2[i].reshape(1, self.p.batch_size,-1),
-                            z[i].reshape(1,self.p.batch_size,-1)
+                            z1[i].reshape(1,-1),
+                            z2[i].reshape(1,-1),
+                            z[i].reshape(1,-1)
                         ))
                     else:
                         zs[:,i] = torch.concat((
-                            z1[i].reshape(1,self.p.batch_size,-1),
-                            z[i].reshape(1,self.p.batch_size,-1),
-                            z2[i].reshape(1, self.p.batch_size,-1)
+                            z1[i].reshape(1,-1),
+                            z[i].reshape(1,-1),
+                            z2[i].reshape(1,-1)
                         ))
                 else:
                     zs[:,i] = torch.concat((
-                        z[i].reshape(1,self.p.batch_size,-1),
-                        z1[i].reshape(1,self.p.batch_size,-1),
-                        z2[i].reshape(1, self.p.batch_size,-1)
+                        z[i].reshape(1,-1),
+                        z1[i].reshape(1,-1),
+                        z2[i].reshape(1,-1)
                     ))
 
             im = self.imG(zs[0])
