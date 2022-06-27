@@ -4,7 +4,7 @@ from torch.nn import init
 import torch.nn.functional as F
 import torch.nn.utils.spectral_norm as SpectralNorm
 import functools
-from utils import Attention, DBlock, snconv3d, snlinear
+from utils import Attention, DBlock, snconv3d, snlinear, Conv3_1d
 
 class Discriminator(nn.Module):
   def __init__(self, params):
@@ -19,7 +19,7 @@ class Discriminator(nn.Module):
                               for i in range(2,8)}}
     
     # Prepare model
-    self.input_conv = snconv3d(3, self.arch['in_channels'][0])
+    self.input_conv = Conv3_1d(3, self.arch['in_channels'][0])
 
     self.blocks = []
     for index in range(len(self.arch['out_channels'])):

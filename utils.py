@@ -5,6 +5,40 @@ import torch.nn.utils.spectral_norm as SpectralNorm
 import functools
 from torch.nn import Parameter as P
 
+class Conv3_1d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=(3,3,3,3), stride=(1, 1, 1, 1),
+                        padding=(1, 1, 1, 1), dilation=(1, 1, 1, 1), bias=True):
+        super().__init__()
+        t = kernel_size[0]
+        d = (kernel_size[1] + kernel_size[2] + kernel_size[3])//2
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
+        #Hidden size estimation to get a number of parameter similar to the 3d case
+        self.hidden_size = int((t*d**2*in_channels*out_channels)/(d**2*in_channels+t*out_channels))
+
+        self.conv3d = nn.Conv3d(in_channels, self.hidden_size, kernel_size[1:], stride[1:], padding[1:], bias=bias)
+        self.conv1d = nn.Conv1d(self.hidden_size, out_channels, kernel_size[0], stride[0], padding[0], bias=bias)
+
+    def forward(self, x):
+        #3D convolution
+        b, t, c, d1, d2, d3 = x.size()
+        x = x.view(b*t, c, d1, d2, d3)
+        x = F.relu(self.conv3d(x))
+        
+        #1D convolution
+        c, dr1, dr2, dr3 = x.size(1), x.size(2), x.size(3), x.size(4)
+        x = x.view(b, t, c, dr1, dr2, dr3)
+        x = x.permute(0, 3, 4, 5, 2, 1).contiguous()
+        x = x.view(b*dr1*dr2*dr3, c, t)
+        x = self.conv1d(x)
+
+        #Final output
+        out_c, out_t = x.size(1), x.size(2)
+        x = x.view(b, dr1, dr2, dr3, out_c, out_t)
+        x = x.permute(0, 4, 5, 1, 2, 3).contiguous()
+        return x.squeeze()
+
 
 ################# BigGAN ######################
 def snconv3d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1, bias=True):
