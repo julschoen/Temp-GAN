@@ -197,7 +197,7 @@ class Trainer(object):
             z2 = self.tempG(z, alpha[1])
 
             zs = torch.randn(3,self.p.batch_size,self.p.z_size, dtype=torch.float, device=self.device)
-            for i, l in labels:
+            for i, l in enumerate(labels):
                 if l and alpha[0,i]<0:
                     if alpha[1,i]<0:
                         zs[:,i] = torch.concat((
