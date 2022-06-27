@@ -7,7 +7,7 @@ from torch.nn import Parameter as P
 
 class Conv3_1d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=(3,3,3,3), stride=(1, 1, 1, 1),
-                        padding=(1, 1, 1, 1), dilation=(1, 1, 1, 1), bias=True):
+                        padding=(0, 1, 1, 1), dilation=(1, 1, 1, 1), bias=True):
         super().__init__()
         t = kernel_size[0]
         d = (kernel_size[1] + kernel_size[2] + kernel_size[3])//2
