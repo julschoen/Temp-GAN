@@ -233,8 +233,8 @@ class Trainer(object):
         with autocast():
             fake, f_label = self.sample_g()
 
-            pred_real = self.tempD(real)
-            pred_fake = self.tempD(fake)
+            pred_real = self.tempD(real.unsqueeze(2))
+            pred_fake = self.tempD(fake.unsqueeze(2))
             err_real = self.cla_loss(pred_real, r_label.to(self.device))
             err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
             loss = err_real + 0.3 * err_fake
@@ -262,7 +262,7 @@ class Trainer(object):
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
-            pred = self.tempD(fake)
+            pred = self.tempD(fake.unsqueeze(2))
             err_temp = self.cla_loss(pred, label.to(self.device))
 
             loss = err_temp + err_im
