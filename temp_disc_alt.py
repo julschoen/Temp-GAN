@@ -74,7 +74,9 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+        print(x.shape)
         x = torch.sum(x, [2, 3, 4])
+        print(x.shape)
         return self.head(x)
 
 
