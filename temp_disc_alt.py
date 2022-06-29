@@ -53,9 +53,9 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        h1 = torch.sum(self.extractor(x[:,0]), [2, 3, 4])
-        h2 = torch.sum(self.extractor(x[:,1]), [2, 3, 4])
-        h3 = torch.sum(self.extractor(x[:,2]), [2, 3, 4])
+        h1 = torch.sum(self.extractor(x[:,0].unsqueeze(1)), [2, 3, 4])
+        h2 = torch.sum(self.extractor(x[:,1].unsqueeze(1)), [2, 3, 4])
+        h3 = torch.sum(self.extractor(x[:,2].unsqueeze(1)), [2, 3, 4])
         h = torch.concat((h1,h2,h3)) 
         return self.head(h)
 
