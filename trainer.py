@@ -176,7 +176,7 @@ class Trainer(object):
         'lossImD': self.imD_losses,
         'lossTempD': self.tempD_losses,
         'fid': self.fid_epoch,
-        'loss_scale': gen_loss_scale
+        'loss_scale': self.gen_loss_scale
         }, os.path.join(self.models_dir, name))
 
     def log(self, step, fake, real):
