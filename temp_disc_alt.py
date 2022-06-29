@@ -56,7 +56,7 @@ class ResNet(nn.Module):
         h1 = torch.sum(self.extractor(x[:,0].unsqueeze(1)), [2, 3, 4])
         h2 = torch.sum(self.extractor(x[:,1].unsqueeze(1)), [2, 3, 4])
         h3 = torch.sum(self.extractor(x[:,2].unsqueeze(1)), [2, 3, 4])
-        h = torch.concat((h1,h2,h3)) 
+        h = torch.concat((h1,h2,h3), dim=1) 
         return self.head(h)
 
 
