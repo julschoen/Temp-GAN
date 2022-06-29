@@ -79,7 +79,7 @@ class ResNet(nn.Module):
 
 
 
-def Discriminator(**kwargs):
+def Discriminator(params, **kwargs):
     """Constructs a ResNet-50 model.
     """
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
