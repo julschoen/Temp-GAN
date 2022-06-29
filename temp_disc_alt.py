@@ -29,7 +29,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(
             block, 512, layers[3], shortcut_type, stride=1, dilation=4)
 
-        self.head = nn.Linear(512, 1)
+        self.head = nn.Linear(2048, 1)
 
 
         for m in self.modules():
@@ -74,9 +74,7 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        print(x.shape)
         x = torch.sum(x, [2, 3, 4])
-        print(x.shape)
         return self.head(x)
 
 
