@@ -62,8 +62,10 @@ class ResNet(nn.Module):
 
 
 def Discriminator(params, **kwargs):
+    #### ResNet-18
+    model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
     #### ResNet-50
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    #model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     #### ResNet-152
     #model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
     return model
