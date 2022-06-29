@@ -49,7 +49,7 @@ def main():
 	for p in pat.keys():
 		phase = pat[p]
 		ims = process(params.data_path, p, phase)
-		if ims.shape[0] > 2:
+		if ims.shape[0] > 9:
 			np.savez_compressed(os.path.join(params.save_path,f'{p}.npz'), x=ims)
 			print(f'Patient {p}, Number of Scans {ims.shape[0]}')
 	pat = [f for f in os.listdir(params.save_path) if f.endswith('npz')]
