@@ -262,7 +262,7 @@ class Trainer(object):
             pred_fake = self.tempD(fake.unsqueeze(2))
             err_real = self.cla_loss(pred_real, r_label.to(self.device))
             err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
-            loss = err_real + self.gen_loss_scale * err_fake
+            loss = err_real + 0.25 * err_fake
 
         self.scalerTempD.scale(loss).backward()
         self.scalerTempD.step(self.optimizerTempD)
@@ -290,7 +290,7 @@ class Trainer(object):
             pred = self.tempD(fake.unsqueeze(2))
             err_temp = self.cla_loss(pred, label.to(self.device))
 
-            loss = (self.gen_loss_scale) * err_temp + err_im
+            loss = err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()

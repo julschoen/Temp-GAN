@@ -16,7 +16,14 @@ class ResNet(nn.Module):
         self.inplanes = 64
         self.no_cuda = no_cuda
         super(ResNet, self).__init__()
-        self.conv1 = Conv3_1d(1, 64, kernel_size=(3,7,7,7), stride=(1, 2, 2, 2), padding=(0, 3, 3, 3), bias=False)
+        self.conv1 = nn.Conv3d(
+            3,
+            64,
+            kernel_size=7,
+            stride=(2, 2, 2),
+            padding=(3, 3, 3),
+            bias=False)
+        #self.conv1 = Conv3_1d(1, 64, kernel_size=(3,7,7,7), stride=(1, 2, 2, 2), padding=(0, 3, 3, 3), bias=False)
             
         self.bn1 = nn.BatchNorm3d(64)
         self.relu = nn.ReLU(inplace=True)
