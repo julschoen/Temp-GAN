@@ -334,7 +334,7 @@ class Trainer(object):
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
-                if self.gen_loss_scale < 1:
+                if self.gen_loss_scale < 1 and i > 999:
                     self.gen_loss_scale += 0.02
             
         
