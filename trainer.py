@@ -86,6 +86,7 @@ class Trainer(object):
         self.fid_epoch = []
 
         self.cla_loss = nn.BCEWithLogitsLoss()
+        self.gen_loss_scale = 0
         self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
     def inf_train_gen(self):
@@ -149,6 +150,7 @@ class Trainer(object):
             self.imD_losses = state_dict['lossImD']
             self.tempD_losses = state_dict['lossTempD']
             self.fid_epoch = state_dict['fid']
+            self.gen_loss_scale = state_dict['loss_scale']
             print('starting from step {}'.format(step))
         return step
 
@@ -174,6 +176,7 @@ class Trainer(object):
         'lossImD': self.imD_losses,
         'lossTempD': self.tempD_losses,
         'fid': self.fid_epoch,
+        'loss_scale': gen_loss_scale
         }, os.path.join(self.models_dir, name))
 
     def log(self, step, fake, real):
@@ -259,7 +262,7 @@ class Trainer(object):
             pred_fake = self.tempD(fake.unsqueeze(2))
             err_real = self.cla_loss(pred_real, r_label.to(self.device))
             err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
-            loss = err_real + 0.3 * err_fake
+            loss = err_real + self.gen_loss_scale * err_fake
 
         self.scalerTempD.scale(loss).backward()
         self.scalerTempD.step(self.optimizerTempD)
@@ -287,7 +290,7 @@ class Trainer(object):
             pred = self.tempD(fake.unsqueeze(2))
             err_temp = self.cla_loss(pred, label.to(self.device))
 
-            loss = err_temp + err_im
+            loss = (self.gen_loss_scale) * err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()
@@ -331,6 +334,8 @@ class Trainer(object):
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
+                if self.gen_loss_scale < 1:
+                    self.gen_loss_scale += 0.02
             
         
         self.log_final(i, fake, real)
