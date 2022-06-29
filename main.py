@@ -14,7 +14,7 @@ def main():
 	parser.add_argument('--lrImG', type=float, default=5e-5, help='Learning rate imG')
 	parser.add_argument('--lrImD', type=float, default=1e-4, help='Learning rate imD')
 	parser.add_argument('--lrTempG', type=float, default=5e-5, help='Learning rate tempG')
-	parser.add_argument('--lrTempD', type=float, default=1e-4, help='Learning rate tempD')
+	parser.add_argument('--lrTempD', type=float, default=1e-5, help='Learning rate tempD')
 	parser.add_argument('--lrEnc', type=float, default=1e-5, help='Learning rate Encoder')
 	parser.add_argument('--data_path', type=str, default='data/train_pat.npz',help='Path to data.')
 	parser.add_argument('--ngpu', type=int, default=2, help='Number of GPUs')
