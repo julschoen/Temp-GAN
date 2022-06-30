@@ -15,7 +15,7 @@ import torchvision
 import torchvision.utils as vutils
 
 from image_disc import Discriminator as ImD
-from temp_disc_alt import Discriminator as TempD
+from temp_disc import Discriminator as TempD
 from image_gen import Generator as ImG
 from temp_gen import Generator as TempG
 from encoder import Encoder
