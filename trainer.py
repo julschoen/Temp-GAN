@@ -311,7 +311,7 @@ class Trainer(object):
 
             disc_im, pred = self.tempD(fake)
             err_temp = self.cla_loss(pred, label.to(self.device))
-            err_im = - disc_im_fake.mean()
+            err_im = - disc_im.mean()
             loss = err_temp + err_im
 
 
