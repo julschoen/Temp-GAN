@@ -135,7 +135,6 @@ class Trainer(object):
             self.imD.load_state_dict(state_dict['imD'])
 
             self.tempG.load_state_dict(state_dict['tempG'])
-            self.dir = state_dict['dir'].to(self.device)
             self.tempD.load_state_dict(state_dict['tempD'])
 
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
@@ -164,7 +163,6 @@ class Trainer(object):
         'imG': self.imG.state_dict(),
         'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
-        'dir': self.dir,
         'tempD': self.tempD.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
         'optimizerImD': self.optimizerImD.state_dict(),
