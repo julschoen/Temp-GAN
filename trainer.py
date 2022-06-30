@@ -48,7 +48,6 @@ class Trainer(object):
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
-        self.dir = (torch.randn(self.p.z_size)/10).to(self.device)
         
         if self.p.ngpu>1:
             self.imD = nn.DataParallel(self.imD)
@@ -273,6 +272,31 @@ class Trainer(object):
 
         return loss.item()
 
+    def step_D(self, real, r_label):
+        for p in self.tempD.parameters():
+            p.requires_grad = True
+        self.tempD.zero_grad()
+        with autocast():
+            fake, f_label = self.sample_g()
+
+            disc_real, pred_real = self.tempD(real)
+            disc_fake, pred_fake = self.tempD(fake)
+
+            errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
+            errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
+            err_real = self.cla_loss(pred_real, r_label.to(self.device))
+            err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
+            loss = errD_real + errD_fake + err_real + err_fake
+
+        self.scalerTempD.scale(loss).backward()
+        self.scalerTempD.step(self.optimizerTempD)
+        self.scalerTempD.update()
+
+        for p in self.tempD.parameters():
+            p.requires_grad = False
+
+        return errD_real.item(), errD_fake.item(), loss.item()
+
     def step_G(self):
         for p in self.tempG.parameters():
             p.requires_grad = True
@@ -284,12 +308,12 @@ class Trainer(object):
         fake, label = self.sample_g()
 
         with autocast():
-            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
-            err_im = - disc_im_fake.mean()
+            #disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+            #err_im = - disc_im_fake.mean()
 
-            pred = self.tempD(fake)
+            disc_im, pred = self.tempD(fake)
             err_temp = self.cla_loss(pred, label.to(self.device))
-
+            err_im = - disc_im_fake.mean()
             loss = err_temp + err_im
 
 
@@ -316,10 +340,10 @@ class Trainer(object):
             for _ in range(self.p.im_iter):  
                 data, labels = next(gen)
                 real = data.to(self.device)
-                errImD_real, errImD_fake = self.step_imD(real[:,0])
+                errImD_real, errImD_fake, errTempD_real = self.step_D(real, labels)
 
-            for _ in range(self.p.temp_iter):
-                errTempD_real = self.step_tempD(real, labels)
+            #for _ in range(self.p.temp_iter):
+            #    errTempD_real = self.step_tempD(real, labels)
 
             errG_im, errG_temp, fake = self.step_G()
 
