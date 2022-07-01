@@ -340,7 +340,7 @@ class Trainer(object):
             for _ in range(self.p.im_iter):  
                 data, labels = next(gen)
                 real = data.to(self.device)
-                errImD_real, errImD_fake = self.step_imD(real, labels)
+                errImD_real, errImD_fake = self.step_imD(real[:,0].unsqueeze(1))
 
             #for _ in range(self.p.temp_iter):
             #    errTempD_real = self.step_tempD(real, labels)
