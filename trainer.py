@@ -344,7 +344,7 @@ class Trainer(object):
 
             #for _ in range(self.p.temp_iter):
             #    errTempD_real = self.step_tempD(real, labels)
-
+            errTempD_real = 0
             errG_im, errG_temp, fake = self.step_G()
 
             self.tracker.epoch_end()
