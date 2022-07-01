@@ -26,6 +26,7 @@ class Trainer(object):
         ### Misc ###
         self.p = params
         self.device = params.device
+        self.assessor_path = '../Assessor/Assessor/models/checkpoint_1499.pt'
 
         ### Make Dirs ###
         self.log_dir = params.log_dir
@@ -55,6 +56,8 @@ class Trainer(object):
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
             
+        state_dict = torch.load(self.assessor_path)
+        self.tempD.load_state_dict(state_dict['model'])
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
                                          betas=(0., 0.9))
@@ -306,12 +309,11 @@ class Trainer(object):
         fake, label = self.sample_g()
 
         with autocast():
-            #disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
-            #err_im = - disc_im_fake.mean()
+            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+            err_im = - disc_im_fake.mean()
 
-            disc_im, pred = self.tempD(fake)
+            pred = self.tempD(fake)
             err_temp = self.cla_loss(pred, label.to(self.device))
-            err_im = - disc_im.mean()
             loss = err_temp + err_im
 
 
@@ -338,7 +340,7 @@ class Trainer(object):
             for _ in range(self.p.im_iter):  
                 data, labels = next(gen)
                 real = data.to(self.device)
-                errImD_real, errImD_fake, errTempD_real = self.step_D(real, labels)
+                errImD_real, errImD_fake = self.step_imD(real, labels)
 
             #for _ in range(self.p.temp_iter):
             #    errTempD_real = self.step_tempD(real, labels)
