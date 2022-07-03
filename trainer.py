@@ -26,7 +26,7 @@ class Trainer(object):
         ### Misc ###
         self.p = params
         self.device = params.device
-        self.assessor_path = '../Assessor/Assessor/models/checkpoint_1499.pt'
+        #self.assessor_path = '../Assessor/Assessor/models/checkpoint_1499.pt'
 
         ### Make Dirs ###
         self.log_dir = params.log_dir
@@ -56,8 +56,8 @@ class Trainer(object):
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
             
-        state_dict = torch.load(self.assessor_path)
-        self.tempD.load_state_dict(state_dict['model'])
+        #state_dict = torch.load(self.assessor_path)
+        #self.tempD.load_state_dict(state_dict['model'])
 
         self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
                                          betas=(0., 0.9))
@@ -194,7 +194,7 @@ class Trainer(object):
     def sample_g(self):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            alpha = (2*torch.rand(self.p.batch_size,2)-1).transpose(0,1)
+            alpha = torch.sort((2*torch.rand(self.p.batch_size,2)-1).transpose(0,1))[0]
             labels = alpha[0]<alpha[1]
             z1 = self.tempG(z, alpha[0])
             z2 = self.tempG(z, alpha[1])
@@ -226,7 +226,7 @@ class Trainer(object):
             im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             ims = torch.concat((im, im1, im2), dim=1)
-        return ims, labels.reshape(-1,1).float()
+        return ims, torch.zeros_like(labels).reshape(-1,1).float()
 
     def step_imD(self, real):
         for p in self.imD.parameters():
@@ -262,7 +262,7 @@ class Trainer(object):
             pred_fake = self.tempD(fake)
             err_real = self.cla_loss(pred_real, r_label.to(self.device))
             err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
-            loss = err_real + 0.25 * err_fake
+            loss = err_real + err_fake
 
         self.scalerTempD.scale(loss).backward()
         self.scalerTempD.step(self.optimizerTempD)
@@ -312,8 +312,8 @@ class Trainer(object):
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
-            pred = self.tempD(fake)
-            err_temp = self.cla_loss(pred, label.to(self.device))
+            err_temp = -self.tempD(fake).mean()
+            #err_temp = self.cla_loss(pred, label.to(self.device))
             loss = err_temp + err_im
 
 
@@ -342,9 +342,9 @@ class Trainer(object):
                 real = data.to(self.device)
                 errImD_real, errImD_fake = self.step_imD(real[:,0])
 
-            #for _ in range(self.p.temp_iter):
-            #    errTempD_real = self.step_tempD(real, labels)
-            errTempD_real = 0
+            for _ in range(self.p.temp_iter):
+                errTempD_real = self.step_tempD(real, labels)
+            #errTempD_real = 0
             errG_im, errG_temp, fake = self.step_G()
 
             self.tracker.epoch_end()
