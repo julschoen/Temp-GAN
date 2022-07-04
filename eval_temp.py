@@ -41,7 +41,6 @@ def eval(params):
 			im = imG(z).reshape(-1,1,64,128,128)
 			for a in alpha:
 				z_ = tempG(z,a)
-				print(z_.mean(), z_.std())
 				im1 = imG(tempG(z,a)).reshape(-1,1,64,128,128)
 				im = torch.concat((im, im1), dim=1)
 		
