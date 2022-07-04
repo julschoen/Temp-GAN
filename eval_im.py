@@ -8,7 +8,7 @@ from torch.cuda.amp import autocast
 
 from eval_utils import *
 from image_gen import Generator as ImG
-from temp_data_handler import DATA, DataLIDC
+from temp_data_handler import DATA, Data4D
 
 def load_gen(path, ngpu):
 	with open(os.path.join(path, 'params.pkl'), 'rb') as file:
