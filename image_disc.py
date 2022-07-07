@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from torch.nn import init
 import torch.nn.functional as F
-from torch.nn.utils.parametrizations import spectral_norm as SpectralNorm
 import functools
 from utils import Attention, DBlock, snconv3d, snlinear
 
