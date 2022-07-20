@@ -34,9 +34,6 @@ def eval(params):
 	for model_path in params.model_log:
 		print(model_path)
 		netG = load_gen(model_path, params.ngpu).to(params.device)
-		ssims = []
-		psnrs = []
-		fids = []
 		fids_ax = []
 		fids_cor = []
 		fids_sag = []
@@ -51,30 +48,18 @@ def eval(params):
 					else:
 						noise = torch.randn(x1.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
 					x2 = netG(noise)
-					s,p,f = ssim(x1.cpu(),x2.cpu()), psnr(x1.cpu(),x2.cpu()),fid_3d(fid_model, x1.cpu(), x2.cpu())
-					ssims.append(s)
-					psnrs.append(p)
-					fids.append(f)
 					fa, fc, fs = fid(x1, x2, params.device)
 					fids_ax.append(fa)
 					fids_cor.append(fc)
 					fids_sag.append(fs)
-			
 
-		ssims = np.array(ssims)
-		psnrs = np.array(psnrs)
-		fids = np.array(fids)
 		fids_ax = np.array(fids_ax)
 		fids_cor = np.array(fids_cor)
 		fids_sag = np.array(fids_sag)
-		print(f'SSIM: {ssims.mean():.4f}+-{ssims.std():.4f}'+ 
-			f'\tPSNR: {psnrs.mean():.4f}+-{psnrs.std():.4f}'+
-			f'\tFID ax: {fids_ax.mean():.4f}+-{fids_ax.std():.4f}'+
+		print(f'FID ax: {fids_ax.mean():.4f}+-{fids_ax.std():.4f}'+
 			f'\tFID cor: {fids_cor.mean():.4f}+-{fids_cor.std():.4f}'+
-			f'\tFID sag: {fids_sag.mean():.4f}+-{fids_sag.std():.4f}'+
-			f'\t3d-FID: {fids.mean():.4f}+-{fids.std():.4f}')
-		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_stats.npz'),
-			ssim = ssims, psnr = psnrs, fid = fids, fid_ax=fids_ax, fid_cor=fids_cor, fid_sag=fids_sag)
+			f'\tFID sag: {fids_sag.mean():.4f}+-{fids_sag.std():.4f}')
+		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_stats.npz'), fid_ax=fids_ax, fid_cor=fids_cor, fid_sag=fids_sag)
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -84,7 +69,6 @@ def main():
 	parser.add_argument('--log_dir', type=str, default='log', help='Save Location')
 	parser.add_argument('--device', type=str, default='cuda', help='Torch Device Choice')
 	parser.add_argument('-l', '--model_log', action='append', type=str, required=True, help='Model log directories to evaluate')
-	parser.add_argument('--fid_checkpoint', type=str, default='resnet_50.pth', help='Path to pretrained MedNet')
 	params = parser.parse_args()
 	eval(params)
 

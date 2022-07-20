@@ -24,37 +24,6 @@ def ssim(real, fake):
         ms_ssim_module = MS_SSIM(data_range=1, win_size=3, size_average=True, channel=1, spatial_dims=3)
         ms_ssim_ = ms_ssim_module(real.cpu().to(torch.float32), fake.cpu().to(torch.float32)).item()
     return ms_ssim_
- 
-def fid_3d(model, real, fake):
-    # calculate activations
-    with torch.no_grad():
-        with autocast():
-            act1 = model(real.cuda()).mean(dim=(2,3,4)).detach().cpu().numpy()
-            act2 = model(fake.cuda()).mean(dim=(2,3,4)).detach().cpu().numpy() 
-            # calculate mean and covariance statistics
-            mu1, sigma1 = act1.mean(axis=0), np.cov(act1, rowvar=False)
-            mu2, sigma2 = act2.mean(axis=0), np.cov(act2, rowvar=False)
-            # calculate sum squared difference between means
-            ssdiff = np.sum((mu1 - mu2)**2.0)
-            # calculate sqrt of product between cov
-            covmean = sqrtm(sigma1.dot(sigma2))
-            # check and correct imaginary numbers from sqrt
-            if np.iscomplexobj(covmean):
-                covmean = covmean.real
-            # calculate score
-            fid_ = ssdiff + np.trace(sigma1 + sigma2 - 2.0 * covmean)
-    return fid_
-
-def get_fid_model(path):
-    fid_model = resnet50()
-    state = torch.load(path)['state_dict']
-
-    new_state_dict = OrderedDict()
-    for k, v in state.items():
-        name = k[7:] # remove `module.`
-        new_state_dict[name] = v
-    fid_model.load_state_dict(new_state_dict)
-    return fid_model
 
 def fid(real, fake, device):
     FID.set_config(device=device)

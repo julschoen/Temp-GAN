@@ -22,12 +22,10 @@ class Discriminator(nn.Module):
 
     self.blocks = []
     for index in range(len(self.arch['out_channels'])):
-      self.blocks += [[DBlock(in_channels=self.arch['in_channels'][index] if d_index==0 else self.arch['out_channels'][index],
+      self.blocks += [[DBlock(in_channels=self.arch['in_channels'][index],
                        out_channels=self.arch['out_channels'][index],
                        preactivation=True,
-                       downsample=(nn.AvgPool3d(2) if self.arch['downsample'][index] and d_index==0 else None))
-                       for d_index in range(1)]]
-      if self.p.att:
+                       downsample=(nn.AvgPool3d(2) if self.arch['downsample'][index] else None))]]
         if self.arch['attention'][self.arch['resolution'][index]]:
           self.blocks[-1] += [Attention(self.arch['out_channels'][index])]
 

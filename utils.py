@@ -51,6 +51,7 @@ def snlinear(in_features, out_features):
 class Attention(nn.Module):
   def __init__(self, ch):
     super(Attention, self).__init__()
+    # Channel multiplier
     self.ch = ch
     self.ch_ = self.ch//8
 
@@ -60,6 +61,7 @@ class Attention(nn.Module):
     self.v = snconv3d(self.ch_, self.ch, kernel_size=1, padding=0, bias=False)
     self.gamma = P(torch.tensor(0.), requires_grad=True)
   def forward(self, x, y=None):
+    # Apply convs
     f = self.f(x)
     g = F.max_pool3d(self.g(x), [2,2,2], stride=2)
     f = f.view(-1, self.ch_, x.shape[2] * x.shape[3] * x.shape[4])
