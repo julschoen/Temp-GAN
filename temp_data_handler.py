@@ -91,3 +91,61 @@ class Data4D():
 
   def __len__(self):
       return self.len
+
+
+class DataLIDC():
+  def __init__(self, path):
+    self.data = np.load(path)['X']
+    self.len = self.data.shape[0]
+
+  def __shift__(self, x, correct=True):
+    if correct:
+      s1, s2, s3 = np.sort(np.random.randint(1,80,3))
+      x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
+      x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
+      x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+    else:
+      s1, s2, s3 = np.random.randint(1,80,3)
+      while s1 < s2 and s2 < s3:
+        s1, s2, s3 = np.random.randint(1,80,3)
+      x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
+      x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
+      x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+  
+    return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
+
+  def __dif_pat__(self, x, index):
+    ind = np.random.choice(range(self.len))
+    while ind == index:
+      ind = np.random.choice(range(self.len))
+
+    x_ = self.data[ind]
+    s1, s2, s3 = np.sort(np.random.randint(1,80,3))
+    x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
+    if torch.rand(1)<0.5:
+      x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
+    else:
+      x2 = np.pad(x_, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
+    if torch.rand(1)<0.5:
+      x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+    else:
+      x3 = np.pad(x_, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+
+    return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
+
+  def __getitem__(self, index):
+    image = self.data[index]
+    image = np.clip(image, -1,1)
+    if torch.rand(1)<0.51:
+      image = self.__shift__(image)
+      label = 1
+    else:
+      if torch.rand(1)<0.51:
+        image = self.__shift__(image, correct=False)
+      else:
+        image = self.__dif_pat__(image, index)
+      label = 0
+    return torch.from_numpy(image).float(), torch.Tensor([label])
+
+  def __len__(self):
+    return self.len
