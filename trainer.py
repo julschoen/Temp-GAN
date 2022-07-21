@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pytorch_fid_wrapper as FID
 import pickle
-from carbontracker.tracker import CarbonTracker
+#from carbontracker.tracker import CarbonTracker
 
 import torch 
 import torch.optim as optim
@@ -89,7 +89,7 @@ class Trainer(object):
 
         self.cla_loss = nn.BCEWithLogitsLoss()
         self.gen_loss_scale = 0
-        self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
+        #self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
     def inf_train_gen(self):
         while True:
@@ -373,7 +373,7 @@ class Trainer(object):
 
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
-            self.tracker.epoch_start()
+            #self.tracker.epoch_start()
             for _ in range(self.p.im_iter):  
                 data, labels = next(gen)
                 real = data.to(self.device)
@@ -384,7 +384,7 @@ class Trainer(object):
 
             errG_im, errG_temp, fake = self.step_G()
 
-            self.tracker.epoch_end()
+            #self.tracker.epoch_end()
             self.imG_losses.append(errG_im)
             self.tempG_losses.append(errG_temp)
             self.imD_losses.append((errImD_real, errImD_fake))
@@ -398,6 +398,6 @@ class Trainer(object):
             
         
         self.log_final(i, fake, real)
-        self.tracker.stop()
+        #self.tracker.stop()
         print('...Done')
 
