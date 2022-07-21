@@ -194,7 +194,7 @@ class Trainer(object):
     def sample_g(self):
         with autocast():
             z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            alpha = torch.sort((2*torch.rand(self.p.batch_size,2)-1).transpose(0,1))[0]
+            alpha = (12*torch.rand(self.p.batch_size,2)-6).transpose(0,1)
             labels = alpha[0]<alpha[1]
             z1 = self.tempG(z, alpha[0])
             z2 = self.tempG(z, alpha[1])
@@ -226,7 +226,7 @@ class Trainer(object):
             im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             ims = torch.concat((im, im1, im2), dim=1)
-        return ims, torch.zeros_like(labels).reshape(-1,1).float()
+        return ims, torch.tensor(labels).reshape(-1,1).float()
 
     def step_imD(self, real):
         for p in self.imD.parameters():
@@ -312,8 +312,8 @@ class Trainer(object):
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
-            err_temp = -self.tempD(fake).mean()
-            #err_temp = self.cla_loss(pred, label.to(self.device))
+            #err_temp = -self.tempD(fake).mean()
+            err_temp = self.cla_loss(pred, label.to(self.device))
             loss = err_temp + err_im
 
 
@@ -344,7 +344,7 @@ class Trainer(object):
 
             for _ in range(self.p.temp_iter):
                 errTempD_real = self.step_tempD(real, labels)
-            #errTempD_real = 0
+
             errG_im, errG_temp, fake = self.step_G()
 
             self.tracker.epoch_end()
@@ -358,9 +358,6 @@ class Trainer(object):
                 self.fid_epoch.append(np.array(self.fid).mean())
                 self.fid = []
                 self.save_checkpoint(i)
-
-            if i%80 == 0 and self.gen_loss_scale < 1 and i > 999:
-                self.gen_loss_scale += 0.01
             
         
         self.log_final(i, fake, real)
