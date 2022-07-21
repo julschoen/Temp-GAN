@@ -348,9 +348,10 @@ class Trainer(object):
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
             err_im = - disc_im_fake.mean()
 
+            pred = self.tempD(fake)
             #err_temp = -self.tempD(fake).mean()
             err_temp = self.cla_loss(pred, label.to(self.device))
-            loss = err_temp + err_im
+            loss = err_temp + 0.1*err_im
 
 
         self.scalerImG.scale(loss).backward()
