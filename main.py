@@ -1,4 +1,4 @@
-from temp_data_handler import Data4D
+from temp_data_handler import Data4D, DataLIDC
 from trainer import Trainer
 import argparse
 
@@ -27,7 +27,8 @@ def main():
 	parser.add_argument('--temp_iter', type=int, default=1, help='Iterations for Temporal Part of Model')
 	params = parser.parse_args()
 	print(params)
-	dataset_train = Data4D(path=params.data_path)
+	#dataset_train = Data4D(path=params.data_path)
+	dataset_train = DataLIDC(path=params.data_path)
 
 	trainer = Trainer(dataset_train, params=params)
 	trainer.train()
