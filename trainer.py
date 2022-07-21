@@ -335,12 +335,12 @@ class Trainer(object):
         return errD_real.item(), errD_fake.item(), loss.item()
 
     def step_G(self):
-        for p in self.tempG.parameters():
-            p.requires_grad = True
+        #for p in self.tempG.parameters():
+        #    p.requires_grad = True
         for p in self.imG.parameters():
             p.requires_grad = True
 
-        self.tempG.zero_grad()
+        #self.tempG.zero_grad()
         self.imG.zero_grad()
         fake, label = self.sample_g(grad=True)
 
@@ -355,12 +355,12 @@ class Trainer(object):
 
 
         self.scalerImG.scale(loss).backward()
-        self.scalerImG.step(self.optimizerTempG)
+        #self.scalerImG.step(self.optimizerTempG)
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
-        for p in self.tempG.parameters():
-            p.requires_grad = False
+        #for p in self.tempG.parameters():
+        #    p.requires_grad = False
         for p in self.imG.parameters():
             p.requires_grad = False
 
