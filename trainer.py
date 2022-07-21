@@ -191,42 +191,77 @@ class Trainer(object):
         self.log_interpolation(step)
         self.save_checkpoint(step)
 
-    def sample_g(self):
+    def sample_g(self, grad=False):
         with autocast():
-            z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-            alpha = (12*torch.rand(self.p.batch_size,2)-6).transpose(0,1)
-            labels = alpha[0]<alpha[1]
-            z1 = self.tempG(z, alpha[0])
-            z2 = self.tempG(z, alpha[1])
+            if grad:
+                z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
+                alpha = (12*torch.rand(self.p.batch_size,2)-6).transpose(0,1)
+                labels = alpha[0]<alpha[1]
+                z1 = self.tempG(z, alpha[0])
+                z2 = self.tempG(z, alpha[1])
 
-            zs = torch.randn(3,self.p.batch_size,self.p.z_size, dtype=torch.float, device=self.device)
-            for i, l in enumerate(labels):
-                if l and alpha[0,i]<0:
-                    if alpha[1,i]<0:
-                        zs[:,i] = torch.concat((
-                            z1[i].reshape(1,-1),
-                            z2[i].reshape(1,-1),
-                            z[i].reshape(1,-1)
-                        ))
+                zs = torch.randn(3,self.p.batch_size,self.p.z_size, dtype=torch.float, device=self.device)
+                for i, l in enumerate(labels):
+                    if l and alpha[0,i]<0:
+                        if alpha[1,i]<0:
+                            zs[:,i] = torch.concat((
+                                z1[i].reshape(1,-1),
+                                z2[i].reshape(1,-1),
+                                z[i].reshape(1,-1)
+                            ))
+                        else:
+                            zs[:,i] = torch.concat((
+                                z1[i].reshape(1,-1),
+                                z[i].reshape(1,-1),
+                                z2[i].reshape(1,-1)
+                            ))
                     else:
                         zs[:,i] = torch.concat((
-                            z1[i].reshape(1,-1),
                             z[i].reshape(1,-1),
+                            z1[i].reshape(1,-1),
                             z2[i].reshape(1,-1)
                         ))
-                else:
-                    zs[:,i] = torch.concat((
-                        z[i].reshape(1,-1),
-                        z1[i].reshape(1,-1),
-                        z2[i].reshape(1,-1)
-                    ))
 
-            im = self.imG(zs[0])
-            im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-            im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-            print(im1)
-            im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-            ims = torch.concat((im, im1, im2), dim=1)
+                im = self.imG(zs[0])
+                im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+                im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+                im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+                ims = torch.concat((im, im1, im2), dim=1)
+            else:
+                with torch.no_grad():
+                    z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
+                    alpha = (12*torch.rand(self.p.batch_size,2)-6).transpose(0,1)
+                    labels = alpha[0]<alpha[1]
+                    z1 = self.tempG(z, alpha[0])
+                    z2 = self.tempG(z, alpha[1])
+
+                    zs = torch.randn(3,self.p.batch_size,self.p.z_size, dtype=torch.float, device=self.device)
+                    for i, l in enumerate(labels):
+                        if l and alpha[0,i]<0:
+                            if alpha[1,i]<0:
+                                zs[:,i] = torch.concat((
+                                    z1[i].reshape(1,-1),
+                                    z2[i].reshape(1,-1),
+                                    z[i].reshape(1,-1)
+                                ))
+                            else:
+                                zs[:,i] = torch.concat((
+                                    z1[i].reshape(1,-1),
+                                    z[i].reshape(1,-1),
+                                    z2[i].reshape(1,-1)
+                                ))
+                        else:
+                            zs[:,i] = torch.concat((
+                                z[i].reshape(1,-1),
+                                z1[i].reshape(1,-1),
+                                z2[i].reshape(1,-1)
+                            ))
+
+                    im = self.imG(zs[0])
+                    im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+                    im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+                    im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+                    ims = torch.concat((im, im1, im2), dim=1)
         return ims, torch.tensor(labels).reshape(-1,1).float()
 
     def step_imD(self, real):
@@ -307,7 +342,7 @@ class Trainer(object):
 
         self.tempG.zero_grad()
         self.imG.zero_grad()
-        fake, label = self.sample_g()
+        fake, label = self.sample_g(grad=True)
 
         with autocast():
             disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
