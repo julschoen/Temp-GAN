@@ -196,6 +196,8 @@ class Trainer(object):
             if grad:
                 z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
                 alpha = (12*torch.rand(self.p.batch_size,2)-6).transpose(0,1)
+                if not self.p.cl:
+                    alpha = torch.sort(alpa)[0]
                 labels = alpha[0]<alpha[1]
                 z1 = self.tempG(z, alpha[0])
                 z2 = self.tempG(z, alpha[1])
@@ -296,8 +298,13 @@ class Trainer(object):
 
             pred_real = self.tempD(real)
             pred_fake = self.tempD(fake)
-            err_real = self.cla_loss(pred_real, r_label.to(self.device))
-            err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
+
+            if self.p.cl:
+                err_real = self.cla_loss(pred_real, r_label.to(self.device))
+                err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
+            else:
+                err_real = (nn.ReLU()(1.0 - pred_real)).mean()
+                err_fake = (nn.ReLU()(1.0 + pred_fake)).mean()
             loss = err_real + err_fake
 
         self.scalerTempD.scale(loss).backward()
@@ -335,8 +342,9 @@ class Trainer(object):
         return errD_real.item(), errD_fake.item(), loss.item()
 
     def step_G(self):
-        #for p in self.tempG.parameters():
-        #    p.requires_grad = True
+        if not self.p.fixed_dir:
+            for p in self.tempG.parameters():
+                p.requires_grad = True
         for p in self.imG.parameters():
             p.requires_grad = True
 
@@ -349,18 +357,23 @@ class Trainer(object):
             err_im = - disc_im_fake.mean()
 
             pred = self.tempD(fake)
-            #err_temp = -self.tempD(fake).mean()
-            err_temp = self.cla_loss(pred, label.to(self.device))
+            if self.p.cl:
+                err_temp = self.cla_loss(pred, label.to(self.device))
+            else:
+                err_temp = -pred.mean()
+            
             loss = err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()
-        #self.scalerImG.step(self.optimizerTempG)
+        if not self.p.fixed_dir:
+            self.scalerImG.step(self.optimizerTempG)
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
-        #for p in self.tempG.parameters():
-        #    p.requires_grad = False
+        if not self.p.cl:
+            for p in self.tempG.parameters():
+                p.requires_grad = False
         for p in self.imG.parameters():
             p.requires_grad = False
 
@@ -400,4 +413,3 @@ class Trainer(object):
         self.log_final(i, fake, real)
         #self.tracker.stop()
         print('...Done')
-
