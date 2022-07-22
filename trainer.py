@@ -355,7 +355,8 @@ class Trainer(object):
         for p in self.imG.parameters():
             p.requires_grad = True
 
-        #self.tempG.zero_grad()
+        if not self.p.fixed_dir:
+            self.tempG.zero_grad()
         self.imG.zero_grad()
         fake, label = self.sample_g(grad=True)
 
