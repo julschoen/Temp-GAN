@@ -28,6 +28,7 @@ def main():
 	parser.add_argument('--cl', type=bool, default=False, help='Use Classification or Adversarial Loss')
 	parser.add_argument('--fixed_dir', type=bool, default=False, help='Is direction learnable?')
 	parser.add_argument('--norm', type=bool, default=False, help='Use direction of unit length?')
+	parser.add_argument('--one_disc', type=bool, default=False, help='Use only Temporal Discriminator. Overrides cl to False.')
 	params = parser.parse_args()
 	print(params)
 	#dataset_train = Data4D(path=params.data_path)

@@ -27,7 +27,8 @@ class Trainer(object):
         self.p = params
         self.device = params.device
         #self.assessor_path = '../Assessor/Assessor/models/checkpoint_1499.pt'
-
+        if self.p.one_disc:
+            self.p.cl = False
         ### Make Dirs ###
         self.log_dir = params.log_dir
         os.makedirs(self.log_dir, exist_ok=True)
@@ -45,29 +46,32 @@ class Trainer(object):
                 pickle.dump(params, file)
 
         ### Make Models ###
-        self.imD = ImD(self.p).to(self.device)
+        if not self.p.one_disc:
+            self.imD = ImD(self.p).to(self.device)
         self.tempD = TempD(self.p).to(self.device)
         self.imG = ImG(self.p).to(self.device)
         self.tempG = TempG(self.p).to(self.device)
         
         if self.p.ngpu>1:
-            self.imD = nn.DataParallel(self.imD)
+            if not self.p.one_disc:
+                self.imD = nn.DataParallel(self.imD)
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
             
         #state_dict = torch.load(self.assessor_path)
         #self.tempD.load_state_dict(state_dict['model'])
-
-        self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
-                                         betas=(0., 0.9))
+        if not self.p.one_disc:
+            self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
+                                            betas=(0., 0.9))
         self.optimizerImG = optim.Adam(self.imG.parameters(), lr=self.p.lrImG,
                                          betas=(0., 0.9))
 
         self.optimizerTempD = optim.Adam(self.tempD.parameters(), lr=self.p.lrTempD,
                                          betas=(0., 0.9))
-        self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
-                                         betas=(0., 0.9))
+        if not self.p.fixed_dir:
+            self.optimizerTempG = optim.Adam(self.tempG.parameters(), lr=self.p.lrTempG,
+                                            betas=(0., 0.9))
         
 
         self.scalerImD = GradScaler()
@@ -135,15 +139,18 @@ class Trainer(object):
             state_dict = torch.load(checkpoint)
             step = state_dict['step']
             self.imG.load_state_dict(state_dict['imG'])
-            self.imD.load_state_dict(state_dict['imD'])
+            if not self.p.one_disc:
+                self.imD.load_state_dict(state_dict['imD'])
 
             self.tempG.load_state_dict(state_dict['tempG'])
             self.tempD.load_state_dict(state_dict['tempD'])
 
             self.optimizerImG.load_state_dict(state_dict['optimizerImG'])
-            self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
+            if not self.p.one_disc:
+                self.optimizerImD.load_state_dict(state_dict['optimizerImD'])
 
-            self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
+            if not self.p.fixed_dir:
+                self.optimizerTempG.load_state_dict(state_dict['optimizerTempG'])
             self.optimizerTempD.load_state_dict(state_dict['optimizerTempD'])
 
             self.imG_losses = state_dict['lossImG']
@@ -164,12 +171,15 @@ class Trainer(object):
         torch.save({
         'step': step,
         'imG': self.imG.state_dict(),
-        'imD': self.imD.state_dict(),
+        if not self.p.one_disc:
+            'imD': self.imD.state_dict(),
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
-        'optimizerImD': self.optimizerImD.state_dict(),
-        'optimizerTempG': self.optimizerTempG.state_dict(),
+        if not self.p.one_disc:
+            'optimizerImD': self.optimizerImD.state_dict(),
+        if not self.p.fixed_dir:
+            'optimizerTempG': self.optimizerTempG.state_dict(),
         'optimizerTempD': self.optimizerTempD.state_dict(),
         'lossImG': self.imG_losses,
         'lossTempG': self.tempG_losses,
@@ -387,12 +397,17 @@ class Trainer(object):
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
             #self.tracker.epoch_start()
-            for _ in range(self.p.im_iter):  
-                data, labels = next(gen)
-                real = data.to(self.device)
-                errImD_real, errImD_fake = self.step_imD(real[:,0])
+            if not self.p.one_disc:
+                for _ in range(self.p.im_iter):  
+                    data, labels = next(gen)
+                    real = data.to(self.device)
+                    errImD_real, errImD_fake = self.step_imD(real[:,0])
+            else:
+                errImD_real, errImD_fake = 0, 0
 
             for _ in range(self.p.temp_iter):
+                data, labels = next(gen)
+                real = data.to(self.device)
                 errTempD_real = self.step_tempD(real, labels)
 
             errG_im, errG_temp, fake = self.step_G()
