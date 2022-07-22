@@ -368,10 +368,10 @@ class Trainer(object):
             if self.p.cl:
                 err_temp = self.cla_loss(pred, label.to(self.device))
             else:
-                err_im = torch.tensor([0.])
                 err_temp = -pred.mean()
             
             if self.p.one_disc:
+                err_im = torch.tensor([0.])
                 loss = err_temp
             else:
                 loss = err_temp + err_im
