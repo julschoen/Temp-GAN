@@ -171,15 +171,12 @@ class Trainer(object):
         torch.save({
         'step': step,
         'imG': self.imG.state_dict(),
-        if not self.p.one_disc:
-            'imD': self.imD.state_dict(),
+        'imD': self.imD.state_dict() if not self.p.one_disc else None,
         'tempG': self.tempG.state_dict(),
         'tempD': self.tempD.state_dict(),
         'optimizerImG': self.optimizerImG.state_dict(),
-        if not self.p.one_disc:
-            'optimizerImD': self.optimizerImD.state_dict(),
-        if not self.p.fixed_dir:
-            'optimizerTempG': self.optimizerTempG.state_dict(),
+        'optimizerImD': self.optimizerImD.state_dict() if not self.p.one_disc else None,
+        'optimizerTempG': self.optimizerTempG.state_dict() if not self.p.fixed_dir else None,
         'optimizerTempD': self.optimizerTempD.state_dict(),
         'lossImG': self.imG_losses,
         'lossTempG': self.tempG_losses,
