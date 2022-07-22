@@ -360,8 +360,9 @@ class Trainer(object):
         fake, label = self.sample_g(grad=True)
 
         with autocast():
-            disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
-            err_im = - disc_im_fake.mean()
+            if not self.p.one_disc:
+                disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+                err_im = - disc_im_fake.mean()
 
             pred = self.tempD(fake)
             if self.p.cl:
@@ -369,7 +370,10 @@ class Trainer(object):
             else:
                 err_temp = -pred.mean()
             
-            loss = err_temp + err_im
+            if self.p.one_disc:
+                loss = err_temp
+            else:
+                loss = err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()
