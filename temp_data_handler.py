@@ -38,8 +38,8 @@ class Data4D():
 
   def __shift__(self, x, correct=True):
     if correct:
-      ind = np.random.randint(0, 3)
-      return x[ind:ind+3]
+      ind = np.sort(np.random.choice([0,1,2,3,4], 3, replace=False))
+      return x[ind]
     else:
       i1 = np.random.randint(0, 5)
       i2 = np.random.randint(0, 5)
