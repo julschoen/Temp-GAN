@@ -38,10 +38,10 @@ def eval(params):
 				z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
 			alpha = torch.sort(12*torch.rand(params.batch_size, 10)-6)[0].transpose(0,1)
 
-			im = imG(z).reshape(-1,1,128,128,128)
+			im = imG(z).unsqueeze(1)
 			for a in alpha:
 				z_ = tempG(z,a)
-				im1 = imG(tempG(z,a)).reshape(-1,1,128,128,128)
+				im1 = imG(tempG(z,a)).unsqueeze(1)
 				im = torch.concat((im, im1), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=im.detach().cpu().numpy())
