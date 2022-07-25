@@ -30,10 +30,11 @@ class DATA(Dataset):
       return self.len
 
 class Data4D():
-  def __init__(self, path):
+  def __init__(self, path, shift=True):
     self.files = np.load(path)['x']
     self.path = path[:-len(path.split('/')[-1])]
     self.len = len(self.files)
+    self.shift
 
   def __shift__(self, x, correct=True):
     if correct:
@@ -72,22 +73,30 @@ class Data4D():
 
 
   def __getitem__(self, index):
-    pat = os.path.join(self.path, self.files[index])
-    image = np.load(pat)['x']
-    if torch.rand(1)<0.51:
-      image = self.__shift__(image)
-      label = 1
-    else:
+    if self.shift:
+      pat = os.path.join(self.path, self.files[index])
+      image = np.load(pat)['x']
       if torch.rand(1)<0.51:
-        image = self.__shift__(image, correct=False)
+        image = self.__shift__(image)
+        label = 1
       else:
-        image = self.__dif_pat__(image, index)
-      label = 0
-    xs_ = np.empty((3,64,128,128))
-    for i, x in enumerate(image):
-      xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
-    image = np.clip(xs_, -1,1)
-    return torch.from_numpy(image).float(), torch.Tensor([label])
+        if torch.rand(1)<0.51:
+          image = self.__shift__(image, correct=False)
+        else:
+          image = self.__dif_pat__(image, index)
+        label = 0
+      xs_ = np.empty((3,64,128,128))
+      for i, x in enumerate(image):
+        xs_[i] = np.flip(x.reshape(128,128,64).T,axis=0)
+      image = np.clip(xs_, -1,1)
+      return torch.from_numpy(image).float(), torch.Tensor([label])
+    else:
+      pat = os.path.join(self.path, self.files[index])
+      image = np.load(pat)['x']
+      ind = np.random.randint(0, x.shape[0])
+      image = np.flip(image[ind].reshape(128,128,64).T,axis=0)
+      image = np.clip(xs_, -1,1)
+      return torch.from_numpy(image).float()
 
   def __len__(self):
       return self.len
@@ -135,7 +144,7 @@ class DataLIDC():
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
   def __getitem__(self, index):
-    if shift:
+    if self.shift:
       image = self.data[index]
       image = np.clip(image, -1,1)
       if torch.rand(1)<0.51:
