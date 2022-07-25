@@ -8,7 +8,7 @@ from torch.cuda.amp import autocast
 
 from eval_utils import *
 from image_gen import Generator as ImG
-from temp_data_handler import DATA, Data4D
+from temp_data_handler import DATA, Data4D, DataLIDC
 
 def load_gen(path, ngpu):
 	with open(os.path.join(path, 'params.pkl'), 'rb') as file:
@@ -24,7 +24,7 @@ def load_gen(path, ngpu):
 	return netG
 
 def eval(params):
-	dataset = DATA(path=params.data_path)
+	dataset = DataLIDC(path=params.data_path, shift=False)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	fid_model = get_fid_model(params.fid_checkpoint).to(params.device)
@@ -41,7 +41,7 @@ def eval(params):
 		large_fake = None
 		with torch.no_grad():
 			with autocast():
-				for i, (data, _) in enumerate(generator):
+				for i, data in enumerate(generator):
 					x1 = data.reshape(-1,1,data.shape[-3],data.shape[-2],data.shape[-1])
 					if params.ngpu > 1:
 						noise = torch.randn(x1.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)

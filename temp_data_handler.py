@@ -94,9 +94,10 @@ class Data4D():
 
 
 class DataLIDC():
-  def __init__(self, path):
+  def __init__(self, path, shift=True):
     self.data = np.load(path)['X']
     self.len = self.data.shape[0]
+    self.shift = shift
 
   def __shift__(self, x, correct=True):
     if correct:
@@ -134,18 +135,23 @@ class DataLIDC():
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
   def __getitem__(self, index):
-    image = self.data[index]
-    image = np.clip(image, -1,1)
-    if torch.rand(1)<0.51:
-      image = self.__shift__(image)
-      label = 1
-    else:
+    if shift:
+      image = self.data[index]
+      image = np.clip(image, -1,1)
       if torch.rand(1)<0.51:
-        image = self.__shift__(image, correct=False)
+        image = self.__shift__(image)
+        label = 1
       else:
-        image = self.__dif_pat__(image, index)
-      label = 0
-    return torch.from_numpy(image).float(), torch.Tensor([label])
+        if torch.rand(1)<0.51:
+          image = self.__shift__(image, correct=False)
+        else:
+          image = self.__dif_pat__(image, index)
+        label = 0
+      return torch.from_numpy(image).float(), torch.Tensor([label])
+    else:
+      image = self.data[index]
+      image = np.clip(image, -1,1)
+      return torch.from_numpy(image).float()
 
   def __len__(self):
     return self.len
