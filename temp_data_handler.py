@@ -34,7 +34,7 @@ class Data4D():
     self.files = np.load(path)['x']
     self.path = path[:-len(path.split('/')[-1])]
     self.len = len(self.files)
-    self.shift
+    self.shift = shift
 
   def __shift__(self, x, correct=True):
     if correct:
