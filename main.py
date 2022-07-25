@@ -29,10 +29,14 @@ def main():
 	parser.add_argument('--fixed_dir', type=bool, default=False, help='Is direction learnable?')
 	parser.add_argument('--norm', type=bool, default=False, help='Use direction of unit length?')
 	parser.add_argument('--one_disc', type=bool, default=False, help='Use only Temporal Discriminator. Overrides cl to False.')
+	parser.add_argument('--lidc', type=bool, default=False, help='Using LIDC or 4DCT')
 	params = parser.parse_args()
 	print(params)
-	#dataset_train = Data4D(path=params.data_path)
-	dataset_train = DataLIDC(path=params.data_path)
+
+	if params.lidc:
+		dataset_train = DataLIDC(path=params.data_path)
+	else:
+		dataset_train = Data4D(path=params.data_path)
 
 	trainer = Trainer(dataset_train, params=params)
 	trainer.train()
