@@ -36,12 +36,12 @@ def eval(params):
 				z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
 			else:
 				z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
-			alpha = torch.sort(-20*torch.rand(params.batch_size, 10)+10)[0].transpose(0,1)
+			alpha = torch.sort(12*torch.rand(params.batch_size, 10)-6)[0].transpose(0,1)
 
-			im = imG(z).reshape(-1,1,64,128,128)
+			im = imG(z).reshape(-1,1,128,128,128)
 			for a in alpha:
 				z_ = tempG(z,a)
-				im1 = imG(tempG(z,a)).reshape(-1,1,64,128,128)
+				im1 = imG(tempG(z,a)).reshape(-1,1,128,128,128)
 				im = torch.concat((im, im1), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=im.detach().cpu().numpy())
