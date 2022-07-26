@@ -33,10 +33,10 @@ def main():
 	params = parser.parse_args()
 	print(params)
 
-	if params.lidc:
-		dataset_train = DataLIDC(path=params.data_path)
-	else:
-		dataset_train = Data4D(path=params.data_path)
+	#if params.lidc:
+	dataset_train = DataLIDC(path=params.data_path)
+	#else:
+	#		dataset_train = Data4D(path=params.data_path)
 
 	trainer = Trainer(dataset_train, params=params)
 	trainer.train()
