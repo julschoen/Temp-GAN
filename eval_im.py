@@ -27,9 +27,6 @@ def eval(params):
 	dataset = DataLIDC(path=params.data_path, shift=False)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
-	fid_model = get_fid_model(params.fid_checkpoint).to(params.device)
-	if params.ngpu > 1:
-		fid_model = nn.DataParallel(fid_model)
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
