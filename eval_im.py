@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch.cuda.amp import autocast
 
-from eval_utils import fid
+from eval_utils import *
 from image_gen import Generator as ImG
 from temp_data_handler import DATA, Data4D, DataLIDC
 
