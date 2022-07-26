@@ -28,6 +28,7 @@ def eval(params):
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	os.makedirs(params.log_dir, exist_ok=True)
+	print('Image Evaluation')
 	for model_path in params.model_log:
 		print(model_path)
 		netG = load_gen(model_path, params.ngpu).to(params.device)
@@ -36,6 +37,7 @@ def eval(params):
 		fids_sag = []
 		large_data = None
 		large_fake = None
+		print('Starting...')
 		with torch.no_grad():
 			for i, data in enumerate(generator):
 				x1 = data.unsqueeze(1)
@@ -48,7 +50,7 @@ def eval(params):
 				fids_ax.append(fa)
 				fids_cor.append(fc)
 				fids_sag.append(fs)
-
+		print('...Done')
 		fids_ax = np.array(fids_ax)
 		fids_cor = np.array(fids_cor)
 		fids_sag = np.array(fids_sag)
