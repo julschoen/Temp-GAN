@@ -70,7 +70,6 @@ def main():
 	parser.add_argument('--device', type=str, default='cuda', help='Torch Device Choice')
 	parser.add_argument('-l', '--model_log', action='append', type=str, required=True, help='Model log directories to evaluate')
 	params = parser.parse_args()
-	eval(params)
 
 if __name__ == '__main__':
 	main()
