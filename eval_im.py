@@ -37,18 +37,17 @@ def eval(params):
 		large_data = None
 		large_fake = None
 		with torch.no_grad():
-			with autocast():
-				for i, data in enumerate(generator):
-					x1 = data.unsqueeze(1)
-					if params.ngpu > 1:
-						noise = torch.randn(x1.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
-					else:
-						noise = torch.randn(x1.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
-					x2 = netG(noise)
-					fa, fc, fs = fid(x1, x2, params.device)
-					fids_ax.append(fa)
-					fids_cor.append(fc)
-					fids_sag.append(fs)
+			for i, data in enumerate(generator):
+				x1 = data.unsqueeze(1)
+				if params.ngpu > 1:
+					noise = torch.randn(x1.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
+				else:
+					noise = torch.randn(x1.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
+				x2 = netG(noise)
+				fa, fc, fs = fid(x1, x2, params.device)
+				fids_ax.append(fa)
+				fids_cor.append(fc)
+				fids_sag.append(fs)
 
 		fids_ax = np.array(fids_ax)
 		fids_cor = np.array(fids_cor)
