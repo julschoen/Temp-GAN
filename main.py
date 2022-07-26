@@ -31,7 +31,6 @@ def main():
 	parser.add_argument('--one_disc', type=bool, default=False, help='Use only Temporal Discriminator. Overrides cl to False.')
 	parser.add_argument('--lidc', type=bool, default=False, help='Using LIDC or 4DCT')
 	params = parser.parse_args()
-	print(params)
 
 	if params.lidc:
 		dataset_train = DataLIDC(path='../3D-GAN/train_lidc_128.npz')
