@@ -44,7 +44,7 @@ class Trainer(object):
         else:
             with open(os.path.join(params.log_dir,'params.pkl'), 'wb') as file:
                 pickle.dump(self.p, file)
-        print
+        print(self.p)
 
         ### Make Models ###
         if not self.p.one_disc:
