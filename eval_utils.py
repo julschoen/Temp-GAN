@@ -2,7 +2,6 @@ import numpy as np
 from scipy.linalg import sqrtm
 from collections import OrderedDict
 import torch
-from FID_ResNet import resnet50
 import pytorch_fid_wrapper as FID
 from pytorch_msssim import MS_SSIM
 from torch.cuda.amp import autocast
