@@ -33,10 +33,10 @@ def main():
 	params = parser.parse_args()
 	print(params)
 
-	#if params.lidc:
-	dataset_train = DataLIDC(path=params.data_path)
-	#else:
-	#		dataset_train = Data4D(path=params.data_path)
+	if params.lidc:
+		dataset_train = DataLIDC(path='../3D-GAN/train_lidc_128.npz')
+	else:
+		dataset_train = Data4D(path='../Data/4dct_clean/train_pat.npz')
 
 	trainer = Trainer(dataset_train, params=params)
 	trainer.train()
