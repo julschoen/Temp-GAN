@@ -41,7 +41,7 @@ def eval(params):
 			im = imG(z).unsqueeze(1)
 			for a in alpha:
 				z_ = tempG(z,a)
-				im1 = imG(tempG(z,a)).unsqueeze(1)
+				im1 = imG(tempG(z,a))
 				im = torch.concat((im, im1), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=im.detach().cpu().numpy())
