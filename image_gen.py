@@ -10,12 +10,18 @@ class Generator(nn.Module):
     super(Generator, self).__init__()
     self.p = params
     self.dim_z = self.p.z_size
-
-    self.arch = {'in_channels' :  [item * self.p.filterG for item in [16, 16, 8, 4, 2]],
-             'out_channels' : [item * self.p.filterG for item in [16, 8, 4,  2, 1]],
-             'upsample' : [True] * 5,
-             'resolution' : [8, 16, 32, 64, 128],
-             'attention' : {2**i: (2**i in [int(item) for item in '32'.split('_')]) for i in range(3,8)}}
+    if self.p.triplet:
+      self.arch = {'in_channels' :  [item * self.p.filterG for item in [16, 16, 8, 4, 2]],
+               'out_channels' : [item * self.p.filterG for item in [16, 8, 4,  2, 1]],
+               'upsample' : [True] * 5,
+               'resolution' : [8, 16, 32, 64, 128],
+               'attention' : {2**i: (2**i in [int(item) for item in '16'.split('_')]) for i in range(3,8)}}
+    else:
+      self.arch = {'in_channels' :  [item * self.p.filterG for item in [16, 16, 8, 4, 2]],
+               'out_channels' : [item * self.p.filterG for item in [16, 8, 4,  2, 1]],
+               'upsample' : [True] * 5,
+               'resolution' : [8, 16, 32, 64, 128],
+               'attention' : {2**i: (2**i in [int(item) for item in '32'.split('_')]) for i in range(3,8)}}
 
     if self.p.lidc:
       self.linear = snlinear(self.p.z_size, self.arch['in_channels'][0] * 64)
