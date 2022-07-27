@@ -58,6 +58,7 @@ def tournament(discs, gens, params):
 		for j, g in enumerate(gens):
 			if i == j:
 				continue
+			print(f'Gen: {names[j]} vs. Disc: {names[i]}')
 			wr = round(d, g, params)
 			res[names[j]].append(wr)
 
