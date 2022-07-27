@@ -314,13 +314,13 @@ class Trainer(object):
                 err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
             elif self.p.triplet:
                 h1 = self.tempD(real[:,0])
-                h2 self.tempD(real[:,1])
-                h3 self.tempD(real[:,2])
+                h2 = self.tempD(real[:,1])
+                h3 = self.tempD(real[:,2])
                 err_real = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
 
                 h1 = self.tempD(fake[:,0])
-                h2 self.tempD(fake[:,1])
-                h3 self.tempD(fake[:,2])
+                h2 = self.tempD(fake[:,1])
+                h3 = self.tempD(fake[:,2])
                 err_fake = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
 
             else:
@@ -386,8 +386,8 @@ class Trainer(object):
                 err_temp = self.cla_loss(pred, label.to(self.device))
             elif self.p.triplet:
                 h1 = self.tempD(fake[:,0])
-                h2 self.tempD(fake[:,1])
-                h3 self.tempD(fake[:,2])
+                h2 = self.tempD(fake[:,1])
+                h3 = self.tempD(fake[:,2])
                 err_temp = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
             else:
                 pred = self.tempD(fake)
