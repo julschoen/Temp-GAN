@@ -109,7 +109,7 @@ class DataLIDC():
     self.shift = shift
 
   def __pad__(self, x, s):
-    if s1 > 0:
+    if s > 0:
         return np.pad(x, [[0,0],[0, 0],[s,0]], constant_values=-1)[:,:,:128]
     else:
         return np.pad(x, [[0,0],[0, 0],[0,np.abs(s)]], constant_values=-1)[:,:,s:]
