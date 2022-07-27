@@ -38,7 +38,9 @@ def round(disc, gen, params):
 			else:
 				noise = torch.randn(params.batch_size, gen.dim_z,
 						1, 1, 1, dtype=torch.float, device=params.device)
-			f = disc(gen(noise))
+			im = gen(noise)
+			print(im.shape)
+			f = disc(im)
 			wrt += (f > 0).sum().item()
 
 	disc, gen = disc.cpu(), gen.cpu()
