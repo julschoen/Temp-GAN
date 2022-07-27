@@ -13,20 +13,16 @@ def load_model(path, ngpu):
     with open(os.path.join(path, 'params.pkl'), 'rb') as file:
         params = pickle.load(file)
 
-    if params.dcgan:
-        netG = Generator(params)
-        netD = Discriminator(params)
-    else:
-        netG = BigG(params)
-        netD = BigD(params)
+    netG = Generator(params)
+    netD = Discriminator(params)
 
     if ngpu > 1:
         netG = nn.DataParallel(netG)
         netD = nn.DataParallel(netD)
 
     state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
-    netG.load_state_dict(state['modelG_state_dict'])
-    netD.load_state_dict(state['modelD_state_dict'])
+    netG.load_state_dict(state['imG'])
+    netD.load_state_dict(state['imD'])
 
     return netD, netG
 
