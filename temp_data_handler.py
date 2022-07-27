@@ -156,6 +156,7 @@ class DataLIDC():
       image = np.clip(image, -1,1)
       image = self.__shift__(image)
       label = 1
+      return torch.from_numpy(image).float(), torch.Tensor([label])
     elif self.shift:
       image = self.data[index]
       image = np.clip(image, -1,1)
