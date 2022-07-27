@@ -110,14 +110,14 @@ class DataLIDC():
 
   def __shift__(self, x, correct=True):
     if correct:
-      s1, s2, s3 = np.sort(np.random.randint(1,80,3))
+      s1, s2, s3 = np.sort(np.random.randint(-80,80,3))
       x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
       x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
       x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
     else:
-      s1, s2, s3 = np.random.randint(1,80,3)
+      s1, s2, s3 = np.random.randint(-80,80,3)
       while s1 < s2 and s2 < s3:
-        s1, s2, s3 = np.random.randint(1,80,3)
+        s1, s2, s3 = np.random.randint(-80,80,3)
       x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
       x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
       x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
@@ -130,7 +130,7 @@ class DataLIDC():
       ind = np.random.choice(range(self.len))
 
     x_ = self.data[ind]
-    s1, s2, s3 = np.sort(np.random.randint(1,80,3))
+    s1, s2, s3 = np.sort(np.random.randint(-80,80,3))
     x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
     if torch.rand(1)<0.5:
       x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
