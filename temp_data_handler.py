@@ -108,19 +108,25 @@ class DataLIDC():
     self.len = self.data.shape[0]
     self.shift = shift
 
+  def __pad__(self, x, s):
+    if s1 > 0:
+        return np.pad(x, [[0,0],[0, 0],[s,0]], constant_values=-1)[:,:,:128]
+    else:
+        return np.pad(x, [[0,0],[0, 0],[0,np.abs(s)]], constant_values=-1)[:,:,s:]
+
   def __shift__(self, x, correct=True):
     if correct:
       s1, s2, s3 = np.sort(np.random.randint(-80,80,3))
-      x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
-      x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
-      x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+      x1 = self.__pad__(x, s1)
+      x2 = self.__pad__(x, s2)
+      x3 = self.__pad__(x, s3)
     else:
       s1, s2, s3 = np.random.randint(-80,80,3)
       while s1 < s2 and s2 < s3:
         s1, s2, s3 = np.random.randint(-80,80,3)
-      x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
-      x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
-      x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+      x1 = self.__pad__(x, s1)
+      x2 = self.__pad__(x, s2)
+      x3 = self.__pad__(x, s3)
   
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
@@ -131,15 +137,15 @@ class DataLIDC():
 
     x_ = self.data[ind]
     s1, s2, s3 = np.sort(np.random.randint(-80,80,3))
-    x1 = np.pad(x, [[0,0],[0, 0],[s1,0]], constant_values=-1)[:,:,:128]
+    x1 = self.__pad__(x, s1)
     if torch.rand(1)<0.5:
-      x2 = np.pad(x, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
+      x2 = self.__pad__(x, s2)
     else:
-      x2 = np.pad(x_, [[0,0],[0, 0],[s2,0]], constant_values=-1)[:,:,:128]
+      x2 = self.__pad__(x_, s2)
     if torch.rand(1)<0.5:
-      x3 = np.pad(x, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+      x3 = self.__pad__(x, s3)
     else:
-      x3 = np.pad(x_, [[0,0],[0, 0],[s3,0]], constant_values=-1)[:,:,:128]
+      x3 = self.__pad__(x_, s3)
 
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
