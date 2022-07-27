@@ -51,9 +51,9 @@ def eval(params):
 		fids_ax = np.array(fids_ax)
 		fids_cor = np.array(fids_cor)
 		fids_sag = np.array(fids_sag)
-		print(f'FID ax: {fids_ax.mean():.4f}+-{fids_ax.std():.4f}'+
-			f'\tFID cor: {fids_cor.mean():.4f}+-{fids_cor.std():.4f}'+
-			f'\tFID sag: {fids_sag.mean():.4f}+-{fids_sag.std():.4f}')
+		print(f'FID ax: {fids_ax.mean():.1f}+-{fids_ax.std():.1f}'+
+			f' cor: {fids_cor.mean():.1f}+-{fids_cor.std():.1f}'+
+			f' sag: {fids_sag.mean():.1f}+-{fids_sag.std():.1f}')
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_stats.npz'), fid_ax=fids_ax, fid_cor=fids_cor, fid_sag=fids_sag)
 
 def main():
