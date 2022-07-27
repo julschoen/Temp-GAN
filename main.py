@@ -26,6 +26,7 @@ def main():
 	parser.add_argument('--im_iter', type=int, default=2, help='Iterations for Image Part of Model')
 	parser.add_argument('--temp_iter', type=int, default=1, help='Iterations for Temporal Part of Model')
 	parser.add_argument('--cl', type=bool, default=False, help='Use Classification or Adversarial Loss')
+	parser.add_argument('--triplet', type=bool, default=False, help='Use Triplet Loss')
 	parser.add_argument('--fixed_dir', type=bool, default=False, help='Is direction learnable?')
 	parser.add_argument('--norm', type=bool, default=False, help='Use direction of unit length?')
 	parser.add_argument('--one_disc', type=bool, default=False, help='Use only Temporal Discriminator. Overrides cl to False.')
@@ -33,7 +34,7 @@ def main():
 	params = parser.parse_args()
 
 	if params.lidc:
-		dataset_train = DataLIDC(path='../3D-GAN/train_lidc_128.npz')
+		dataset_train = DataLIDC(path='../3D-GAN/train_lidc_128.npz', triplet=params.triplet)
 	else:
 		dataset_train = Data4D(path='../Data/4dct_clean/train_pat.npz')
 

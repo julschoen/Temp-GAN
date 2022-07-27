@@ -93,6 +93,7 @@ class Trainer(object):
         self.fid_epoch = []
 
         self.cla_loss = nn.BCEWithLogitsLoss()
+        self.tr_loss = nn.TripletMarginLoss()
         self.gen_loss_scale = 0
         #self.tracker = CarbonTracker(epochs=self.p.niters, log_dir=self.p.log_dir)
 
@@ -306,13 +307,25 @@ class Trainer(object):
         with autocast():
             fake, f_label = self.sample_g()
 
-            pred_real = self.tempD(real)
-            pred_fake = self.tempD(fake)
-
             if self.p.cl:
+                pred_real = self.tempD(real)
+                pred_fake = self.tempD(fake)
                 err_real = self.cla_loss(pred_real, r_label.to(self.device))
                 err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
+            elif self.p.triplet:
+                h1 = self.tempD(real[:,0])
+                h2 self.tempD(real[:,1])
+                h3 self.tempD(real[:,2])
+                err_real = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
+
+                h1 = self.tempD(fake[:,0])
+                h2 self.tempD(fake[:,1])
+                h3 self.tempD(fake[:,2])
+                err_fake = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
+
             else:
+                pred_real = self.tempD(real)
+                pred_fake = self.tempD(fake)
                 err_real = (nn.ReLU()(1.0 - pred_real)).mean()
                 err_fake = (nn.ReLU()(1.0 + pred_fake)).mean()
             loss = err_real + err_fake
@@ -368,10 +381,16 @@ class Trainer(object):
                 disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
                 err_im = - disc_im_fake.mean()
 
-            pred = self.tempD(fake)
             if self.p.cl:
+                pred = self.tempD(fake)
                 err_temp = self.cla_loss(pred, label.to(self.device))
+            elif self.p.triplet:
+                h1 = self.tempD(fake[:,0])
+                h2 self.tempD(fake[:,1])
+                h3 self.tempD(fake[:,2])
+                err_temp = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
             else:
+                pred = self.tempD(fake)
                 err_temp = -pred.mean()
             
             if self.p.one_disc:

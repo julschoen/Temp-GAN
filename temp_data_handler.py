@@ -103,10 +103,11 @@ class Data4D():
 
 
 class DataLIDC():
-  def __init__(self, path, shift=True):
+  def __init__(self, path, triplet=False, shift=True):
     self.data = np.load(path)['X']
     self.len = self.data.shape[0]
     self.shift = shift
+    self.triplet = triplet
 
   def __pad__(self, x, s):
     if s > 0:
@@ -150,7 +151,12 @@ class DataLIDC():
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
   def __getitem__(self, index):
-    if self.shift:
+    if self.triplet and self.shift:
+      image = self.data[index]
+      image = np.clip(image, -1,1)
+      image = self.__shift__(image)
+      label = 1
+    elif self.shift:
       image = self.data[index]
       image = np.clip(image, -1,1)
       if torch.rand(1)<0.51:
