@@ -18,9 +18,9 @@ def process(path, files):
 			size=(128,128,64),
 			mode='trilinear'
 		)
-		img = torch.clamp(img, -1000,2000)
-		img = img-500
-		img = img/1500
+		img = torch.clamp(img, -1000,500)
+		img = img+250
+		img = img/750
 		img = torch.clamp(img, -1,1)
 		if ims is not None:
 			ims = torch.concat((ims,img))
@@ -55,6 +55,7 @@ def main():
 	dirs = sorted([f for f in os.listdir(params.data_path) if os.path.isdir(os.path.join(params.data_path, f))],
 		key=lambda x: int(x))
 	os.makedirs(params.save_path, exist_ok=True)
+	print(f'Preprocessing {len(dirs)} patients')
 	for d in dirs:
 		subdirs = sorted([f for f in os.listdir(os.path.join(params.data_path, d)) 
 									if os.path.isdir(os.path.join(params.data_path,d,f))],
@@ -64,14 +65,14 @@ def main():
 							key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
 			if len(files)>1:
 				ims = process(os.path.join(params.data_path, d, sub), files)
-				if ims.shape[0] > 2:
+				if ims.shape[0] > 10:
 					os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 					np.savez_compressed(os.path.join(params.save_path, d,f'{sub}.npz'), x=ims)
 					print(f'Patient {d}, Series {sub}, Number of Scans {ims.shape[0]}')
 	
 	dirs = sorted([f for f in os.listdir(params.save_path) if os.path.isdir(os.path.join(params.save_path, f))],
 		key=lambda x: int(x))
-
+	print(f'Preprocessing {len(dirs)} patients')
 	test = np.random.choice(dirs, size=int(len(dirs)*0.1))
 	train = []
 	for d in dirs:
