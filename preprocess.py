@@ -68,7 +68,7 @@ def main():
 				ims = process(os.path.join(params.data_path, d, sub), files)
 				break
 		break
-				"""
+	"""
 				if ims.shape[0] > 10:
 					os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 					np.savez_compressed(os.path.join(params.save_path, d,f'{sub}.npz'), x=ims)
