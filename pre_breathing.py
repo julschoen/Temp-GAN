@@ -52,7 +52,6 @@ def main():
 	for p in pat.keys():
 		phase = pat[p]
 		ims = process(params.data_path, p, phase)
-		break
 	"""
 		if ims.shape[0] > 9:
 			np.savez_compressed(os.path.join(params.save_path,f'{p}.npz'), x=ims)
