@@ -11,7 +11,7 @@ def process(path, files):
 		if not f.endswith('.gz'):
 			continue
 		img = nib.load(os.path.join(path,f))
-		print(img.head)
+		print(img.header)
 		img = torch.Tensor(np.asanyarray(img.dataobj))
 		shape = img.shape
 		img = interpolate(
