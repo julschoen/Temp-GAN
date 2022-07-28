@@ -16,6 +16,7 @@ def process(path, patient, phases):
 			print(patient)
 			print(img.header['dim'])
 			print(img.header['pixdim'])
+			break
 		img = torch.Tensor(np.asanyarray(img.dataobj))
 		shape = img.shape
 		img = interpolate(
