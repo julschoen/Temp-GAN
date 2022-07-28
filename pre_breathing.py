@@ -11,12 +11,9 @@ def process(path, patient, phases):
 	phases = np.sort(phases)
 	for phase in phases:
 		img = nib.load(os.path.join(path,f'patient{patient}phase{phase}.0.nii.gz'))
-		if not np.allclose(img.header['dim'], [3,512,512,145,1,1,1,1]):
-			print(patient)
-			print(img.header['dim'])
-		if not np.allclose(img.header['pixdim'],  [1., 0.9765625, 0.9765625, 2., 1., 1., 1., 1.]):
-			print(patient)
-			print(img.header['pixdim'])
+		print(patient)
+		print(img.header['dim'])
+		print(img.header['pixdim'])
 		img = torch.Tensor(np.asanyarray(img.dataobj))
 		shape = img.shape
 		img = interpolate(
