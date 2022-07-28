@@ -11,6 +11,8 @@ def process(path, patient, phases):
 	phases = np.sort(phases)
 	for phase in phases:
 		img = nib.load(os.path.join(path,f'patient{patient}phase{phase}.0.nii.gz'))
+		print(img.header['dim'])
+		print(img.header['pixdim'])
 		img = torch.Tensor(np.asanyarray(img.dataobj))
 		shape = img.shape
 		img = interpolate(
@@ -48,6 +50,8 @@ def main():
 	for p in pat.keys():
 		phase = pat[p]
 		ims = process(params.data_path, p, phase)
+		break
+	"""
 		if ims.shape[0] > 9:
 			np.savez_compressed(os.path.join(params.save_path,f'{p}.npz'), x=ims)
 			print(f'Patient {p}, Number of Scans {ims.shape[0]}')
@@ -63,8 +67,7 @@ def main():
 
 	np.savez_compressed(os.path.join(params.save_path, 'test_pat.npz'), x=np.array(test))
 	np.savez_compressed(os.path.join(params.save_path, 'train_pat.npz'), x=np.array(train))
-
-
+	"""
 
 
 if __name__ == '__main__':

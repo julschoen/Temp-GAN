@@ -11,8 +11,6 @@ def process(path, files):
 		if not f.endswith('.gz'):
 			continue
 		img = nib.load(os.path.join(path,f))
-		print(img.header['dim'])
-		print(img.header['pixdim'])
 		img = torch.Tensor(np.asanyarray(img.dataobj))
 		shape = img.shape
 		img = interpolate(
@@ -67,9 +65,7 @@ def main():
 							key=lambda x: int(x[4:5]) if x[4:6].endswith('_') else int(x[4:6]))
 			if len(files)>1:
 				ims = process(os.path.join(params.data_path, d, sub), files)
-				break
-		break
-	"""
+				
 				if ims.shape[0] > 10:
 					os.makedirs(os.path.join(params.save_path, d), exist_ok=True)
 					np.savez_compressed(os.path.join(params.save_path, d,f'{sub}.npz'), x=ims)
@@ -91,9 +87,6 @@ def main():
 
 	np.savez_compressed(os.path.join(params.save_path, 'test_pat.npz'), x=np.array(test))
 	np.savez_compressed(os.path.join(params.save_path, 'train_pat.npz'), x=np.array(train))
-	"""
-
-
 
 
 if __name__ == '__main__':
