@@ -117,14 +117,24 @@ class DataLIDC():
 
   def __shift__(self, x, correct=True):
     if correct:
-      s1, s2, s3 = np.sort(np.random.randint(-64,64,3))
-      x1 = self.__pad__(x, s1)
-      x2 = self.__pad__(x, s2)
-      x3 = self.__pad__(x, s3)
+      s1, s2 = np.sort(np.random.randint(-20,20,2))
+      if s1 < 0:
+        if s2 < 0:
+          x1 = self.__pad__(x, s1)
+          x2 = self.__pad__(x, s2)
+          x3 = x.copy()
+        else:
+          x1 = self.__pad__(x, s1)
+          x3 = self.__pad__(x, s2)
+          x2 = x.copy()
+      else:
+        x2 = self.__pad__(x, s1)
+        x3 = self.__pad__(x, s2)
+        x1 = x.copy()
     else:
-      s1, s2, s3 = np.random.randint(-64,64,3)
+      s1, s2, s3 = np.random.randint(-20,20,3)
       while s1 < s2 and s2 < s3:
-        s1, s2, s3 = np.random.randint(-64,64,3)
+        s1, s2, s3 = np.random.randint(-20,20,3)
       x1 = self.__pad__(x, s1)
       x2 = self.__pad__(x, s2)
       x3 = self.__pad__(x, s3)
@@ -137,7 +147,7 @@ class DataLIDC():
       ind = np.random.choice(range(self.len))
 
     x_ = self.data[ind]
-    s1, s2, s3 = np.sort(np.random.randint(-64,64,3))
+    s1, s2, s3 = np.sort(np.random.randint(-20,20,3))
     x1 = self.__pad__(x, s1)
     if torch.rand(1)<0.5:
       x2 = self.__pad__(x, s2)
