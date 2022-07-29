@@ -24,6 +24,7 @@ class Generator(nn.Module):
     def forward(self, z, alpha):
         alpha.view(-1,1)
         if self.p.norm:
+            print(alpha.shape)
             input_norm = torch.norm(alpha, dim=1, keepdim=True)
             out = self.linear(alpha)
             d = (input_norm / torch.norm(out, dim=1, keepdim=True)) * out
