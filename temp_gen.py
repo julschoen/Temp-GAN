@@ -22,7 +22,7 @@ class Generator(nn.Module):
         self.lin = nn.Parameter(self.lin)
 
     def forward(self, z, alpha):
-        alpha alpha.view(-1,1)
+        alpha = alpha.view(-1,1)
         if self.p.norm:
             input_norm = torch.norm(alpha, dim=1, keepdim=True)
             out = self.linear(alpha)
