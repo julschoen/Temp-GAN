@@ -22,11 +22,13 @@ class Generator(nn.Module):
         self.lin = nn.Parameter(self.lin)
 
     def forward(self, z, alpha):
+        alpha.view(-1,1)
         if self.p.norm:
             input_norm = torch.norm(alpha, dim=1, keepdim=True)
             out = self.linear(alpha)
             d = (input_norm / torch.norm(out, dim=1, keepdim=True)) * out
             print(d.shape)
+            print(torch.norm(d))
             #d = torch.mul((self.lin/torch.norm(self.lin)).reshape(1,-1).transpose(0,1), alpha).transpose(0,1)
         else:
             d  = self.linear(input)
