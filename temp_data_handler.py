@@ -105,7 +105,7 @@ class Data4D():
 class DataLIDC():
   def __init__(self, path, triplet=False, shift=True):
     self.data = np.load(path)['X']
-    self.len = self.data.shape[0]
+    self.len = 400#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
 
@@ -117,14 +117,14 @@ class DataLIDC():
 
   def __shift__(self, x, correct=True):
     if correct:
-      s1, s2, s3 = np.sort(np.random.randint(-80,80,3))
+      s1, s2, s3 = np.sort(np.random.randint(-64,64,3))
       x1 = self.__pad__(x, s1)
       x2 = self.__pad__(x, s2)
       x3 = self.__pad__(x, s3)
     else:
-      s1, s2, s3 = np.random.randint(-80,80,3)
+      s1, s2, s3 = np.random.randint(-64,64,3)
       while s1 < s2 and s2 < s3:
-        s1, s2, s3 = np.random.randint(-80,80,3)
+        s1, s2, s3 = np.random.randint(-64,64,3)
       x1 = self.__pad__(x, s1)
       x2 = self.__pad__(x, s2)
       x3 = self.__pad__(x, s3)
@@ -137,7 +137,7 @@ class DataLIDC():
       ind = np.random.choice(range(self.len))
 
     x_ = self.data[ind]
-    s1, s2, s3 = np.sort(np.random.randint(-80,80,3))
+    s1, s2, s3 = np.sort(np.random.randint(-64,64,3))
     x1 = self.__pad__(x, s1)
     if torch.rand(1)<0.5:
       x2 = self.__pad__(x, s2)
