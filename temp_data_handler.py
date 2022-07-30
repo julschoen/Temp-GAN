@@ -105,10 +105,10 @@ class Data4D():
 class DataLIDC():
   def __init__(self, path, triplet=False, shift=True):
     self.data = np.load(path)['X']
-    self.len = 400#self.data.shape[0]
+    self.len = 600#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
-    self.shift_amount = np.concatenate((np.arange(-64,-10),np.arange(10,64)))
+    self.shift_amount = np.concatenate((np.arange(-40,-10),np.arange(10,40)))
 
   def __pad__(self, x, s):
     if s > 0:
