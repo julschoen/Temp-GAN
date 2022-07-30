@@ -31,7 +31,7 @@ def eval(params):
 		imG, tempG = load_gen(model_path, params.ngpu)
 		imG = imG.to(params.device)
 		tempG = tempG.to(params.device)
-		shifts_r = 6.
+		shifts_r = 12.
 		with torch.no_grad():
 			if params.ngpu > 1:
 				z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
