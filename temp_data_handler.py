@@ -108,16 +108,17 @@ class DataLIDC():
     self.len = 400#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
+    self.shift_amount = np.concatenate((np.arange(-64,-10),np.arange(10,64)))
 
   def __pad__(self, x, s):
     if s > 0:
-        return np.pad(x, [[0,0],[0, 0],[s,0]], constant_values=-1)[:,:,:128]
+        return np.pad(x.copy(), [[0,0],[0, 0],[s,0]], constant_values=-1)[:,:,:128]
     else:
-        return np.pad(x, [[0,0],[0, 0],[0,np.abs(s)]], constant_values=-1)[:,:,np.abs(s):]
+        return np.pad(x.copy(), [[0,0],[0, 0],[0,np.abs(s)]], constant_values=-1)[:,:,np.abs(s):]
 
   def __shift__(self, x, correct=True):
     if correct:
-      s1, s2 = np.sort(np.random.randint(-20,20,2))
+      s1, s2 = np.sort(np.random.choice(self.shift_amount,2, replace=False))
       if s1 < 0:
         if s2 < 0:
           x1 = self.__pad__(x, s1)
@@ -125,16 +126,16 @@ class DataLIDC():
           x3 = x.copy()
         else:
           x1 = self.__pad__(x, s1)
-          x3 = self.__pad__(x, s2)
           x2 = x.copy()
+          x3 = self.__pad__(x, s2)
       else:
         x2 = self.__pad__(x, s1)
         x3 = self.__pad__(x, s2)
         x1 = x.copy()
     else:
-      s1, s2, s3 = np.random.randint(-20,20,3)
+      s1, s2, s3 = np.random.choice(self.shift_amount,3, replace=False)
       while s1 < s2 and s2 < s3:
-        s1, s2, s3 = np.random.randint(-20,20,3)
+        s1, s2, s3 = np.random.choice(self.shift_amount,3, replace=False)
       x1 = self.__pad__(x, s1)
       x2 = self.__pad__(x, s2)
       x3 = self.__pad__(x, s3)
@@ -147,7 +148,7 @@ class DataLIDC():
       ind = np.random.choice(range(self.len))
 
     x_ = self.data[ind]
-    s1, s2, s3 = np.sort(np.random.randint(-20,20,3))
+    s1, s2, s3 = np.sort(np.random.choice(self.shift_amount,3, replace=False))
     x1 = self.__pad__(x, s1)
     if torch.rand(1)<0.5:
       x2 = self.__pad__(x, s2)

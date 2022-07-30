@@ -327,11 +327,13 @@ class Trainer(object):
                 err_fake = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
 
             else:
-                pred_real = self.tempD(real)
+                pred_true = self.tempD(real[r_label == 1])
+                pred_false = self.tempD(real[r_label == 0])
                 pred_fake = self.tempD(fake)
-                err_real = (nn.ReLU()(1.0 - pred_real)).mean()
+                err_true = (nn.ReLU()(1.0 - pred_true)).mean()
+                err_false = (nn.ReLU()(1.0 + pred_false)).mean()
                 err_fake = (nn.ReLU()(1.0 + pred_fake)).mean()
-            loss = err_real + err_fake
+            loss = err_true + err_false + err_fake
 
         self.scalerTempD.scale(loss).backward()
         self.scalerTempD.step(self.optimizerTempD)
