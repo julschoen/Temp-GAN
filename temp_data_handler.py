@@ -174,10 +174,10 @@ class DataLIDC():
         image = self.__shift__(image)
         label = 1
       else:
-        #if torch.rand(1)<0.51:
-        image = self.__shift__(image, correct=False)
-        #else:
-        #image = self.__dif_pat__(image, index)
+        if torch.rand(1)<0.51:
+          image = self.__shift__(image, correct=False)
+        else:
+          image = self.__dif_pat__(image, index)
         label = 0
       return torch.from_numpy(image).float(), torch.Tensor([label])
     else:
