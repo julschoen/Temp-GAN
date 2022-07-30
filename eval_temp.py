@@ -31,6 +31,7 @@ def eval(params):
 		imG, tempG = load_gen(model_path, params.ngpu)
 		imG = imG.to(params.device)
 		tempG = tempG.to(params.device)
+		shifts_r = 6.
 		with torch.no_grad():
 			if params.ngpu > 1:
 				z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
@@ -39,11 +40,14 @@ def eval(params):
 			np.arange(-shifts_r, shifts_r + 1e-9, shifts_r / 10)
 			alpha = torch.arange(-shifts_r, shifts_r + 1e-9, shifts_r / 8).repeat(params.batch_size).reshape(params.batch_size,17).t()
 
-			im = imG(z).unsqueeze(1)
+			im = None
 			for a in alpha:
 				z_ = tempG(z,a)
 				im1 = imG(tempG(z,a)).unsqueeze(1)
-				im = torch.concat((im, im1), dim=1)
+				if im = None:
+					im = im1
+				else:
+					im = torch.concat((im, im1), dim=1)
 		
 		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=im.detach().cpu().numpy())
 
