@@ -327,8 +327,8 @@ class Trainer(object):
                 err_fake = self.tr_loss(h1,h2,h3) + self.tr_loss(h3,h2,h1)
 
             else:
-                pred_true = self.tempD(real[r_label == 1])
-                pred_false = self.tempD(real[r_label == 0])
+                pred_true = self.tempD(real.unsqueeze(1)[r_label == 1])
+                pred_false = self.tempD(real.unsqueeze(1)[r_label == 0])
                 pred_fake = self.tempD(fake)
                 err_true = (nn.ReLU()(1.0 - pred_true)).mean()
                 err_false = (nn.ReLU()(1.0 + pred_false)).mean()
