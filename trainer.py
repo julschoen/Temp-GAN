@@ -333,7 +333,8 @@ class Trainer(object):
                 err_true = (nn.ReLU()(1.0 - pred_true)).mean()
                 err_false = (nn.ReLU()(1.0 + pred_false)).mean()
                 err_fake = (nn.ReLU()(1.0 + pred_fake)).mean()
-            loss = err_true + err_false + err_fake
+                err_real = err_true + err_false
+            loss = err_real + err_fake
 
         self.scalerTempD.scale(loss).backward()
         self.scalerTempD.step(self.optimizerTempD)
