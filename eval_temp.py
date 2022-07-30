@@ -44,7 +44,7 @@ def eval(params):
 			for a in alpha:
 				z_ = tempG(z,a)
 				im1 = imG(tempG(z,a)).unsqueeze(1)
-				if im = None:
+				if im is None:
 					im = im1
 				else:
 					im = torch.concat((im, im1), dim=1)
