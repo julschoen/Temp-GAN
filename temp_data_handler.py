@@ -109,6 +109,8 @@ class DataLIDC():
     self.shift = shift
     self.triplet = triplet
     self.shift_amount = np.concatenate((np.arange(-40,-10),np.arange(10,40)))
+    self.neg_counter = 0
+    self.pos_counter = 0
 
   def __pad__(self, x, s):
     if s > 0:
@@ -119,8 +121,8 @@ class DataLIDC():
   def __shift__(self, x, correct=True):
     if correct:
       s1, s2 = np.sort(np.random.choice(self.shift_amount,2, replace=False))
-      print(s1,s2)
       if s1 < 0:
+        self.neg_counter += 1
         if s2 < 0:
           x1 = self.__pad__(x, s1)
           x2 = self.__pad__(x, s2)
@@ -130,6 +132,7 @@ class DataLIDC():
           x2 = x.copy()
           x3 = self.__pad__(x, s2)
       else:
+        self.pos_counter += 1
         x1 = x.copy()
         x2 = self.__pad__(x, s1)
         x3 = self.__pad__(x, s2)
@@ -182,6 +185,7 @@ class DataLIDC():
         else:
           image = self.__dif_pat__(image, index)
         label = 0
+      print(self.neg_counter, self.pos_counter)
       return torch.from_numpy(image).float(), torch.Tensor([label])
     else:
       image = self.data[index]
