@@ -1,9 +1,5 @@
 ./gan/bin/python main.py --log_dir=AdvTest --load_params=True --lidc=True
 ./gan/bin/python main.py --log_dir=AdvTest1 --lidc=True
-./gan/bin/python main.py --log_dir=AdvTest --norm=True --lidc=True
-./gan/bin/python main.py --log_dir=AdvTest --lidc=True
-./gan/bin/python main.py --log_dir=AdvTest --norm=True --lidc=True
-./gan/bin/python main.py --log_dir=AdvTest --lidc=True
 ./gan/bin/python main.py --log_dir=TrTest --triplet=True --norm=True --lidc=True
 ./gan/bin/python main.py --log_dir=ClTest --cl=True --norm=True --lidc=True
 ./run.sh
