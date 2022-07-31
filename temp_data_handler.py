@@ -206,7 +206,6 @@ class DataLIDC():
         else:
           image = self.__dif_pat__(image, index)
         label = 0
-      print(self.neg_counter, self.pos_counter)
       return torch.from_numpy(image).float(), torch.Tensor([label])
     else:
       image = self.data[index]
