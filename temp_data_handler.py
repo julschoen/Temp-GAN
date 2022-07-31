@@ -119,6 +119,7 @@ class DataLIDC():
   def __shift__(self, x, correct=True):
     if correct:
       s1, s2 = np.sort(np.random.choice(self.shift_amount,2, replace=False))
+      print(s1,s2)
       if s1 < 0:
         if s2 < 0:
           x1 = self.__pad__(x, s1)
@@ -129,9 +130,10 @@ class DataLIDC():
           x2 = x.copy()
           x3 = self.__pad__(x, s2)
       else:
+        x1 = x.copy()
         x2 = self.__pad__(x, s1)
         x3 = self.__pad__(x, s2)
-        x1 = x.copy()
+        
     else:
       s1, s2, s3 = np.random.choice(self.shift_amount,3, replace=False)
       while s1 < s2 and s2 < s3:
