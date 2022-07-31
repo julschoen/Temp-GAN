@@ -108,9 +108,7 @@ class DataLIDC():
     self.len = 600#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
-    self.shift_amount = np.concatenate((np.arange(-40,-10),np.arange(10,40)))
-    self.neg_counter = 0
-    self.pos_counter = 0
+    self.shift_amount = np.arange(10,40)
 
   def __pad__(self, x, s):
     if s > 0:
@@ -118,11 +116,24 @@ class DataLIDC():
     else:
         return np.pad(x.copy(), [[0,0],[0, 0],[0,np.abs(s)]], constant_values=-1)[:,:,np.abs(s):]
 
+  def __get_shift__(self, sort=True):
+    if sort:
+      s1, s2 = np.sort(np.random.choice(self.shift_amount,2, replace=False))
+    else:
+      s1, s2 = np.random.choice(self.shift_amount,2, replace=False)
+
+    p = torch.rand(1)
+    if p < 0.25:
+      s1, s2 = -s2, -s1
+    elif p < 0.75:
+      s1 = -s1
+    return s1,s2
+
   def __shift__(self, x, correct=True):
     if correct:
-      s1, s2 = np.sort(np.random.choice(self.shift_amount,2, replace=False))
-      if s1 < 0:
-        self.neg_counter += 1
+      m = 
+      s1, s2 = self.__get_shift__()
+      if s1<0:
         if s2 < 0:
           x1 = self.__pad__(x, s1)
           x2 = self.__pad__(x, s2)
@@ -132,18 +143,17 @@ class DataLIDC():
           x2 = x.copy()
           x3 = self.__pad__(x, s2)
       else:
-        self.pos_counter += 1
         x1 = x.copy()
         x2 = self.__pad__(x, s1)
         x3 = self.__pad__(x, s2)
         
     else:
-      s1, s2, s3 = np.random.choice(self.shift_amount,3, replace=False)
-      while s1 < s2 and s2 < s3:
-        s1, s2, s3 = np.random.choice(self.shift_amount,3, replace=False)
-      x1 = self.__pad__(x, s1)
-      x2 = self.__pad__(x, s2)
-      x3 = self.__pad__(x, s3)
+      s1, s2 = self.__get_shift__(sort=False)
+      while s1 < s2:
+        s1, s2 = self.__get_shift__(sort=False)
+      x1 = x.copy()
+      x2 = self.__pad__(x, s1)
+      x3 = self.__pad__(x, s2)
   
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
@@ -153,17 +163,29 @@ class DataLIDC():
       ind = np.random.choice(range(self.len))
 
     x_ = self.data[ind]
-    s1, s2, s3 = np.sort(np.random.choice(self.shift_amount,3, replace=False))
-    x1 = self.__pad__(x, s1)
-    if torch.rand(1)<0.5:
-      x2 = self.__pad__(x, s2)
+    s1, s2 = self.__get_shift__()
+    if s1<0:
+      if s2 < 0:
+        x1 = self.__pad__(x, s1)
+        x2 = self.__pad__(x, s2)
+        x3 = x.copy()
+      else:
+        x1 = self.__pad__(x, s1)
+        x2 = x.copy()
+        x3 = self.__pad__(x, s2)
     else:
-      x2 = self.__pad__(x_, s2)
-    if torch.rand(1)<0.5:
-      x3 = self.__pad__(x, s3)
-    else:
-      x3 = self.__pad__(x_, s3)
+      x1 = x.copy()
+      x2 = self.__pad__(x, s1)
+      x3 = self.__pad__(x, s2)
 
+    p = torch.rand(1)
+    if p < 0.33:
+      x1 = x_
+    elif p < 0.66:
+      x2 = x_
+    else:
+      x3 = x_
+      
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
   def __getitem__(self, index):
