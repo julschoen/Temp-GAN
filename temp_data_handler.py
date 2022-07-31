@@ -131,7 +131,6 @@ class DataLIDC():
 
   def __shift__(self, x, correct=True):
     if correct:
-      m = 
       s1, s2 = self.__get_shift__()
       if s1<0:
         if s2 < 0:
@@ -185,7 +184,7 @@ class DataLIDC():
       x2 = x_
     else:
       x3 = x_
-      
+
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
   def __getitem__(self, index):
