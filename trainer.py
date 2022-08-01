@@ -200,15 +200,28 @@ class Trainer(object):
         self.log_interpolation(step)
         self.save_checkpoint(step)
 
+    def get_shift(self, sort=True):
+        if sort:
+            alpha = 6*torch.rand(self.p.batch_size,2)
+            alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
+            for i, (a1, a2) in enumerate(alpha):
+                p = torch.rand(1)
+                if p < 0.25:
+                    alpha[i,0] = -a1
+                    alpha[i,1] = -a2
+                elif p < 0.75:
+                      alpha[i, 0] = -a1
+            alpha = alpha.t()
+            alpha = torch.sort(alpha.t())[0].t()
+        else:
+            alpha = ((12*torch.rand(16,2))-6).t()
+        return alpha
+
     def sample_g(self, grad=False):
         with autocast():
             if grad:
                 z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-                alpha = (12*torch.rand(self.p.batch_size,2)-6).t()
-                alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
-                alpha[(alpha > -0.5) & (alpha < 0)] = -0.5
-                if not self.p.cl:
-                    alpha = torch.sort(alpha.t())[0].t()
+                alpha = self.get_shift(sort=not self.p.cl)
                 labels = alpha[0]<alpha[1]
                 z1 = self.tempG(z, alpha[0])
                 z2 = self.tempG(z, alpha[1])
