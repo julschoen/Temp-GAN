@@ -1,4 +1,4 @@
-./gan/bin/python main.py --log_dir=AdvNFNorm --norm=True --lidc=True --niter=2500
+./gan/bin/python main.py --log_dir=AdvNFNormCl --norm=True --lidc=True --niter=2500
 ./gan/bin/python main.py --log_dir=TrNFNorm --triplet=True --norm=True --lidc=True --niter=2500
 ./gan/bin/python main.py --log_dir=ClNFNorm --cl=True --norm=True --lidc=True --niter=2500
 ./run.sh
