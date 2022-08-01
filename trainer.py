@@ -214,7 +214,7 @@ class Trainer(object):
             alpha = alpha.t()
             alpha = torch.sort(alpha.t())[0].t()
         else:
-            alpha = ((12*torch.rand(16,2))-6).t()
+            alpha = ((12*torch.rand(self.p.batch_size,2))-6).t()
         return alpha
 
     def sample_g(self, grad=False):
