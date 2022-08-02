@@ -30,44 +30,57 @@ def load_model(path, ngpu):
 
     return netD, tempG, imG
 
-def sample_g(tempG, imG):
-    with torch.no_grad():
-        if params.ngpu > 1:
-				z = torch.randn(params.batch_size, gen.module.dim_z, dtype=torch.float, device=params.device)
+def get_shift(sort=True):
+	if sort:
+		alpha = 6*torch.rand(self.p.batch_size,2)
+		alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
+		for i, (a1, a2) in enumerate(alpha):
+			p = torch.rand(1)
+			if p < 0.25:
+				alpha[i,0] = -a1
+				alpha[i,1] = -a2
+			elif p < 0.75:
+				alpha[i, 0] = -a1
+		alpha = alpha.t()
+		alpha = torch.sort(alpha.t())[0].t()
+	else:
+	alpha = ((12*torch.rand(self.p.batch_size,2))-6).t()
+	return alpha
+
+def sample_g():
+	with torch.no_grad():
+		z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
+		alpha = self.get_shift(sort=not self.p.cl)
+		labels = alpha[0]<alpha[1]
+		z1 = self.tempG(z, alpha[0])
+		z2 = self.tempG(z, alpha[1])
+
+		zs = torch.randn(3,self.p.batch_size,self.p.z_size, dtype=torch.float, device=self.device)
+		for i, l in enumerate(labels):
+			if l and alpha[0,i]<0:
+				if alpha[1,i]<0:
+					zs[:,i] = torch.concat((
+					z1[i].reshape(1,-1),
+					z2[i].reshape(1,-1),
+					z[i].reshape(1,-1)
+					))
+				else:
+					zs[:,i] = torch.concat((
+					z1[i].reshape(1,-1),
+					z[i].reshape(1,-1),
+					z2[i].reshape(1,-1)
+					))
 			else:
-				z = torch.randn(params.batch_size, gen.dim_z, dtype=torch.float, device=params.device)
-        alpha = torch.sort((12*torch.rand(params.batch_size,2)-6))[0].transpose(0,1)
-        labels = alpha[0]<alpha[1]
-        z1 = self.tempG(z, alpha[0])
-        z2 = self.tempG(z, alpha[1])
-
-        zs = torch.randn(params.batch_size,z.shape[1], dtype=torch.float, device=self.device)
-        for i, _ in enumerate(labels):
-            if alpha[1,i]<0 and alpha[0,i]<0:
-                zs[:,i] = torch.concat((
-                    z1[i].reshape(1,-1),
-                    z2[i].reshape(1,-1),
-                    z[i].reshape(1,-1)
-                ))
-            elif alpha[0,i]<0:
-                zs[:,i] = torch.concat((
-                    z1[i].reshape(1,-1),
-                    z[i].reshape(1,-1),
-                    z2[i].reshape(1,-1)
-                ))
-            else:
-                zs[:,i] = torch.concat((
-                    z[i].reshape(1,-1),
-                    z1[i].reshape(1,-1),
-                    z2[i].reshape(1,-1)
-                ))
-
-        im = self.imG(zs[0])
-        im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-        im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-        im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-        ims = torch.concat((im, im1, im2), dim=1)
-    return ims, labels.reshape(-1,1).float()
+				zs[:,i] = torch.concat((
+				z[i].reshape(1,-1),
+				z1[i].reshape(1,-1),
+				z2[i].reshape(1,-1)
+				))
+		im = self.imG(zs[0])
+		im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+		im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+		im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+	return ims, labels.reshape(-1,1).float()
 
 def round(disc, im_gen, temp_gen, params):
 	disc = disc.to(params.device)

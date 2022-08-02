@@ -255,11 +255,7 @@ class Trainer(object):
             else:
                 with torch.no_grad():
                     z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-                    alpha = (12*torch.rand(self.p.batch_size,2)-6).t()
-                    alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
-                    alpha[(alpha > -0.5) & (alpha < 0)] = -0.5
-                    if not self.p.cl:
-                        alpha = torch.sort(alpha.t())[0].t()
+                    alpha = self.get_shift(sort=not self.p.cl)
                     labels = alpha[0]<alpha[1]
                     z1 = self.tempG(z, alpha[0])
                     z2 = self.tempG(z, alpha[1])
