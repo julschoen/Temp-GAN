@@ -60,7 +60,7 @@ def eval(params):
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
-	parser.add_argument('--data_path', type=str, default='data/test_pat.npz',help='Path to data.')
+	parser.add_argument('--data_path', type=str, default='../3D-GAN/train_lidc_128.npz',help='Path to data.')
 	parser.add_argument('--ngpu', type=int, default=2, help='Number of GPUs')
 	parser.add_argument('--log_dir', type=str, default='log', help='Save Location')
 	parser.add_argument('--device', type=str, default='cuda', help='Torch Device Choice')
