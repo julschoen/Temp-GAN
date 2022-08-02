@@ -110,8 +110,8 @@ def tournament(discs, gens, params):
 		res[n] = []
 	for i, d in enumerate(discs):
 		for j, (tg, ig) in enumerate(gens):
-			if i == j:
-				continue
+			#if i == j:
+			#		continue
 
 			wr = round(d, tg, ig, params)
 			res[names[j]].append(wr)
