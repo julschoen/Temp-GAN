@@ -79,7 +79,7 @@ def sample_g(tempG, imG, z, p):
 		im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
 		im1 = imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
 		im2 = imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-	return ims
+	return torch.concat((im, im1, im2), dim=1)
 
 def round(disc, temp_gen, im_gen, params):
 	disc = disc.to(params.device)
