@@ -89,9 +89,9 @@ def round(disc, temp_gen, im_gen, params):
 	for i in range(2):
 		with torch.no_grad():
 			if params.ngpu > 1:
-				noise = torch.randn(params.batch_size, gen.module.dim_z, dtype=torch.float, device=params.device)
+				noise = torch.randn(params.batch_size, im_gen.module.dim_z, dtype=torch.float, device=params.device)
 			else:
-				noise = torch.randn(params.batch_size, gen.dim_z, dtype=torch.float, device=params.device)
+				noise = torch.randn(params.batch_size, im_gen.dim_z, dtype=torch.float, device=params.device)
 
 			ims = sample_g(temp_gen, im_gen, noise, params)
 			f = disc(ims)
