@@ -24,7 +24,7 @@ def load_gen(path, ngpu):
 	return netG
 
 def eval(params):
-	dataset = DataLIDC(path=params.data_path)
+	dataset = DataLIDC(path=params.data_path, triplet=True)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	os.makedirs(params.log_dir, exist_ok=True)
