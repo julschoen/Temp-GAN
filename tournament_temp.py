@@ -30,9 +30,9 @@ def load_model(path, ngpu):
 
     return netD, tempG, imG
 
-def get_shift(sort=True):
+def get_shift(p, sort=True):
 	if sort:
-		alpha = 6*torch.rand(self.p.batch_size,2)
+		alpha = 6*torch.rand(p.batch_size,2)
 		alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
 		for i, (a1, a2) in enumerate(alpha):
 			p = torch.rand(1)
@@ -44,18 +44,17 @@ def get_shift(sort=True):
 		alpha = alpha.t()
 		alpha = torch.sort(alpha.t())[0].t()
 	else:
-		alpha = ((12*torch.rand(self.p.batch_size,2))-6).t()
+		alpha = ((12*torch.rand(p.batch_size,2))-6).t()
 	return alpha
 
-def sample_g():
+def sample_g(tempG, imG, z, p):
 	with torch.no_grad():
-		z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
-		alpha = self.get_shift(sort=not self.p.cl)
+		alpha = get_shift(p)
 		labels = alpha[0]<alpha[1]
-		z1 = self.tempG(z, alpha[0])
-		z2 = self.tempG(z, alpha[1])
+		z1 = tempG(z, alpha[0])
+		z2 = tempG(z, alpha[1])
 
-		zs = torch.randn(3,self.p.batch_size,self.p.z_size, dtype=torch.float, device=self.device)
+		zs = torch.randn(3,p.batch_size,z.shape[1], dtype=torch.float, device=p.device)
 		for i, l in enumerate(labels):
 			if l and alpha[0,i]<0:
 				if alpha[1,i]<0:
@@ -76,13 +75,13 @@ def sample_g():
 				z1[i].reshape(1,-1),
 				z2[i].reshape(1,-1)
 				))
-		im = self.imG(zs[0])
+		im = imG(zs[0])
 		im = im.reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-		im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-		im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
-	return ims, labels.reshape(-1,1).float()
+		im1 = imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+		im2 = imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
+	return ims
 
-def round(disc, im_gen, temp_gen, params):
+def round(disc, temp_gen, im_gen, params):
 	disc = disc.to(params.device)
 	im_gen = im_gen.to(params.device)
 	temp_gen = temp_gen.to(params.device)
@@ -94,7 +93,8 @@ def round(disc, im_gen, temp_gen, params):
 			else:
 				noise = torch.randn(params.batch_size, gen.dim_z, dtype=torch.float, device=params.device)
 
-			f = disc(gen(noise))
+			ims = sample_g(temp_gen, im_gen, noise, params)
+			f = disc(ims)
 			wrt += (f > 0).sum().item()
 
 	disc, im_gen, temp_gen = disc.cpu(), im_gen.cpu(), temp_gen.cpu()
@@ -109,11 +109,11 @@ def tournament(discs, gens, params):
 	for n in names:
 		res[n] = []
 	for i, d in enumerate(discs):
-		for j, g in enumerate(gens):
+		for j, (tg, ig) in enumerate(gens):
 			if i == j:
 				continue
 
-			wr = round(d, g, params)
+			wr = round(d, tg, ig, params)
 			res[names[j]].append(wr)
 
 	print('------------- Tournament Results -------------')
