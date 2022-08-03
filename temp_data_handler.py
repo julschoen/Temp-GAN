@@ -203,6 +203,7 @@ class DataLIDC():
       else:
       #  if torch.rand(1)<0.51:
         image = self.__shift__(image, correct=False)
+        label = 0
       #  else:
       #    image = self.__dif_pat__(image, index)
       #  label = 0
