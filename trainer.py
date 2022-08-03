@@ -422,9 +422,9 @@ class Trainer(object):
         self.scalerImG.step(self.optimizerImG)
         self.scalerImG.update()
 
-        if not self.p.cl:
-            for p in self.tempG.parameters():
-                p.requires_grad = False
+        
+        for p in self.tempG.parameters():
+            p.requires_grad = False
         for p in self.imG.parameters():
             p.requires_grad = False
 
@@ -434,6 +434,19 @@ class Trainer(object):
         step_done = self.start_from_checkpoint()
         FID.set_config(device=self.device)
         gen = self.inf_train_gen()
+
+        for p in self.imG.parameters():
+            p.requires_grad = False
+
+        for p in self.tempG.parameters():
+            p.requires_grad = False
+
+        for p in self.tempD.parameters():
+            p.requires_grad = False
+
+        if not self.p.one_disc:
+            for p in self.imD.parameters():
+                p.requires_grad = True
 
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
