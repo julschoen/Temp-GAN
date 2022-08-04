@@ -206,12 +206,12 @@ class Trainer(object):
             alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
             for i, (a1, a2) in enumerate(alpha):
                 p = torch.rand(1)
-                if p < 0.25:
+                if p < 0.33:
                     a1_ = a1.item()
                     a2_ = a2.item()
                     alpha[i,0] = -a2_
                     alpha[i,1] = -a1_
-                elif p < 0.75:
+                elif p < 0.66:
                       alpha[i, 0] = -a1
             alpha = torch.sort(alpha)[0].t()
         else:
