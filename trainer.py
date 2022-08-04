@@ -454,7 +454,6 @@ class Trainer(object):
             if not self.p.one_disc:
                 for _ in range(self.p.im_iter):  
                     data, labels = next(gen)
-                    print('Got data')
                     real = data.to(self.device)
                     errImD_real, errImD_fake = self.step_imD(real[:,0])
             else:
