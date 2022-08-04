@@ -111,6 +111,7 @@ class DataLIDC():
     self.shift_amount = np.arange(15,50)
 
   def __pad__(self, x, s):
+    print(s)
     if s == 0:
       return x.copy()
     elif s > 0:
