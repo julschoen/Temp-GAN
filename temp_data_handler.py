@@ -121,17 +121,18 @@ class DataLIDC():
   def __get_shift__(self, sort=True):
     if sort:
       s1, s2, s3 = np.sort(np.random.choice(self.shift_amount,3, replace=False))
+      p = torch.rand(1)
+      if p < 0.25:
+        s1, s2, s3 = -s3, -s2, -s1
+      elif p < 0.50:
+        s1, s2 = -s2, -s1
+      elif p < 0.75:
+        s1, s2 = -s2, s1
+      return s1,s2,s3
     else:
-      s1, s2, s3 = np.random.choice(self.shift_amount,3, replace=False)
+      s1, s2, s3 = np.random.choice(np.arange(-32,32),3, replace=False)
+      return s1,s2,s3
 
-    p = torch.rand(1)
-    if p < 0.25:
-      s1, s2, s3 = -s3, -s2, -s1
-    elif p < 0.50:
-      s1, s2 = -s2, -s1
-    elif p < 0.75:
-      s1, s2 = -s2, s1
-    return s1,s2,s3
 
   def __shift__(self, x, correct=True):
     if correct:
