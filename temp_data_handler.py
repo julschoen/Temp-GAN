@@ -108,7 +108,7 @@ class DataLIDC():
     self.len = 100#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
-    self.shift_amount = np.arange(15,50)
+    self.shift_amount = np.arange(5,50)
 
   def __pad__(self, x, s):
     if s == 0:
@@ -120,46 +120,32 @@ class DataLIDC():
 
   def __get_shift__(self, sort=True):
     if sort:
-      s1, s2 = np.sort(np.random.choice(self.shift_amount,2, replace=False))
+      s1, s2, s3 = np.sort(np.random.choice(self.shift_amount,3, replace=False))
     else:
-      s1, s2 = np.random.choice(self.shift_amount,2, replace=False)
+      s1, s2, s3 = np.random.choice(self.shift_amount,3, replace=False)
 
     p = torch.rand(1)
     if p < 0.25:
+      s1, s2, s3 = -s3, -s2, -s1
+    elif p < 0.50:
       s1, s2 = -s2, -s1
     elif p < 0.75:
-      s1 = -s1
-    return s1,s2
+      s1, s2 = -s2, s1
+    return s1,s2,s3
 
   def __shift__(self, x, correct=True):
     if correct:
-      s1, s2 = self.__get_shift__()
-      if s1<0:
-        if s2 < 0:
-          x1 = self.__pad__(x, s1)
-          x2 = self.__pad__(x, s2)
-          x3 = self.__pad__(x, np.random.randint(-10,10))
-        else:
-          x1 = self.__pad__(x, s1)
-          x2 = self.__pad__(x, np.random.randint(-10,10))
-          x3 = self.__pad__(x, s2)
-      else:
-        x1 = self.__pad__(x, np.random.randint(-10,10))
-        x2 = self.__pad__(x, s1)
-        x3 = self.__pad__(x, s2)
-        
+      s1, s2, s3 = self.__get_shift__()
+      x1 = self.__pad__(x, s1)
+      x2 = self.__pad__(x, s2)
+      x3 = self.__pad__(x, s3)
     else:
-      s1, s2 = self.__get_shift__(sort=False)
-      while s1 < s2:
-        s1, s2 = self.__get_shift__(sort=False)
-      if s1>0:
-        x1 = self.__pad__(x, s1)
-        x2 = self.__pad__(x, np.random.randint(-10,10))
-        x3 = self.__pad__(x, s2)
-      else:
-        x1 = self.__pad__(x, np.random.randint(-10,10))
-        x2 = self.__pad__(x, s1)
-        x3 = self.__pad__(x, s2)
+      s1, s2, s3 = self.__get_shift__(sort=False)
+      while s1 < s2 and s2 < s3:
+        s1, s2, s3 = self.__get_shift__(sort=False)
+      x1 = self.__pad__(x, s1)
+      x2 = self.__pad__(x, s2)
+      x3 = self.__pad__(x, s3)
   
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
