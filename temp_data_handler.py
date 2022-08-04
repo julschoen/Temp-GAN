@@ -139,13 +139,13 @@ class DataLIDC():
         if s2 < 0:
           x1 = self.__pad__(x, s1)
           x2 = self.__pad__(x, s2)
-          x3 = self.__pad__(x, np.random.randint(-10,10,1))
+          x3 = self.__pad__(x, np.random.randint(-10,10))
         else:
           x1 = self.__pad__(x, s1)
-          x2 = self.__pad__(x, np.random.randint(-10,10,1))
+          x2 = self.__pad__(x, np.random.randint(-10,10))
           x3 = self.__pad__(x, s2)
       else:
-        x1 = self.__pad__(x, np.random.randint(-10,10,1))
+        x1 = self.__pad__(x, np.random.randint(-10,10))
         x2 = self.__pad__(x, s1)
         x3 = self.__pad__(x, s2)
         
@@ -155,10 +155,10 @@ class DataLIDC():
         s1, s2 = self.__get_shift__(sort=False)
       if s1>0:
         x1 = __pad__(x, s1)
-        x2 = self.__pad__(x, np.random.randint(-10,10,1))
+        x2 = self.__pad__(x, np.random.randint(-10,10))
         x3 = __pad__(x, s2)
       else:
-        x1 = self.__pad__(x, np.random.randint(-10,10,1))
+        x1 = self.__pad__(x, np.random.randint(-10,10))
         x2 = __pad__(x, s1)
         x3 = __pad__(x, s2)
   
