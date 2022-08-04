@@ -101,7 +101,6 @@ class Data4D():
   def __len__(self):
       return self.len
 
-
 class DataLIDC():
   def __init__(self, path, triplet=False, shift=True):
     self.data = np.load(path)['X']
