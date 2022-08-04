@@ -108,7 +108,7 @@ class DataLIDC():
     self.len = 100#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
-    self.shift_amount = np.arange(5,50)
+    self.shift_amount = np.arange(5,32)
 
   def __pad__(self, x, s):
     if s == 0:
