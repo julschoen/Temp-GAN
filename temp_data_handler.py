@@ -197,7 +197,6 @@ class DataLIDC():
     elif self.shift:
       image = self.data[index]
       image = np.clip(image, -1,1)
-      print(image.shape)
       if torch.rand(1)<0.51:
         image = self.__shift__(image)
         print(1)
