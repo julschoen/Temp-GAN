@@ -108,7 +108,7 @@ class DataLIDC():
     self.len = 100#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
-    self.shift_amount = np.arange(10,40)
+    self.shift_amount = np.arange(15,50)
 
   def __pad__(self, x, s):
     if s > 0:
@@ -136,13 +136,13 @@ class DataLIDC():
         if s2 < 0:
           x1 = self.__pad__(x, s1)
           x2 = self.__pad__(x, s2)
-          x3 = x.copy()
+          x3 = self.__pad__(x, np.random.randint(-10,10,1))
         else:
           x1 = self.__pad__(x, s1)
-          x2 = x.copy()
+          x2 = self.__pad__(x, np.random.randint(-10,10,1))
           x3 = self.__pad__(x, s2)
       else:
-        x1 = x.copy()
+        x1 = self.__pad__(x, np.random.randint(-10,10,1))
         x2 = self.__pad__(x, s1)
         x3 = self.__pad__(x, s2)
         
@@ -150,9 +150,14 @@ class DataLIDC():
       s1, s2 = self.__get_shift__(sort=False)
       while s1 < s2:
         s1, s2 = self.__get_shift__(sort=False)
-      x1 = x.copy()
-      x2 = self.__pad__(x, s1)
-      x3 = self.__pad__(x, s2)
+      if s1>0:
+        x1 = __pad__(x, s1)
+        x2 = self.__pad__(x, np.random.randint(-10,10,1))
+        x3 = __pad__(x, s2)
+      else:
+        x1 = self.__pad__(x, np.random.randint(-10,10,1))
+        x2 = __pad__(x, s1)
+        x3 = __pad__(x, s2)
   
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
@@ -199,14 +204,10 @@ class DataLIDC():
       image = np.clip(image, -1,1)
       if torch.rand(1)<0.51:
         image = self.__shift__(image)
-        print(1)
-        print(image.shape)
         label = 1
       else:
       #  if torch.rand(1)<0.51:
         image = self.__shift__(image, correct=False)
-        print(2)
-        print(image.shape)
         label = 0
       #  else:
       #    image = self.__dif_pat__(image, index)

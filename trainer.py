@@ -288,6 +288,7 @@ class Trainer(object):
                     im1 = self.imG(zs[1]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
                     im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             ims = torch.concat((im, im1, im2), dim=1)
+        print(ims.shape)
         return ims, labels.reshape(-1,1).float()
 
     def step_imD(self, real):
