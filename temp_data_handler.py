@@ -104,7 +104,7 @@ class Data4D():
 class DataLIDC():
   def __init__(self, path, triplet=False, shift=True):
     self.data = np.load(path)['X']
-    self.len = 100#self.data.shape[0]
+    self.len = 700#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
     self.shift_amount = np.arange(0,32)
@@ -180,13 +180,13 @@ class DataLIDC():
     elif self.shift:
       image = self.data[index]
       image = np.clip(image, -1,1)
-      #if torch.rand(1)<0.51:
-      image = self.__shift__(image)
-      label = 1
-      #else:
+      if torch.rand(1)<0.51:
+        image = self.__shift__(image)
+        label = 1
+      else:
       #  if torch.rand(1)<0.51:
-      #    image = self.__shift__(image, correct=False)
-      #    label = 0
+        image = self.__shift__(image, correct=False)
+        label = 0
       #  else:
       #    image = self.__dif_pat__(image, index)
       #    label = 0
