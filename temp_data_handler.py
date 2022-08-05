@@ -104,7 +104,7 @@ class Data4D():
 class DataLIDC():
   def __init__(self, path, triplet=False, shift=True):
     self.data = np.load(path)['X']
-    self.len = 600#self.data.shape[0]
+    self.len = 100#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
     self.shift_amount = np.arange(0,32)
@@ -172,7 +172,7 @@ class DataLIDC():
 
   def __getitem__(self, index):
     if self.triplet and self.shift:
-      image = self.data[index]
+      image = self.data[600+index]
       image = np.clip(image, -1,1)
       image = self.__shift__(image)
       label = 1
