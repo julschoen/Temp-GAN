@@ -155,28 +155,18 @@ class DataLIDC():
       ind = np.random.choice(range(self.len))
 
     x_ = self.data[ind]
-    s1, s2 = self.__get_shift__()
-    if s1<0:
-      if s2 < 0:
-        x1 = self.__pad__(x, s1)
-        x2 = self.__pad__(x, s2)
-        x3 = x.copy()
-      else:
-        x1 = self.__pad__(x, s1)
-        x2 = x.copy()
-        x3 = self.__pad__(x, s2)
-    else:
-      x1 = x.copy()
-      x2 = self.__pad__(x, s1)
-      x3 = self.__pad__(x, s2)
+    s1, s2, s3 = self.__get_shift__()
+    x1 = self.__pad__(x, s1)
+    x2 = self.__pad__(x, s2)
+    x3 = self.__pad__(x, s3)
 
     p = torch.rand(1)
     if p < 0.33:
-      x1 = x_
+      x1 = self.__pad__(x_, s1)
     elif p < 0.66:
-      x2 = x_
+      x2 = self.__pad__(x_, s2)
     else:
-      x3 = x_
+      x3 = self.__pad__(x_, s3)
 
     return np.concatenate((x1.reshape(1,128,128,-1),x2.reshape(1,128,128,-1),x3.reshape(1,128,128,-1)))
 
@@ -194,12 +184,12 @@ class DataLIDC():
         image = self.__shift__(image)
         label = 1
       else:
-      #  if torch.rand(1)<0.51:
-        image = self.__shift__(image, correct=False)
-        label = 0
-      #  else:
-      #    image = self.__dif_pat__(image, index)
-      #  label = 0
+        if torch.rand(1)<0.51:
+          image = self.__shift__(image, correct=False)
+          label = 0
+        else:
+          image = self.__dif_pat__(image, index)
+          label = 0
       return torch.from_numpy(image).float(), torch.Tensor([label])
     else:
       image = self.data[index]
