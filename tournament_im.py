@@ -20,7 +20,7 @@ def load_model(path, ngpu):
         netG = nn.DataParallel(netG)
         netD = nn.DataParallel(netD)
 
-    state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
+    state = torch.load(os.path.join(path, 'models/checkpoint_4999.pt'))
     netG.load_state_dict(state['imG'])
     netD.load_state_dict(state['imD'])
 
