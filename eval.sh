@@ -1,1 +1,1 @@
-./gan/bin/python eval_im.py --log_dir=LIDC_eval -l=AdvNFNormCl2 -l=AdvNFNormTr2
+./gan/bin/python eval_temp.py --log_dir=LIDCTemp_eval -l=AdvNFNormCl -l=AdvNFNormTr -l=ClNFNorm -l=TrNFNorm
