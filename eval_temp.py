@@ -21,6 +21,7 @@ def load_gen(path, ngpu):
 		tempG = nn.DataParallel(tempG)
 	state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
 	imG.load_state_dict(state['imG'])
+	tempG.load_state_dict(state['tempG'])
 
 	return imG, tempG
 
@@ -42,8 +43,8 @@ def eval(params):
 
 			im = None
 			for a in alpha:
-				z_ = tempG(z,a)
 				im1 = imG(tempG(z,a)).unsqueeze(1)
+				np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_{alpha}_temp.npz'),x=im1.detach().cpu().numpy())
 				if im is None:
 					im = im1
 				else:
