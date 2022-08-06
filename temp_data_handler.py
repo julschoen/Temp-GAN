@@ -104,7 +104,7 @@ class Data4D():
 class DataLIDC():
   def __init__(self, path, triplet=False, shift=True):
     self.data = np.load(path)['X']
-    self.len = 700#self.data.shape[0]
+    self.len = 100#self.data.shape[0]
     self.shift = shift
     self.triplet = triplet
     self.shift_amount = np.arange(0,32)
