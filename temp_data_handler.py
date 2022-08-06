@@ -141,8 +141,8 @@ class DataLIDC():
       x3 = self.__pad__(x, s3)
     else:
       s1, s2, s3 = self.__get_shift__(sort=False)
-      while s1 < s2 and s2 < s3:
-        s1, s2, s3 = self.__get_shift__(sort=False)
+      if s1 < s2 and s2 < s3:
+        s1, s2, s3 = s3, s1, s2
       x1 = self.__pad__(x, s1)
       x2 = self.__pad__(x, s2)
       x3 = self.__pad__(x, s3)
