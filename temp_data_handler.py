@@ -171,7 +171,7 @@ class DataLIDC():
 
   def __getitem__(self, index):
     if self.triplet and self.shift:
-      image = self.data[700+index]
+      image = self.data[800+index]
       image = np.clip(image, -1,1)
       image = self.__shift__(image)
       label = 1
