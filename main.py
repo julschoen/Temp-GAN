@@ -35,6 +35,8 @@ def main():
 
 	if params.lidc:
 		dataset_train = DataLIDC(path='../3D-GAN/train_lidc_128.npz', triplet=params.triplet)
+	elif params.cbct:
+		dataset_train = DataCBCT(path='../Data/cbct/train_pat.npz')
 	else:
 		dataset_train = Data4D(path='../Data/4dct_clean/train_pat.npz')
 
