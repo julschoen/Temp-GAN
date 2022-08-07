@@ -456,7 +456,6 @@ class Trainer(object):
                     data, labels = next(gen)
                     real = data.to(self.device)
                     errImD_real, errImD_fake = self.step_imD(real[:,0])
-                    print(1)
             else:
                 errImD_real, errImD_fake = 0, 0
 
@@ -464,10 +463,8 @@ class Trainer(object):
                 data, labels = next(gen)
                 real = data.to(self.device)
                 errTempD_real = self.step_tempD(real, labels)
-                print(2)
 
             errG_im, errG_temp, fake = self.step_G()
-            print(3)
 
             #self.tracker.epoch_end()
             self.imG_losses.append(errG_im)
