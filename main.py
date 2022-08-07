@@ -1,4 +1,4 @@
-from temp_data_handler import Data4D, DataLIDC
+from temp_data_handler import Data4D, DataLIDC, DataCBCT
 from trainer import Trainer
 import argparse
 
@@ -30,7 +30,8 @@ def main():
 	parser.add_argument('--fixed_dir', type=bool, default=False, help='Is direction learnable?')
 	parser.add_argument('--norm', type=bool, default=False, help='Use direction of unit length?')
 	parser.add_argument('--one_disc', type=bool, default=False, help='Use only Temporal Discriminator. Overrides cl to False.')
-	parser.add_argument('--lidc', type=bool, default=False, help='Using LIDC or 4DCT')
+	parser.add_argument('--lidc', type=bool, default=False, help='Using LIDC default 4DCT')
+	parse.add_argument('--cbct', type=bool, default=False, help='Using CBCT default 4DCT')
 	params = parser.parse_args()
 
 	if params.lidc:
