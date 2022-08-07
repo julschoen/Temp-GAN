@@ -44,7 +44,6 @@ def eval(params):
 			im = None
 			for a in alpha:
 				im1 = imG(tempG(z,a)).unsqueeze(1)
-				#np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_{alpha}_temp.npz'),x=im1.detach().cpu().numpy())
 				if im is None:
 					im = im1
 				else:
