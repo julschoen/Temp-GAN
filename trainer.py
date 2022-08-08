@@ -131,12 +131,13 @@ class Trainer(object):
     def start_from_checkpoint(self):
         step = 0
         files = [f for f in os.listdir(self.models_dir)]
-        if len(files) < 2:
-            checkpoint = os.path.join(self.models_dir, 'checkpoint.pt')
-        else:
-            files.remove('checkpoint.pt')
-            files = sorted(files, key=lambda x: int(x.split('_')[1].split('.')[0]))
-            checkpoint = os.path.join(self.models_dir, files[-1])
+        #if len(files) < 2:
+        checkpoint = os.path.join(self.models_dir, 'checkpoint.pt')
+        #else:
+        #    files.remove('checkpoint.pt')
+        #    files = sorted(files, key=lambda x: int(x.split('_')[1].split('.')[0]))
+        #    checkpoint = os.path.join(self.models_dir, files[-1])
+
         if os.path.isfile(checkpoint):
             state_dict = torch.load(checkpoint)
             step = state_dict['step']
