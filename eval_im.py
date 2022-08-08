@@ -8,7 +8,7 @@ from torch.cuda.amp import autocast
 
 from eval_utils import *
 from image_gen import Generator as ImG
-from temp_data_handler import DATA, Data4D, DataLIDC
+from temp_data_handler import DATA, Data4D, DataLIDC, DataCBCT
 
 def load_gen(path, ngpu):
 	with open(os.path.join(path, 'params.pkl'), 'rb') as file:
@@ -24,7 +24,9 @@ def load_gen(path, ngpu):
 	return netG
 
 def eval(params):
-	dataset = DataLIDC(path=params.data_path, triplet=True)
+	#dataset = DataLIDC(path=params.data_path, triplet=True)
+	dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=False)
+	#dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=False)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	os.makedirs(params.log_dir, exist_ok=True)
