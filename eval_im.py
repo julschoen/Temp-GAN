@@ -28,7 +28,7 @@ def eval(params):
 	dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=False)
 	#dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=False)
 	print(dataset.__len__())
-	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4, drop_last=True)
+	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
