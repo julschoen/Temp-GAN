@@ -75,7 +75,7 @@ class Data4D():
       ind = np.random.randint(0, x.shape[0])
       x = np.flip(x[ind].reshape(128,128,64).T,axis=0)
       x = np.clip(x, -1,1)
-      return torch.from_numpy(x).float()
+      return torch.from_numpy(x).float(), 0
 
   def __len__(self):
       return self.len
