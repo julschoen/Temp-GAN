@@ -115,7 +115,7 @@ class DataCBCT():
       image = np.clip(xs_, -1,1)
       return torch.from_numpy(image).float(), torch.Tensor([label])
     else:
-      pat = os.path.join(self.path, self.files[index])
+      pat = pat = [os.path.join(self.path, self.files[index], f) for f in os.listdir(os.path.join(self.path, self.files[index])) if f.endswith('npz')][0]
       x = np.load(pat)['x']
       ind = np.random.randint(x.shape[0])
       x = np.flip(x[ind].reshape(128,128,64).T,axis=0)
