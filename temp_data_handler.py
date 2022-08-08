@@ -71,11 +71,11 @@ class Data4D():
       return torch.from_numpy(image).float(), torch.Tensor([label])
     else:
       pat = os.path.join(self.path, self.files[index])
-      image = np.load(pat)['x']
+      x = np.load(pat)['x']
       ind = np.random.randint(0, x.shape[0])
-      image = np.flip(image[ind].reshape(128,128,64).T,axis=0)
-      image = np.clip(xs_, -1,1)
-      return torch.from_numpy(image).float()
+      x = np.flip(x[ind].reshape(128,128,64).T,axis=0)
+      x = np.clip(x, -1,1)
+      return torch.from_numpy(x).float()
 
   def __len__(self):
       return self.len
