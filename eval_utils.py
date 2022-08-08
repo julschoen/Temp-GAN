@@ -38,11 +38,11 @@ def fid(real, fake, device):
                     )
 
             fid_cor = FID.fid(
-                    torch.reshape(fake.to(torch.float32).transpose(2,4), (-1,1,64,128)).expand(-1,3,-1,-1), 
+                    torch.reshape(fake.to(torch.float32).transpose(2,3), (-1,1,128,128)).expand(-1,3,-1,-1), 
                     real_images=torch.reshape(real.to(torch.float32).transpose(2,3), (-1,1,128,128)).expand(-1,3,-1,-1)
                     )
             fid_sag = FID.fid(
-                    torch.reshape(fake.to(torch.float32).transpose(3,5), (-1,1,128,64)).expand(-1,3,-1,-1), 
-                    real_images=torch.reshape(real.to(torch.float32).transpose(4,2), (-1,1,64,128)).expand(-1,3,-1,-1)
+                    torch.reshape(fake.to(torch.float32).transpose(4,2), (-1,1,128,128)).expand(-1,3,-1,-1), 
+                    real_images=torch.reshape(real.to(torch.float32).transpose(4,2), (-1,1,128,128)).expand(-1,3,-1,-1)
                     )
     return fid_ax, fid_cor, fid_sag
