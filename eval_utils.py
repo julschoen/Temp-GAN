@@ -28,8 +28,6 @@ def fid(real, fake, device):
     FID.set_config(device=device)
     real.to(device)
     fake.to(device)
-    print(real.shape)
-    print(fake.shape)
     with torch.no_grad():
         with autocast():
             fid_ax = FID.fid(
