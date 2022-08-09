@@ -49,7 +49,7 @@ def eval(params):
 				else:
 					im = torch.concat((im, im1), dim=1)
 		
-		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}2_temp.npz'),x=im.detach().cpu().numpy())
+		np.savez_compressed(os.path.join(params.log_dir,f'{model_path}_temp.npz'),x=im.detach().cpu().numpy())
 
 def main():
 	parser = argparse.ArgumentParser()
