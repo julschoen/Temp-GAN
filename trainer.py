@@ -389,7 +389,7 @@ class Trainer(object):
                 err_im = torch.tensor([0.])
                 loss = err_temp
             else:
-                loss = 0.25 * err_temp + err_im
+                loss = err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()
