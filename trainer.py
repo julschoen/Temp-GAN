@@ -203,7 +203,7 @@ class Trainer(object):
 
     def get_shift(self, sort=True):
         if sort:
-            alpha = 6*torch.rand(self.p.batch_size,2)
+            alpha = torch.rand(self.p.batch_size,2)
             alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
             for i, (a1, a2) in enumerate(alpha):
                 p = torch.rand(1)
@@ -216,7 +216,7 @@ class Trainer(object):
                       alpha[i, 0] = -a1
             alpha = torch.sort(alpha)[0].t()
         else:
-            alpha = ((12*torch.rand(self.p.batch_size,2))-6).t()
+            alpha = ((2*torch.rand(self.p.batch_size,2))-1).t()
         return alpha
 
     def sample_g(self, grad=False):
