@@ -356,31 +356,6 @@ class Trainer(object):
 
         return loss.item()
 
-    def step_D(self, real, r_label):
-        for p in self.tempD.parameters():
-            p.requires_grad = True
-        self.tempD.zero_grad()
-        with autocast():
-            fake, f_label = self.sample_g()
-
-            disc_real, pred_real = self.tempD(real)
-            disc_fake, pred_fake = self.tempD(fake)
-
-            errD_real = (nn.ReLU()(1.0 - disc_real)).mean()
-            errD_fake = (nn.ReLU()(1.0 + disc_fake)).mean()
-            err_real = self.cla_loss(pred_real, r_label.to(self.device))
-            err_fake = self.cla_loss(pred_fake, f_label.to(self.device))
-            loss = errD_real + errD_fake + err_real + err_fake
-
-        self.scalerTempD.scale(loss).backward()
-        self.scalerTempD.step(self.optimizerTempD)
-        self.scalerTempD.update()
-
-        for p in self.tempD.parameters():
-            p.requires_grad = False
-
-        return errD_real.item(), errD_fake.item(), loss.item()
-
     def step_G(self):
         if not self.p.fixed_dir:
             for p in self.tempG.parameters():
@@ -414,7 +389,7 @@ class Trainer(object):
                 err_im = torch.tensor([0.])
                 loss = err_temp
             else:
-                loss = err_temp + err_im
+                loss = 0.25 * err_temp + err_im
 
 
         self.scalerImG.scale(loss).backward()
