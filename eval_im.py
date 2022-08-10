@@ -24,7 +24,7 @@ def load_gen(path, ngpu):
 	return netG
 
 def eval(params):
-	dataset = DataLIDC(path=params.data_path, triplet=True)
+	dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', triplet=True)
 	#dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=False)
 	#dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=False)
 	print(dataset.__len__())
