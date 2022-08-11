@@ -370,7 +370,13 @@ class Trainer(object):
 
         with autocast():
             if not self.p.one_disc:
-                disc_im_fake = self.imD(fake[:,0].unsqueeze(1))
+
+                disc_im_fake = self.imD(
+                    fake[list(
+                        torch.concat(
+                            (torch.arange(self.p.batch_size),torch.randint(high=3, size=(self.p.batch_size,)))
+                            ).reshape(2,self.p.batch_size))].unsqueeze(1)
+                    )
                 err_im = - disc_im_fake.mean()
 
             if self.p.cl:
@@ -431,7 +437,11 @@ class Trainer(object):
                 for _ in range(self.p.im_iter):  
                     data, labels = next(gen)
                     real = data.to(self.device)
-                    errImD_real, errImD_fake = self.step_imD(real[:,0])
+                    errImD_real, errImD_fake = self.step_imD(real[list(
+                        torch.concat(
+                            (torch.arange(self.p.batch_size),torch.randint(high=3, size=(self.p.batch_size,)))
+                            ).reshape(2,self.p.batch_size))]
+                    )
             else:
                 errImD_real, errImD_fake = 0, 0
 
