@@ -30,22 +30,23 @@ def load_model(path, ngpu):
 
     return netD, tempG, imG
 
-def get_shift(p, sort=True):
-	if sort:
-		alpha = 6*torch.rand(p.batch_size,2)
-		alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
-		for i, (a1, a2) in enumerate(alpha):
-			p = torch.rand(1)
-			if p < 0.25:
-				alpha[i,0] = -a1
-				alpha[i,1] = -a2
-			elif p < 0.75:
-				alpha[i, 0] = -a1
-		alpha = alpha.t()
-		alpha = torch.sort(alpha.t())[0].t()
-	else:
-		alpha = ((12*torch.rand(p.batch_size,2))-6).t()
-	return alpha
+def get_shift(param, sort=True):
+        if sort:
+            alpha = 6*torch.rand(param.batch_size,2)
+            alpha[(alpha < 0.5) & (alpha > 0)] = 0.5
+            for i, (a1, a2) in enumerate(alpha):
+                p = torch.rand(1)
+                if p < 0.33:
+                    a1_ = a1.item()
+                    a2_ = a2.item()
+                    alpha[i,0] = -a2_
+                    alpha[i,1] = -a1_
+                elif p < 0.66:
+                      alpha[i, 0] = -a1
+            alpha = torch.sort(alpha)[0].t()
+        else:
+            alpha = ((12*torch.rand(param.batch_size,2))-6).t()
+        return alpha
 
 def sample_g(tempG, imG, z, p):
 	with torch.no_grad():
