@@ -89,7 +89,6 @@ def eval(params):
 	for model_path in params.model_log:
 		print(model_path)
 		imG, tempG = load_models(model_path, params.ngpu)
-		data = data[:,0].to(params.device)
 		zs = embed_check(imG, params)
 		generate_ims(imG, params, f'embed_{model_path}.npz', noise=zs)
 		#generate_ims(imG, params, f'rev_rec_gen_{model_path}.npz', noise=rev_zs)
