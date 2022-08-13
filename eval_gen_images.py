@@ -77,7 +77,7 @@ def embed_check(netG, params):
 	z12 = z2-z1
 	mags = torch.linspace(0,1,10)
 
-	zs = torch.randn(10,z_size, dtype=torch.float, device=self.device)
+	zs = torch.randn(10,z_size, dtype=torch.float, device=params.device)
 	for i, m in enumerate(mags):
 		zs[i+1] = z1 + z12*m
 
