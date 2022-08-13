@@ -20,18 +20,15 @@ def load_models(path, ngpu):
 	
 	imG = ImG(params)
 	tempG = TempG(params)
-	enc = Encoder(params)
 
 	if ngpu > 1:
 		imG = nn.DataParallel(imG)
 		tempG = nn.DataParallel(tempG)
-		enc = nn.DataParallel(enc)
-	state = torch.load(os.path.join(path, 'models/checkpoint.pt'))
+	state = torch.load(os.path.join(path, 'models/checkpoint_4999.pt'))
 	imG.load_state_dict(state['imG'])
 	tempG.load_state_dict(state['tempG'])
-	enc.load_state_dict(state['enc'])
 
-	return imG.to(params.device), tempG.to(params.device), enc.to(params.device)
+	return imG.to(params.device), tempG.to(params.device)
 
 def generate_ims(netG, params, save_name, noise=None):
 	if noise is None:
@@ -44,12 +41,6 @@ def generate_ims(netG, params, save_name, noise=None):
 			ims = netG(noise)
 	ims = ims.detach().cpu().numpy()
 	np.savez_compressed(os.path.join(params.log_dir, save_name), x=ims)
-
-def get_embedding(ims, enc):
-	with torch.no_grad():
-		with autocast():
-			zs = enc(ims.unsqueeze(1))
-	return zs
 
 def reverse_z(netG, ims, params, niter=5000, lr=0.01):
 	mse_loss = nn.MSELoss().to(params.device)
@@ -75,24 +66,34 @@ def reverse_z(netG, ims, params, niter=5000, lr=0.01):
 			optimizer_approx.step()
 	return z_approx
 
+def embed_check(netG, params):
+	if params.ngpu > 1:
+		z1, z2 = torch.randn(2, netG.module.dim_z,dtype=torch.float, device=params.device)
+		z_size = netG.module.dim_z
+	else:
+		z1, z2 = torch.randn(2, netG.dim_z,dtype=torch.float, device=params.device)
+		z_size = netG.dim_z
+
+	z12 = z2-z1
+	mags = torch.linspace(0,1,10)
+
+	zs = torch.randn(10,z_size, dtype=torch.float, device=self.device)
+	for i, m in enumerate(mags):
+		zs[i+1] = z1 + z12*m
+
+	return zs
+
+
+
 def eval(params):
-	dataset = DATA(path=params.data_path)
-	print(dataset.__len__())
-	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
-	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
-		imG, tempG, enc = load_models(model_path, params.ngpu)
-		generate_ims(imG, params, f'random_gen_{model_path}.npz')
-		for _, (data, _) in enumerate(generator):
-			data = data[:,0].to(params.device)
-			zs = get_embedding(data, enc)
-			rev_zs = reverse_z(imG, data, params)
-			print(torch.mean(zs),torch.std(zs), torch.mean(rev_zs), torch.std(rev_zs))
-			generate_ims(imG, params, f'rec_gen_{model_path}.npz', noise=zs)
-			generate_ims(imG, params, f'rev_rec_gen_{model_path}.npz', noise=rev_zs)
-			np.savez_compressed(os.path.join(params.log_dir, f'rec_real_{model_path}.npz'), x=data.detach().cpu().numpy())
-			break
+		imG, tempG = load_models(model_path, params.ngpu)
+		data = data[:,0].to(params.device)
+		zs = embed_check(imG, params)
+		generate_ims(imG, params, f'embed_{model_path}.npz', noise=zs)
+		#generate_ims(imG, params, f'rev_rec_gen_{model_path}.npz', noise=rev_zs)
+		#np.savez_compressed(os.path.join(params.log_dir, f'rec_real_{model_path}.npz'), x=data.detach().cpu().numpy())
 
 def main():
 	parser = argparse.ArgumentParser()
