@@ -38,7 +38,6 @@ def eval(params):
 				z = torch.randn(params.batch_size, imG.module.dim_z, dtype=torch.float, device=params.device)
 			else:
 				z = torch.randn(params.batch_size, imG.dim_z, dtype=torch.float, device=params.device)
-			np.arange(-shifts_r, shifts_r + 1e-9, shifts_r / 10)
 			alpha = torch.arange(-shifts_r, shifts_r + 1e-9, shifts_r / 8).repeat(params.batch_size).reshape(params.batch_size,17).t()
 
 			im = None
