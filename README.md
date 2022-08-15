@@ -18,8 +18,8 @@ _4D CT - Breathing Motion_
 
 _CBCT - Tumor Regression_
 
-![An image](./animations/cbct_0_1.gif)
-![An image](./animations/cbct_0.gif)
+![An image](./animations/cbct_3_1.gif)
+![An image](./animations/cbct_3.gif)
 
 ![An image](./animations/cbct_1_1.gif)
 ![An image](./animations/cbct_1.gif)
