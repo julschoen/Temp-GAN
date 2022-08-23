@@ -13,7 +13,7 @@ def MDmin(x_batch):
             if ii != jj:
                 s[ii] = min(s[ii],torch.abs(x_batch[ii] - x_batch[jj]).mean())
                 
-    s_full = s[:,None,None,None,None].repeat((1,1,2,4,4))
+    s_full = s[:,None,None,None,None].repeat((1,1,8,16,16))
     print(x_batch.shape, s_full.shape)
     return torch.cat((x_batch,s_full),dim=1), s
 
