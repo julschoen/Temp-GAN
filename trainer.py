@@ -26,7 +26,6 @@ class Trainer(object):
         ### Misc ###
         self.p = params
         self.device = params.device
-        #self.assessor_path = '../Assessor/Assessor/models/checkpoint_1499.pt'
         if self.p.one_disc:
             self.p.cl = False
         ### Make Dirs ###
@@ -59,9 +58,7 @@ class Trainer(object):
             self.tempD = nn.DataParallel(self.tempD)
             self.imG = nn.DataParallel(self.imG)
             self.tempG = nn.DataParallel(self.tempG)
-            
-        #state_dict = torch.load(self.assessor_path)
-        #self.tempD.load_state_dict(state_dict['model'])
+
         if not self.p.one_disc:
             self.optimizerImD = optim.Adam(self.imD.parameters(), lr=self.p.lrImD,
                                             betas=(0., 0.9))
@@ -428,7 +425,7 @@ class Trainer(object):
 
         if not self.p.one_disc:
             for p in self.imD.parameters():
-                p.requires_grad = True
+                p.requires_grad = False
 
         print("Starting Training...")
         for i in range(step_done, self.p.niters):
