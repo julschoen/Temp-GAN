@@ -12,8 +12,7 @@ def MDmin(x_batch):
         for jj in range(batch_size):
             if ii != jj:
                 s[ii] = min(s[ii],torch.abs(x_batch[ii] - x_batch[jj]).mean())
-    print(s.shape)
-    s_full = s.reshape(1,-1)
+    s_full = s.reshape(batch_size,1)
     return torch.cat((x_batch,s_full),dim=1), s
 
 class Conv3_1d(nn.Module):
