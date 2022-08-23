@@ -32,6 +32,7 @@ def main():
 	parser.add_argument('--one_disc', type=bool, default=False, help='Use only Temporal Discriminator. Overrides cl to False.')
 	parser.add_argument('--lidc', type=bool, default=False, help='Using LIDC default 4DCT')
 	parser.add_argument('--cbct', type=bool, default=False, help='Using CBCT default 4DCT')
+	parser.add_argument('--md', type=bool, default=False, help='Use MiniBatch Discrimination')
 	params = parser.parse_args()
 
 	if params.lidc:

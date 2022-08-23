@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.nn import init
 import torch.nn.functional as F
 import functools
-from utils import Attention, DBlock, snconv3d, snlinear, Conv3_1d
+from utils import Attention, DBlock, snconv3d, snlinear, Conv3_1d, MDmin
 
 class Discriminator(nn.Module):
   def __init__(self, params):
@@ -34,7 +34,10 @@ class Discriminator(nn.Module):
 
     self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
     if not self.p.triplet:
-      self.linear = snlinear(self.arch['out_channels'][-1], 1)
+      if self.p.md:
+        self.linear = snlinear(self.arch['out_channels'][-1]+1, 1)
+      else:
+        self.linear = snlinear(self.arch['out_channels'][-1], 1)
     self.activation = nn.ReLU(inplace=True)
     self.init_weights()
 
@@ -56,7 +59,9 @@ class Discriminator(nn.Module):
         h = block(h)
     # Apply global sum pooling as in SN-GAN
     h = torch.sum(self.activation(h), [2, 3, 4])
-    if self.p.triplet:
-      return h
-    else:
-      return self.linear(h)
+    if not self.p.triplet:
+      if self.p.md:
+        h, s = MDmin(h)
+      h = self.linear(h)
+
+    return h

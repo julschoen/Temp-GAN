@@ -5,6 +5,17 @@ from torch.nn.utils.parametrizations import spectral_norm as SpectralNorm
 import functools
 from torch.nn import Parameter as P
 
+def MDmin(x_batch):
+    batch_size = x_batch.shape[0]
+    s = 1e6 * torch.ones(batch_size).to(x_batch.device)
+    for ii in range(batch_size):
+        for jj in range(batch_size):
+            if ii != jj:
+                s[ii] = min(s[ii],torch.abs(x_batch[ii] - x_batch[jj]).mean())
+                
+    s_full = s[:,None,None,None,None].repeat((1,1,2,4,4))
+    return torch.cat((x_batch,s_full),dim=1), s
+
 class Conv3_1d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=(3,3,3,3), stride=(1, 1, 1, 1),
                         padding=(0, 1, 1, 1), dilation=(1, 1, 1, 1), bias=True):
