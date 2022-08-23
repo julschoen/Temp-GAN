@@ -32,12 +32,16 @@ class Discriminator(nn.Module):
       if self.arch['attention'][self.arch['resolution'][index]]:
         self.blocks[-1] += [Attention(self.arch['out_channels'][index])]
 
+    if self.p.md:
+      self.blocks[-2] = [DBlock(in_channels=self.arch['in_channels'][-2]+1,
+                       out_channels=self.arch['out_channels'][-2],
+                       preactivation=True,
+                       downsample=(nn.AvgPool3d(2) if self.arch['downsample'][-2] else None))]
+
     self.blocks = nn.ModuleList([nn.ModuleList(block) for block in self.blocks])
     if not self.p.triplet:
-      if self.p.md:
-        self.linear = snlinear(self.arch['out_channels'][-1]+1, 1)
-      else:
-        self.linear = snlinear(self.arch['out_channels'][-1], 1)
+      self.linear = snlinear(self.arch['out_channels'][-1], 1)
+
     self.activation = nn.ReLU(inplace=True)
     self.init_weights()
 
@@ -55,6 +59,8 @@ class Discriminator(nn.Module):
     h = self.input_conv(x)
     # Loop over blocks
     for index, blocklist in enumerate(self.blocks):
+      if index == len(self.blocks)-2:
+         h,s = MDmin(h)
       for block in blocklist:
         h = block(h)
     # Apply global sum pooling as in SN-GAN
