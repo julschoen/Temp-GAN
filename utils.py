@@ -7,6 +7,7 @@ from torch.nn import Parameter as P
 
 def MDmin(x_batch):
     batch_size = x_batch.shape[0]
+    print(x_batch.shape)
     s = 1e6 * torch.ones(batch_size).to(x_batch.device)
     for ii in range(batch_size):
         for jj in range(batch_size):
