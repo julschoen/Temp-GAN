@@ -59,7 +59,7 @@ class Discriminator(nn.Module):
     # Loop over blocks
     for index, blocklist in enumerate(self.blocks):
       if index == len(self.blocks)-2:
-         h,s = MDmin(h)
+         h,s = MDmin(h, lidc=self.p.lidc)
       for block in blocklist:
         h = block(h)
     # Apply global sum pooling as in SN-GAN
