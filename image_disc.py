@@ -58,7 +58,7 @@ class Discriminator(nn.Module):
     h = self.input_conv(x)
     # Loop over blocks
     for index, blocklist in enumerate(self.blocks):
-      if index == len(self.blocks)-2:
+      if self.p.md and index == len(self.blocks)-2:
          h,s = MDmin(h, lidc=self.p.lidc)
       for block in blocklist:
         h = block(h)
