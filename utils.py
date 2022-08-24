@@ -5,15 +5,17 @@ from torch.nn.utils.parametrizations import spectral_norm as SpectralNorm
 import functools
 from torch.nn import Parameter as P
 
-def MDmin(x_batch):
+def MDmin(x_batch, lidc=False):
     batch_size = x_batch.shape[0]
     s = 1e6 * torch.ones(batch_size).to(x_batch.device)
     for ii in range(batch_size):
         for jj in range(batch_size):
             if ii != jj:
                 s[ii] = min(s[ii],torch.abs(x_batch[ii] - x_batch[jj]).mean())
-                
-    s_full = s[:,None,None,None,None].repeat((1,1,8,16,16))
+    if lidc:
+        s_full = s[:,None,None,None,None].repeat((1,1,16,16,16))
+    else:
+        s_full = s[:,None,None,None,None].repeat((1,1,8,16,16))
     return torch.cat((x_batch,s_full),dim=1), s
 
 class Conv3_1d(nn.Module):
