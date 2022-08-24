@@ -32,7 +32,7 @@ class Discriminator(nn.Module):
       if self.arch['attention'][self.arch['resolution'][index]]:
         self.blocks[-1] += [Attention(self.arch['out_channels'][index])]
 
-    if self.p.md:
+    if False:#self.p.md:
       self.blocks[-2] = [DBlock(in_channels=self.arch['in_channels'][-2]+1,
                        out_channels=self.arch['out_channels'][-2],
                        preactivation=True,
@@ -59,7 +59,7 @@ class Discriminator(nn.Module):
     h = self.input_conv(x)
     # Loop over blocks
     for index, blocklist in enumerate(self.blocks):
-      if index == len(self.blocks)-2:
+      if False:#index == len(self.blocks)-2:
          h,s = MDmin(h, lidc=self.p.lidc)
       for block in blocklist:
         h = block(h)
