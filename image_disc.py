@@ -53,13 +53,16 @@ class Discriminator(nn.Module):
         self.param_count += sum([p.data.nelement() for p in module.parameters()])
     print('Param count for D''s initialized parameters: %d' % self.param_count)
 
-  def forward(self, x):
+  def forward(self, x, return_feats=False):
     # Run input conv
     h = self.input_conv(x)
     # Loop over blocks
     for index, blocklist in enumerate(self.blocks):
-      if self.p.md and index == len(self.blocks)-2:
-         h,s = MDmin(h, lidc=self.p.lidc)
+      if index == len(self.blocks)-2:
+        if return_feats:
+          return h
+        elif self.p.md:
+          h,s = MDmin(h, lidc=self.p.lidc)
       for block in blocklist:
         h = block(h)
     # Apply global sum pooling as in SN-GAN
