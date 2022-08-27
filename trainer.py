@@ -217,10 +217,28 @@ class Trainer(object):
             alpha = ((12*torch.rand(self.p.batch_size,2))-6).t()
         return alpha
 
+    def selectSimilarSamples(self):
+        with torch.no_grad():
+            z = torch.randn(128, self.p.z_size, device=self.p.device)
+            z_split = torch.split(z,32)
+            all_feats = []
+            for zs in z_split:
+            
+                fake = self.imG(zs)
+                feats = self.imD(fake, return_feats=True)
+                all_feats.append(feats)
+                
+            all_feats = torch.cat(all_feats)
+            _, similarities = MDmin(all_feats, lidc=self.p.lidc)
+            _, idx = torch.sort(similarities)
+            idx_out = idx[0:min(self.p.batch_size,len(idx))]
+        
+        return z[idx_out]
+
     def sample_g(self, grad=False):
         with autocast():
             if grad:
-                z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
+                z = selectSimilarSamples()
                 alpha = self.get_shift(sort=not self.p.cl)
                 labels = alpha[0]<alpha[1]
                 z1 = self.tempG(z, alpha[0])
@@ -289,32 +307,13 @@ class Trainer(object):
             ims = torch.concat((im, im1, im2), dim=1)
         return ims, labels.reshape(-1,1).float()
 
-    def selectSimilarSamples(self):
-        with torch.no_grad():
-            z = torch.randn(128, self.p.z_size, device=self.p.device)
-            z_split = torch.split(z,32)
-            all_feats = []
-            for zs in z_split:
-            
-                fake = self.imG(zs)
-                feats = self.imD(fake, return_feats=True)
-                all_feats.append(feats)
-                
-            all_feats = torch.cat(all_feats)
-            _, similarities = MDmin(all_feats, lidc=self.p.lidc)
-            _, idx = torch.sort(similarities)
-            idx_out = idx[0:min(self.p.batch_size,len(idx))]
-        
-        return z[idx_out]
-
-
     def step_imD(self, real):
         for p in self.imD.parameters():
             p.requires_grad = True
         
         self.imD.zero_grad()
         with autocast():
-            z = torch.randn(real.shape[0], self.p.z_size, dtype=torch.float, device=self.device)
+            z = self.selectSimilarSamples()
             fake = self.imG(z)
             disc_fake = self.imD(fake)
             disc_real = self.imD(real.unsqueeze(1))
