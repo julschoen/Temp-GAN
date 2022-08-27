@@ -238,7 +238,7 @@ class Trainer(object):
     def sample_g(self, grad=False):
         with autocast():
             if grad:
-                z = selectSimilarSamples()
+                z = self.selectSimilarSamples()
                 alpha = self.get_shift(sort=not self.p.cl)
                 labels = alpha[0]<alpha[1]
                 z1 = self.tempG(z, alpha[0])
@@ -272,7 +272,7 @@ class Trainer(object):
                 im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             else:
                 with torch.no_grad():
-                    z = torch.randn(self.p.batch_size, self.p.z_size, dtype=torch.float, device=self.device)
+                    z = self.selectSimilarSamples()
                     alpha = self.get_shift(sort=not self.p.cl)
                     labels = alpha[0]<alpha[1]
                     z1 = self.tempG(z, alpha[0])
