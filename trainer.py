@@ -219,7 +219,7 @@ class Trainer(object):
 
     def selectSimilarSamples(self):
         with torch.no_grad():
-            z = torch.randn(128, self.p.z_size, device=self.p.device)
+            z = torch.randn(64, self.p.z_size, device=self.p.device)
             z_split = torch.split(z,32)
             all_feats = []
             for zs in z_split:
