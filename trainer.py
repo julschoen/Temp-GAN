@@ -14,6 +14,7 @@ from torch.cuda.amp import autocast, GradScaler
 import torchvision
 import torchvision.utils as vutils
 
+from utils import MDmin
 from image_disc import Discriminator as ImD
 from temp_disc import Discriminator as TempD
 from image_gen import Generator as ImG
@@ -287,6 +288,25 @@ class Trainer(object):
                     im2 = self.imG(zs[2]).reshape(-1,1,im.shape[-3],im.shape[-2],im.shape[-1])
             ims = torch.concat((im, im1, im2), dim=1)
         return ims, labels.reshape(-1,1).float()
+
+    def selectSimilarSamples(self):
+        with torch.no_grad():
+            z = torch.randn(128, self.p.z_size, device=self.p.device)
+            z_split = torch.split(z,32)
+            all_feats = []
+            for zs in z_split:
+            
+                fake = self.imG(zs)
+                feats = self.imD(fake, return_feats=True)
+                all_feats.append(feats)
+                
+            all_feats = torch.cat(all_feats)
+            _, similarities = MDmin(all_feats, lidc=self.p.lidc)
+            _, idx = torch.sort(similarities)
+            idx_out = idx[0:min(self.p.batch_size,len(idx))]
+        
+        return z[idx_out]
+
 
     def step_imD(self, real):
         for p in self.imD.parameters():
