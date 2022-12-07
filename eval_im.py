@@ -28,9 +28,9 @@ def load_gen(path, ngpu):
 	return netG.to(params.device), tempG.to(params.device)
 
 def eval(params):
-	#dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', triplet=True)
+	dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', triplet=True)
 	#dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=True)
-	dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=True)
+	#dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=True)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	os.makedirs(params.log_dir, exist_ok=True)
