@@ -28,7 +28,7 @@ def load_gen(path, ngpu):
 	return netG.to(params.device), tempG.to(params.device)
 
 def eval(params):
-	dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', triplet=False, shift=False)
+	dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', triplet=True)
 	#dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=True)
 	#dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=True)
 	print(dataset.__len__())
@@ -44,8 +44,8 @@ def eval(params):
 		large_fake = None
 		with torch.no_grad():
 			for i, (data, _) in enumerate(generator):
-				x1 = data.unsqueeze(1)
-				#x1 = x1[:,np.random.choice([0,1,2])].unsqueeze(1)
+				x1 = data#.unsqueeze(1)
+				x1 = x1[:,np.random.choice([0,1,2])].unsqueeze(1)
 				if params.ngpu > 1:
 					noise = torch.randn(x1.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
 				else:
