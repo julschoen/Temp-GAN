@@ -8,6 +8,7 @@ from torch.cuda.amp import autocast
 
 from eval_utils import *
 from image_gen import Generator as ImG
+from temp_gen import Generator as TempG
 from temp_data_handler import DATA, Data4D, DataLIDC, DataCBCT
 
 def load_gen(path, ngpu):
@@ -15,24 +16,27 @@ def load_gen(path, ngpu):
 		params = pickle.load(file)
 	
 	netG = ImG(params)
+	tempG = TempG(params)
 
 	if ngpu > 1:
 		netG = nn.DataParallel(netG)
+		tempG = nn.DataParallel(tempG)
 	state = torch.load(os.path.join(path, 'models/checkpoint_4999.pt'))
 	netG.load_state_dict(state['imG'])
+	tempG.load_state_dict(state['tempG'])
 
-	return netG
+	return netG, tempG
 
 def eval(params):
 	#dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', triplet=True)
-	dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=False)
+	dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=True)
 	#dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=False)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
-		netG = load_gen(model_path, params.ngpu).to(params.device)
+		netG, tempG = load_gen(model_path, params.ngpu).to(params.device)
 		fids_ax = []
 		fids_cor = []
 		fids_sag = []
@@ -46,7 +50,8 @@ def eval(params):
 					noise = torch.randn(x1.shape[0], netG.module.dim_z, dtype=torch.float, device=params.device)
 				else:
 					noise = torch.randn(x1.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
-				x2 = netG(noise)
+				alpha = ((12*torch.rand(x1.shape[0]))-6)
+				x2 = netG(tempG(noise, alpha))
 				fa, fc, fs = fid(x1, x2, params.device)
 				fids_ax.append(fa)
 				fids_cor.append(fc)
