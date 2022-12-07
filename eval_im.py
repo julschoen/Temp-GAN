@@ -25,7 +25,7 @@ def load_gen(path, ngpu):
 	netG.load_state_dict(state['imG'])
 	tempG.load_state_dict(state['tempG'])
 
-	return netG, tempG
+	return netG.to(params.device), tempG.to(params.device)
 
 def eval(params):
 	#dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', triplet=True)
@@ -36,7 +36,7 @@ def eval(params):
 	os.makedirs(params.log_dir, exist_ok=True)
 	for model_path in params.model_log:
 		print(model_path)
-		netG, tempG = load_gen(model_path, params.ngpu).to(params.device)
+		netG, tempG = load_gen(model_path, params.ngpu)
 		fids_ax = []
 		fids_cor = []
 		fids_sag = []
