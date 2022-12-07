@@ -217,7 +217,7 @@ class DataLIDC():
     else:
       image = self.data[index]
       image = np.clip(image, -1,1)
-      return torch.from_numpy(image).float()
+      return torch.from_numpy(image).float(), 0
 
   def __len__(self):
     return self.len
