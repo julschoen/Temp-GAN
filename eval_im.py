@@ -51,7 +51,7 @@ def eval(params):
 				else:
 					noise = torch.randn(x1.shape[0], netG.dim_z, dtype=torch.float, device=params.device)
 				alpha = ((12*torch.rand(x1.shape[0]))-6)
-				x2 = netG(tempG(noise, alpha))
+				x2 = netG(noise)
 				fa, fc, fs = fid(x1, x2, params.device)
 				fids_ax.append(fa)
 				fids_cor.append(fc)
