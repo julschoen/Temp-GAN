@@ -29,7 +29,7 @@ def load_gen(path, ngpu):
 
 def eval(params):
 	#dataset = DataLIDC(path='../3D-GAN/test_lidc_128.npz', shift=False)
-	dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=True)
+	dataset = Data4D(path='../Data/4dct_clean/test_pat.npz', shift=False)
 	#dataset = DataCBCT(path='../Data/cbct/test_pat.npz', shift=True)
 	print(dataset.__len__())
 	generator = DataLoader(dataset, batch_size=params.batch_size, shuffle=True, num_workers=4)
