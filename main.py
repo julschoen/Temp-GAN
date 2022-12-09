@@ -16,7 +16,7 @@ def main():
 	parser.add_argument('--lrTempG', type=float, default=5e-5, help='Learning rate tempG')
 	parser.add_argument('--lrTempD', type=float, default=5e-5, help='Learning rate tempD')
 	parser.add_argument('--lrEnc', type=float, default=1e-5, help='Learning rate Encoder')
-	parser.add_argument('--data_path', type=str, default='../3D-GAN/train_lidc_128.npz',help='Path to data.')
+	parser.add_argument('--data_path', type=str, default='./',help='Path to data.')
 	parser.add_argument('--ngpu', type=int, default=2, help='Number of GPUs')
 	parser.add_argument('--steps_per_log', type=int, default=10, help='Output Iterations')
 	parser.add_argument('--steps_per_img_log', type=int, default=50, help='Image Save Iterations')
@@ -34,13 +34,6 @@ def main():
 	parser.add_argument('--cbct', type=bool, default=False, help='Using CBCT default 4DCT')
 	parser.add_argument('--md', type=bool, default=False, help='Use MiniBatch Discrimination')
 	params = parser.parse_args()
-
-	if params.lidc:
-		dataset_train = DataLIDC(path='../3D-GAN/train_lidc_128.npz', triplet=params.triplet)
-	elif params.cbct:
-		dataset_train = DataCBCT(path='../Data/cbct/train_pat.npz')
-	else:
-		dataset_train = Data4D(path='../Data/4dct_clean/train_pat.npz')
 
 	trainer = Trainer(dataset_train, params=params)
 	trainer.train()
