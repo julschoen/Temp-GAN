@@ -35,6 +35,13 @@ def main():
 	parser.add_argument('--md', type=bool, default=False, help='Use MiniBatch Discrimination')
 	params = parser.parse_args()
 
+	if params.lidc:
+		dataset_train = DataLIDC(path=params.data_path, triplet=params.triplet)
+	elif params.cbct:
+		dataset_train = DataCBCT(path=params.data_path)
+	else:
+		dataset_train = Data4D(path=params.data_path)
+
 	trainer = Trainer(dataset_train, params=params)
 	trainer.train()
 
